@@ -23,11 +23,15 @@ Useful resources for R packages and Shiny development.
 - [usethis][usethis]
 - [Shiny tutorial][shinytutorial]
 - [Shiny function reference][shinyreference]
+- [Mastering Shiny][masteringshiny]
+- [Shiny with Databases][shinydatabases]
 
 [devtools]: https://devtools.r-lib.org/index.html
+[masteringshiny]: https://mastering-shiny.org/
 [rpackages]: https://r-pkgs.org/
 [rsqlite]: https://rsqlite.r-dbi.org/
 [shiny]: https://shiny.posit.co/
+[shinydatabases]: https://posit.co/blog/shiny-with-databases
 [shinyreference]: https://shiny.posit.co/r/reference/shiny/latest/
 [shinytutorial]: https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/
 [sqlite]: https://sqlite.org/index.html
