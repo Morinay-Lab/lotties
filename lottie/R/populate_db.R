@@ -168,7 +168,7 @@ other_species_df <- data.frame(
         "UnknownTit",
         "GreaterSpottedWoodpecker",
         "Wren",
-        "WillowWrabler"
+        "WillowWarbler"
     )
 )
 RSQLite::dbWriteTable(
