@@ -15,7 +15,7 @@ CURRENT_DIR <- getwd()
 DATA_DIR <- paste0(CURRENT_DIR, "/data/")
 XLS_DIR <- paste0(DATA_DIR, "xls/")
 CSV_DIR <- paste0(DATA_DIR, "csv/")
-GPX_DIR <- paste0(CSV_DIR, "gpx/")
+GPX_DIR <- paste0(DATA_DIR, "gpx/")
 
 ## List for results
 gps <- list()
@@ -24,8 +24,9 @@ gps <- list()
 ##################################################################
 ## NB - Track_2025_07_09_SJB.csv is a different format to others so is removed and loaded separately needs
 ## cleaning/handling separately (likely handle by switching to using GPX files)
-file_names <- paste0(GPX_DIR, dir(GPX_DIR))
-track_2025_07_09 <- paste0(GPX_DIR, "Track_2025_07_09_SJB.csv")
+GPX_AS_CSV_DIR <- paste0(CSV_DIR, "gpx/")
+file_names <- paste0(GPX_AS_CSV_DIR, dir(GPX_AS_CSV_DIR))
+track_2025_07_09 <- paste0(GPX_AS_CSV_DIR, "Track_2025_07_09_SJB.csv")
 file_names <- file_names[!stringr::str_detect(file_names, "Track_2025_07_09_SJB.csv")]
 gps$gps_clean <- read_csv(file_names,
                       id = "name",
@@ -41,13 +42,29 @@ gps$gps_clean <- read_csv(file_names,
 
            date_time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s"),
            time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s") |>
-               format(., format = "%H:%M:%S"),
+               format(format = "%H:%M:%S"),
            date = as.Date(date_time),
-           day_of_year = lubridate::yday(date)) |>
+           day_of_year = lubridate::yday(date),
+           track = gsub(".*/", "", name)) |>
     dplyr::select(-name)
 ## Average data points
 gps$gps_average <- gps$gps_clean |>
-    dplyr::summarise()
+    dplyr::group_by(track) |>
+    dplyr::summarise(mean_lat = mean(lat),
+        mean_lon = mean(lon),
+        mean_ele = mean(ele),
+        mean_date_time = mean(date_time),
+        mean_date = mean(date),
+        min_lat = min(lat),
+        min_lon = min(lon),
+        min_ele = min(ele),
+        min_date_time = min(date_time),
+        min_date = min(date),
+        max_lat = max(lat),
+        max_lon = max(lon),
+        max_ele = max(ele),
+        max_date_time = max(date_time),
+        max_date = max(date))
 
 ##################################################################
 ## Additional GPS points                                        ##
@@ -114,6 +131,9 @@ rm(pos_LN_24_25, pos_LN_25_26, pos_SB_24_25)
 ## Write to CSV
 write.csv(gps$gps_clean,
     paste0(CSV_DIR, "gps_clean.csv"),
+    row.names = FALSE)
+write.csv(gps$gps_average,
+    paste0(CSV_DIR, "gps_average.csv"),
     row.names = FALSE)
 write.csv(gps$gps_additional_clean,
           paste0(CSV_DIR, "additional_gps_clean.csv"),

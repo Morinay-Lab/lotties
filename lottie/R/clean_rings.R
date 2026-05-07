@@ -16,7 +16,7 @@ CURRENT_DIR <- getwd()
 DATA_DIR <- paste0(CURRENT_DIR, "/data/")
 XLS_DIR <- paste0(DATA_DIR, "xls/")
 CSV_DIR <- paste0(DATA_DIR, "csv/")
-GPX_DIR <- paste0(CSV_DIR, "gpx/")
+GPX_DIR <- paste0(DATA_DIR, "gpx/")
 
 ##################################################################
 ## Rings                                                        ##

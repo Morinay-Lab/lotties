@@ -14,7 +14,7 @@ CURRENT_DIR <- getwd()
 DATA_DIR <- paste0(CURRENT_DIR, "/data/")
 XLS_DIR <- paste0(DATA_DIR, "xls/")
 CSV_DIR <- paste0(DATA_DIR, "csv/")
-GPX_DIR <- paste0(CSV_DIR, "gpx/")
+GPX_DIR <- paste0(DATA_DIR, "gpx/")
 
 ## Setup a list to hold 2024/25 data
 data_2024_25 <- list()
@@ -52,10 +52,10 @@ data_2024_25$meta_clean <- bind_rows(meta_ln, meta_sb) |>
     date = as.Date(Date, format = "%Y-%m-%d"),
     time_seen = as.POSIXct(`Time first seen`,
                            format = "%Y-%M-%d %H:%M:%S") |>
-                format(., format = "%H:%M:%S"),
+                format(format = "%H:%M:%S"),
     time_lost = as.POSIXct(`Time lost/left`,
                            format = "%Y-%M-%d %H:%M:%S")|>
-                format(., format = "%H:%M:%S"),
+                format(format = "%H:%M:%S"),
     ## Correcting a missing times
     time_seen = dplyr::case_when(is.na(time_seen) ~ "12:54:00",
                           TRUE ~ time_seen),
@@ -127,10 +127,10 @@ data_2024_25$observation_clean <- bind_rows(observations_LN, observations_SB) |>
       date = as.Date(Date, format="%Y-%m-%d"),
       time_start = as.POSIXct(`Time your started out`,
                               format = "%Y-%M-%d %H:%M:%S")|>
-          format(., format = "%H:%M:%S"),
+          format(format = "%H:%M:%S"),
       time_end = as.POSIXct(`Time you finished`,
                             format = "%Y-%M-%d %H:%M:%S")|>
-          format(., format = "%H:%M:%S"),
+          format(format = "%H:%M:%S"),
       ## st = ymd_hms(`Time your started out`, format = "%Y-%M-%d %H:%M:%S"),
       ## end = ymd_hms(`Time you finished`, format = "%Y-%M-%d %H:%M:%S"),
       ## Duration = as.integer(Time.end-Time.start)*60,
@@ -180,7 +180,7 @@ data_2024_25$flock_clean <- bind_rows(composition_LN, composition_SB) |>
         ## Date  & Times in good format
         date=as.Date(Date, format = "%Y-%m-%d"),
         time_seen = as.POSIXct(`Time seen`, format = "%Y-%M-%d %H:%M:%S") |>
-            format(., format = "%H:%M:%S"),
+            format(format = "%H:%M:%S"),
         ## Unique IDD
         IDD = paste(person, flock_id, sep = "_"),
         ## Day of Year
