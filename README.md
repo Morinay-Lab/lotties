@@ -13,6 +13,35 @@ and storing data and the subsequent network analysis of interactions.
 We leverage the [Shiny][shiny] package to capture data and store it in an [SQLite][sqlite] database (using the
 [RSQLite][rsqlite] package).
 
+## Cloning
+
+To clone this repository locally you can use either of the following commands (the second will work if you have your
+GitHub account setup with [SSH][gh_ssh])
+
+``` shell
+git clone https://github.com/Morinay-Lab/lotties.git
+git clone git@github.com:Morinay-Lab/lotties.git
+```
+
+Or if you use a Git client such as Git Kraken you can use that to clone the repository.
+
+## Usage
+
+Data should be placed in `R/data/` with directories for each file type (i.e. all `.xls` files should be placed in the
+`R/data/xls/` directory). GPX files in `.csv` format should be placed under `data/csv/gpx/`. Any `.gpx` files should
+reside under `data/gpx/`.
+
+### Shiny
+
+You can test the Shiny package locally by navigating to the `lottie/R/` directory within the cloned repository from within [R][r] and running
+`shiny::runApp()`.
+
+``` r
+setwd("~/path/to/cloned/repository/lotties/lottie/R")
+shiny::runApp()
+```
+
+A new tab should open in your default browser showing the Shiny User Interface.
 
 ## Resources
 
@@ -27,7 +56,9 @@ Useful resources for R packages and Shiny development.
 - [Shiny with Databases][shinydatabases]
 
 [devtools]: https://devtools.r-lib.org/index.html
+[gh_ssh]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
 [masteringshiny]: https://mastering-shiny.org/
+[r]: https://www.r-project.org/
 [rpackages]: https://r-pkgs.org/
 [rsqlite]: https://rsqlite.r-dbi.org/
 [shiny]: https://shiny.posit.co/
