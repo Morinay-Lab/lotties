@@ -36,8 +36,12 @@ cards <- list(
                    shiny::dateInput("conditions_date",
                                     "Date : ",
                                     format = "yyyy-mm-dd"),
-                   shinyTime::timeInput("conditions_time",
-                                        "Time : ",
+                   shinyTime::timeInput("conditions_start_time",
+                                        "Start Time : ",
+                                        seconds = FALSE,
+                                        value = Sys.time()),
+                   shinyTime::timeInput("conditions_end_time",
+                                        "End Time : ",
                                         seconds = FALSE,
                                         value = Sys.time()),
                    ## Alternatively we can have sliders for hours/minutes
@@ -109,44 +113,45 @@ cards <- list(
                    shiny::textInput("composition_notes",
                                     "Notes : ",
                                     value = "",
-                                    updateOn = "blur")
+                                    updateOn = "blur"),
+                   shiny::actionButton("add_composition", "Submit bird description"),
+                   shiny::tableOutput("composition")
+                   ## shiny::tableOutput("composition_test")
            )),
     bslib::card(
-        full_screen = TRUE,
+        full_screen = FALSE,
         card_header = "Flock Description",
         bslib::card_body(
-                   shiny::h4("First seen..."),
-                   shiny::dateInput("description_date",
-                                    "Date : ",
-                                    format = "yyyy-mm-dd"),
-                   shinyTime::timeInput("description_time_first_seen",
-                                        "Time : ",
-                                        seconds = FALSE,
-                                        value = Sys.time()),
-                   ## shiny::sliderInput("description_hour_first_seen",
-                   ##                    "Hour:",
-                   ##                    min = 0,
-                   ##                    max = 23,
-                   ##                    value = 12,
-                   ##                    step = 1),
-                   ## shiny::sliderInput("description_mins_first_seen",
-                   ##                    "Minutes:",
-                   ##                    min = 0,
-                   ##                    max = 59,
-                   ##                    value = 0,
-                   ##                    step = 1),
-                   shiny::h4("Flock features..."),
-                   shiny::checkboxInput("description_in_flock",
-                                        "In flock?"),
+                  shiny::h4("First seen..."),
+                  shiny::dateInput("description_date",
+                      "Date : ",
+                      format = "yyyy-mm-dd"
+                  ),
+                  shinyTime::timeInput("description_start_time",
+                      "Time : ",
+                      seconds = FALSE,
+                      value = Sys.time()
+                  ),
+                  shinyTime::timeInput("description_end_time",
+                      "Time : ",
+                      seconds = FALSE,
+                      value = Sys.time()
+                  ),
+                  shiny::h4("Flock features..."),
+                  shiny::selectInput("description_flock_type",
+                                      "Flock type : ",
+                                      choices = c("In flock" = "flock",
+                                                  "Pair" = "pair",
+                                                  "Individual" = "individual")),
                    shiny::checkboxInput("description_whole_flock",
-                                        "Whole flock?"),
-                   shiny::sliderInput("description_n_flock",
+                                        "Whole flock identified?"),
+                   shiny::numericInput("description_n_flock",
                                       "Flock Size : ",
                                       min = 0,
                                       max = 60,
                                       value = 12,
                                       step = 1),
-                   shiny::sliderInput("description_n_ringed",
+                   shiny::numericInput("description_n_ringed",
                                       "Ringed Birds : ",
                                       min = 0,
                                       max = 60,
@@ -166,26 +171,11 @@ cards <- list(
                                     "Notes : ",
                                     value = "",
                                     updateOn = "blur"),
-                   shiny::h4("Last seen..."),
-                   shinyTime::timeInput("description_time_last_seen",
-                                        "Time : ",
-                                        seconds = FALSE,
-                                        value = Sys.time())
-                   ## shiny::sliderInput("description_hour_last_seen",
-                   ##                    "Hour:",
-                   ##                    min = 0,
-                   ##                    max = 23,
-                   ##                    value = 12,
-                   ##                    step = 1),
-                   ## shiny::sliderInput("description_mins_last_seen",
-                   ##                    "Minutes:",
-                   ##                    min = 0,
-                   ##                    max = 59,
-                   ##                    value = 0,
-                   ##                    step = 1)
+                   shiny::actionButton("add_description", "Submit flock description"),
+                   shiny::tableOutput("description")
            )),
     bslib::card(
-        full_screen = TRUE,
+        full_screen = FALSE,
         card_header = "Flock Interactions",
         bslib::card_body(
                    shiny::dateInput("interactions_date",
@@ -195,71 +185,73 @@ cards <- list(
                                         "Time : ",
                                         seconds = FALSE,
                                         value = Sys.time()),
-                   ## shiny::sliderInput("interactions_hour",
-                   ##                    "Hour:",
-                   ##                    min = 0,
-                   ##                    max = 23,
-                   ##                    value = 12,
-                   ##                    step = 1),
-                   ## shiny::sliderInput("interactions_mins",
-                   ##                    "Minutes:",
-                   ##                    min = 0,
-                   ##                    max = 59,
-                   ##                    value = 0,
-                   ##                    step = 1),
-                   shiny::sliderInput("flock_a",
+                   shiny::numericInput("interactions_flock_a",
                                       "Flock A (numeric ID) : ",
                                       min = 0,
                                       max = 300,
                                       value = 0,
                                       step = 1),
-                   shiny::sliderInput("flock_b",
+                   shiny::numericInput("interactions_flock_b",
                                       "Flock B (numeric ID) : ",
                                       min = 0,
                                       max = 300,
                                       value = 0,
                                       step = 1),
-                   shiny::sliderInput("flock_c",
-                                      "Flock C (numeric ID) : ",
-                                      min = 0,
-                                      max = 300,
-                                      value = 0,
-                                      step = 1),
-                   shiny::checkboxGroupInput("type_of_interaction",
+                   shiny::checkboxGroupInput("interactions_type",
                                              "Type of Interaction : ",
                                              choices = c(
                                                  "Foraging together" = "foraging together",
                                                  "A chasing B" = "A chasing B",
-                                                 "A chasing C" = "A chasing C",
-                                                 "B chasing C" = "B chasing C",
+                                                 "B chasing A" = "B chasing A",
                                                  "Near but not interacting" = "being close but not interacting",
                                                  "Other (see notes)" = "other - see comments")),
-                   shiny::textInput("notes",
+                   shiny::textInput("interactions_notes",
                                     "Notes : ",
                                     value = "",
                                     updateOn = "blur"),
+                   shiny::actionButton("add_interactions", "Submit interaction"),
+                   shiny::tableOutput("interactions")
            ))
+)
+
+data <- list(
+    bslib::card(full_screen = TRUE, card_header = "Flock Composition"),
+    bslib::card(full_screen = TRUE, card_header = "Flock Description"),
+    bslib::card(full_screen = TRUE, card_header = "Flock Interactions")
 )
 ui <- bslib::page_sidebar(
     title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
     sidebar = bslib::sidebar(
-                         title = "Conditions",
-                         ## Record user
-                         shiny::selectInput("user", label="User", choices=c("SB", "LN", "MJ", "ND")),
-                         ## Upload GPX file
-                         shiny::fileInput(
-                                    "gpx",
-                                    "Choose GPX File(s)",
-                                    multiple = TRUE, accept = c(".gpx")
-                                ),
-                         cards[[1]]
-                     ),
+        title = "Conditions",
+        ## Record user
+        shiny::selectInput("user", label = "User", choices = c("SB", "LN", "MJ", "ND")),
+        ## Upload GPX file
+        shiny::fileInput(
+            "gpx",
+            "Choose GPX File(s)",
+            multiple = TRUE, accept = c(".gpx")
+        ),
+        cards[[1]]
+    ),
     ## ns-rse : This is using non-standard evaluation but I think its an old form, newer methods are lazyeval
     ## (https://cran.r-project.org/web/packages/lazyeval/vignettes/lazyeval.html)
+    ## ns-rse 2026-05-12 : Consider switching to column-layout
+    ## https://rstudio.github.io/bslib/articles/column-layout/index.html
+    ## bslib::layout_column_wrap(
+    ##    width = "300px",
+    ##    height = 300,
+    ##    fixed_width = FALSE,
+    ##    heights_equal = "all",
     bslib::navset_card_underline(
-               title = "Data Entry",
-               bslib::nav_panel("Flock Composition", cards[[2]]),
-               bslib::nav_panel("Flock Description", cards[[3]]),
-               bslib::nav_panel("Flock Interactions", cards[[4]])
-           )
-    )
+        title = "Flock Observations...",
+        bslib::nav_panel("Composition", cards[[2]]),
+        bslib::nav_panel("Description", cards[[3]]),
+        bslib::nav_panel("Interactions", cards[[4]])
+        )
+    ## Attempt to show results as separate cards underneath input panels
+    ## bslib::navset_card_underline(
+    ##     bslib::nav_panel("Composition", data[[1]]),
+    ##     bslib::nav_panel("Description", data[[2]]),
+    ##     bslib::nav_panel("Interactions", data[[3]])
+    ## )
+)
