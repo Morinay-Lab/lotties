@@ -198,9 +198,11 @@ write.csv(data_2024_25$flock_clean,
 ##################################################################
 ## Join metadata and GPS so we have IDD and mean/min/max lat/lon/ele
 data_2024_25$locs <- dplyr::left_join(gps$gps_clean,
-                                      data_2024_25$meta_clean,
-                                      by = c("day_of_year", "person")) |>
+    data_2024_25$meta_clean,
+    by = c("date", "person")
+) |>
     dplyr::filter(time >= time_seen & time <= time_lost) |>
+    dplyr::ungroup() |>
     dplyr::select(IDD, lat, lon, ele) |>
     group_by(IDD) |>
     summarise(
@@ -215,13 +217,13 @@ data_2024_25$locs <- dplyr::left_join(gps$gps_clean,
         max_ele = max(ele))
 ## Joining the GPS data and additional location data
 data_2024_25$locs <- dplyr::bind_rows(data_2024_25$locs, gps$additional_clean)
-## Expect 176
-length(unique(data_2024_25$locs$IDD))
+
 
 # Combined meta and location data
 data_2024_25$meta_clean_gps <- dplyr::left_join(data_2024_25$meta_clean,
-                                                data_2024_25$locs,
-                                                by = "IDD")
+    data_2024_25$locs,
+    by = "IDD"
+)
 
 ## ns-rse 2026-04-29 - Possibly unnecessary changes
 ## Clean flock_composition_clean using the possible_colour_rings
@@ -250,7 +252,7 @@ data_2024_25$flock_clean <- data_2024_25$flock_clean |>
         indiv_certainty,
         day_of_year)
 
-## Merge with met data (with GPS)
+## Merge flock with meta data (with GPS)
 data_2024_25$all_flock_data <- dplyr::left_join(data_2024_25$flock_clean,
                                                 data_2024_25$meta_clean_gps,
                                                 by = "IDD") |>
@@ -263,3 +265,81 @@ data_2024_25$all_flock_data <- dplyr::left_join(data_2024_25$flock_clean,
 ## - 13 instances where `date.x != date.y`
 ## - 29 instances where `day_of_year.x != day_of_year.y`
 ## - 0 instances where  `person.x != person.y`
+
+#################################################################
+## Merge info                                                  ##
+#################################################################
+## Aggregate some summary data on number of rows and unique
+## observations in data that is combined/collpased
+merge_data <- list()
+merge_data$gps_clean <- c("gps$gps_clean (track)",
+    gps$gps_clean |> nrow(),
+    gps$gps_clean |> dplyr::ungroup() |> dplyr::select(track, date, person) |> unique() |> nrow(),
+    NA
+)
+merge_data$meta_clean <- c(
+    "data_2024_25$meta_clean (no track)",
+    data_2024_25$meta_clean |> nrow(),
+    data_2024_25$meta_clean |> dplyr::ungroup() |> dplyr::select(date, person) |> unique() |> nrow(),
+    data_2024_25$meta_clean |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+tmp_left_join <- dplyr::left_join(gps$gps_clean,
+    data_2024_25$meta_clean,
+    by = c("date", "person")
+)
+merge_data$left_join <- c(
+    "left_join, no summarise (track)",
+    tmp_left_join |> nrow(),
+    tmp_left_join |> dplyr::ungroup() |> dplyr::select(track, date, person) |> unique() |> nrow(),
+    tmp_left_join |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$locs <- c(
+    "data_2024_25$locs (no track)",
+    data_2024_25$locs |> nrow(),
+    NA,
+    data_2024_25$locs |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$additional_clean <- c("gps$additional_clean (no track)",
+    gps$additional_clean |> nrow(),
+    NA,
+    gps$additional_clean |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$meta_clean_gps <- c(
+    "data_2024_25$meta_clean_gps (no track)",
+    data_2024_25$meta_clean_gps |> nrow(),
+    data_2024_25$meta_clean_gps |> dplyr::ungroup() |> dplyr::select(date, person) |> unique() |> nrow(),
+    data_2024_25$meta_clean_gps |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$flock_clean <- c(
+    "data_2024_25$flock_clean (no track)",
+    data_2024_25$flock_clean |> nrow(),
+    data_2024_25$flock_clean |> dplyr::ungroup() |> dplyr::select(date, person) |> unique() |> nrow(),
+    data_2024_25$flock_clean |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$all_flock_data <- c(
+    "data_2024_25$all_flock_data (no track)",
+    data_2024_25$all_flock_data |> nrow(),
+    data_2024_25$all_flock_data |> dplyr::ungroup() |> dplyr::select(date, person) |> unique() |> nrow(),
+    data_2024_25$all_flock_data |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$table <- rbind(
+    merge_data$gps_clean,
+    merge_data$meta_clean,
+    merge_data$left_join,
+    merge_data$locs,
+    merge_data$additional_clean,
+    merge_data$meta_clean_gps,
+    merge_data$flock_clean
+) |> dplyr::as_tibble()
+colnames(merge_data$table) <- c("Data", "Rows", "Unique ([track/]date/person)", "Unique (IDD)")
+message("Summary of tables being combined (2024/25)...")
+merge_data$table |>
+    knitr::kable() |>
+    capture.output() |>
+    paste0(collapse = "\n") |>
+    message()
+message("Notes on flock and meta data (with GPS) merge 2024/25...")
+message("")
+message(" - 13 instances where `date.x != date.y`")
+message(" - 29 instances where `day_of_year.x != day_of_year.y`")
+message(" - 0 instances where  `person.x != person.y`")

@@ -29,7 +29,7 @@ GPX_AS_CSV_DIR <- paste0(CSV_DIR, "gps/")
 file_names <- paste0(GPX_AS_CSV_DIR, dir(GPX_AS_CSV_DIR))
 track_2025_07_09 <- paste0(GPX_AS_CSV_DIR, "Track_2025_07_09_SJB.csv")
 file_names <- file_names[!stringr::str_detect(file_names, "Track_2025_07_09_SJB.csv")]
-gps$gps_clean <- read_csv(file_names,
+gps$gps_clean <- readr::read_csv(file_names,
     id = "name",
     col_names = TRUE,
     skip = 42,

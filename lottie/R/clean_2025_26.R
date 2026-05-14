@@ -221,10 +221,13 @@ write.csv(data_2025_26$flock_clean,
 ## GPS points                                                   ##
 ##################################################################
 ## Join metadata and GPS so we have IDD and mean/min/max lat/lon/ele
+##
 data_2025_26$locs <- dplyr::left_join(gps$gps_clean,
-                                      data_2025_26$meta_clean,
-                                      by = c("day_of_year", "person")) |>
+    data_2025_26$meta_clean,
+    by = c("date", "person")
+) |>
     dplyr::filter(time >= time_seen & time <= time_lost) |>
+    dplyr::ungroup() |>
     dplyr::select(IDD, lat, lon, ele) |>
     dplyr::group_by(IDD) |>
     dplyr::summarise(
@@ -239,49 +242,20 @@ data_2025_26$locs <- dplyr::left_join(gps$gps_clean,
         max_ele = max(ele))
 ## Joining the GPS data and additional location data
 data_2025_26$locs <- bind_rows(data_2025_26$locs, gps$additional_clean)
-## Expect ???
-length(unique(data_2025_26$locs$IDD))
 
 # Combine meta and location data
 data_2025_26$meta_clean_gps <- dplyr::left_join(data_2025_26$meta_clean,
                                                 data_2025_26$locs,
                                                 by = "IDD")
 
-## Clean flock_composition_clean using the possible_colour_rings
-data_2025_26$flock_clean <- data_2025_26$flock_clean |>
-    dplyr::mutate(
-        ## Day of Year
-        day_of_year = lubridate::yday(date),
-        ## correcting rings
-        colour_ring_certainty = dplyr::case_when(
-            grepl("BTO",colour_ring)~ NA,
-            str_length(colour_ring) > 5 ~ NA,
-            grepl("\\?", colour_ring)~ NA,
-            colour_ring=="U"~NA,
-            TRUE ~ colour_ring),
-        indiv_certainty = ifelse(is.na(colour_ring_certainty),
-                                 paste0("UNK", cumsum(is.na(colour_ring_certainty))),
-                                 colour_ring_certainty)) |>
-    dplyr::rename(
-        time = time_seen) |>
-    dplyr::select(
-        date,
-        time,
-        colour_ring_certainty,
-        person,
-        IDD,
-        indiv_certainty,
-        day_of_year)
-
-## Merge with meta data (with GPS)
+## Merge flock with meta data (with GPS)
 data_2025_26$all_flock_data <- dplyr::left_join(
                                           data_2025_26$flock_clean,
                                           data_2025_26$meta_clean_gps,
                                           by = "IDD") |>
     dplyr::rename(date = date.x,
-                  day_of_year = day_of_year.x,
                   person = person.x) |>
-  dplyr::select(-date.y, -day_of_year.y, -person.y)
+  dplyr::select(-date.y, -person.y)
 ## Notes on merge
 ##
 ## - 1182 instances where `time_seen.x != time_seen.y`
@@ -289,3 +263,83 @@ data_2025_26$all_flock_data <- dplyr::left_join(
 ## - 29 instances where `day_of_year.x != day_of_year.y`
 ## - 0 instances where  `person.x != person.y`
 ## - 0 instances where  `flock_id.x != flock_id.y`
+
+#################################################################
+## Merge info                                                  ##
+#################################################################
+## Aggregate some summary data on number of rows and unique
+## observations in data that is combined/collpased
+merge_data <- list()
+merge_data$gps_clean <- c("gps$gps_clean (track)",
+    gps$gps_clean |> nrow(),
+    gps$gps_clean |> dplyr::ungroup() |> dplyr::select(track, date, person) |> unique() |> nrow(),
+    NA
+)
+merge_data$meta_clean <- c(
+    "data_2025_26$meta_clean (no track)",
+    data_2025_26$meta_clean |> nrow(),
+    data_2025_26$meta_clean |> dplyr::ungroup() |> dplyr::select(date, person) |> unique() |> nrow(),
+    data_2025_26$meta_clean |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+tmp_left_join <- dplyr::left_join(gps$gps_clean,
+    data_2025_26$meta_clean,
+    by = c("date", "person")
+)
+merge_data$left_join <- c(
+    "left_join, no summarise (track)",
+    tmp_left_join |> nrow(),
+    tmp_left_join |> dplyr::ungroup() |> dplyr::select(track, date, person) |> unique() |> nrow(),
+    tmp_left_join |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$locs <- c(
+    "data_2025_26$locs (no track)",
+    data_2025_26$locs |> nrow(),
+    NA,
+    data_2025_26$locs |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$additional_clean <- c("gps$additional_clean (no track)",
+    gps$additional_clean |> nrow(),
+    NA,
+    gps$additional_clean |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$meta_clean_gps <- c(
+    "data_2025_26$meta_clean_gps (no track)",
+    data_2025_26$meta_clean_gps |> nrow(),
+    data_2025_26$meta_clean_gps |> dplyr::ungroup() |> dplyr::select(date, person) |> unique() |> nrow(),
+    data_2025_26$meta_clean_gps |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$flock_clean <- c(
+    "data_2025_26$flock_clean (no track)",
+    data_2025_26$flock_clean |> nrow(),
+    data_2025_26$flock_clean |> dplyr::ungroup() |> dplyr::select(date, person) |> unique() |> nrow(),
+    data_2025_26$flock_clean |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$all_flock_data <- c(
+    "data_2025_26$all_flock_data (no track)",
+    data_2025_26$all_flock_data |> nrow(),
+    data_2025_26$all_flock_data |> dplyr::ungroup() |> dplyr::select(date, person) |> unique() |> nrow(),
+    data_2025_26$all_flock_data |> dplyr::ungroup() |> dplyr::select(IDD) |> unique() |> nrow()
+)
+merge_data$table <- rbind(
+    merge_data$gps_clean,
+    merge_data$meta_clean,
+    merge_data$left_join,
+    merge_data$locs,
+    merge_data$additional_clean,
+    merge_data$meta_clean_gps,
+    merge_data$flock_clean
+) |> dplyr::as_tibble()
+colnames(merge_data$table) <- c("Data", "Rows", "Unique ([track/]date/person)", "Unique (IDD)")
+message("Summary of tables being combined (2025/26)...")
+merge_data$table |>
+    knitr::kable() |>
+    capture.output() |>
+    paste0(collapse = "\n") |>
+    message()
+message("Notes on flock and meta data (with GPS) merge 2024/25...")
+message("")
+message(" - 1182 instances where `time_seen.x != time_seen.y`")
+message(" - 41 instances where `date.x != date.y`")
+message(" - 29 instances where `day_of_year.x != day_of_year.y`")
+message(" - 0 instances where  `person.x != person.y`")
+message(" - 0 instances where  `flock_id.x != flock_id.y`")
