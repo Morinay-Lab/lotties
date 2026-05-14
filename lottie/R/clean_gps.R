@@ -57,18 +57,66 @@ gps$gps_clean <- read_csv(file_names,
     dplyr::group_by(track) |>
     dplyr::slice(3:n())
 
+## Track_2025_07_09_SJB.csv
+##
+## This is a bit messy as it has two headers as though two files have been concatenated, to work round this we read the
+## file twice, skipping the first header then the first header, the data that follows and the second header.
+track_2025_07_09_sjb_block1 <- read_csv(track_2025_07_09,
+    id = "name",
+    col_names = TRUE,
+    skip = 25,
+    col_select = col_select,
+    show_col_types = FALSE
+) |>
+    dplyr::slice(1:138) |>
+    dplyr::mutate(
+        lat = as.numeric(lat),
+        person = case_when(
+            str_detect(name, pattern = "LN") == TRUE ~ "LN",
+            str_detect(name, pattern = "MJ") == TRUE ~ "MJ",
+            str_detect(name, pattern = "ND") == TRUE ~ "ND",
+            str_detect(name, pattern = "SB|SJB") == TRUE ~ "SB",
+            TRUE ~ NA
+        ),
+        date_time =  lubridate::ymd_hms(time))
+## ns-rse 2026-05-14 Having looked at the dates and lat/lon they are not contiguous so I think we can safely ignore
+## these data points, they are not actual GPS traces, there are just a few points on each date.
+track_2025_07_09_sjb_block1 |> dplyr::select(lat, lon, ele, date_time) |> head()
+track_2025_07_09_sjb_block1 |>
+    dplyr::select(lat, lon, ele, time, date_time) |>
+    tail()
 
-           date_time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s"),
-           time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s") |>
-               format(format = "%H:%M:%S"),
-           date = as.Date(date_time),
-           day_of_year = lubridate::yday(date),
-           track = gsub(".*/", "", name)) |>
+track_2025_07_09_sjb_block2 <- read_csv(track_2025_07_09,
+    id = "name",
+    col_names = TRUE,
+    skip = 221,
+    col_select = col_select,
+    show_col_types = FALSE
+) |>
+    dplyr::mutate(
+        person = case_when(
+            str_detect(name, pattern = "LN") == TRUE ~ "LN",
+            str_detect(name, pattern = "MJ") == TRUE ~ "MJ",
+            str_detect(name, pattern = "ND") == TRUE ~ "ND",
+            str_detect(name, pattern = "SB|SJB") == TRUE ~ "SB",
+            TRUE ~ NA
+        ),
+        date_time =  as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s"),
+        time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s") |>
+            format(format = "%H:%M:%S"),
+        date = as.Date(date_time),
+        day_of_year = lubridate::yday(date),
+        track = gsub(".*/", "", name)) |>
     dplyr::select(-name)
-## Average data points
+## This second block looks more like GPS data with seuential readings every minute. It contains tracks from 33 days. For
+## now append to gps_clean. We de-duplicate to remove any possible duplicated data points (of which there were 330)
+gps$gps_clean <- rbind(gps$gps_clean, track_2025_07_09_sjb_block2) |> unique()
+
+## Average data points. This is done by track and date since tracks(/files) can have multiple days included
 gps$gps_average <- gps$gps_clean |>
-    dplyr::group_by(track) |>
-    dplyr::summarise(mean_lat = mean(lat),
+    dplyr::group_by(track, date) |>
+    dplyr::summarise(
+        mean_lat = mean(lat),
         mean_lon = mean(lon),
         mean_ele = mean(ele),
         mean_date_time = mean(date_time),
