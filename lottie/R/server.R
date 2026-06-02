@@ -88,12 +88,17 @@ server <- function(input, output, session) {
     composition_data <- shiny::reactiveVal(data.frame(
             date = character(),
             time = character(),
-            colour_ring = character(),
             ringed = character(),
-            left_leg = character(),
-            left_certainty = character(),
-            right_leg = character(),
-            right_certainty = character(),
+            colour_ring = character(),
+            certain = character(),
+            left_top= character(),
+            left_top_certain = character(),
+            left_bottom= character(),
+            left_bottom_certain = character(),
+            right_top = character(),
+            right_top_certain = character(),
+            right_bottom = character(),
+            right_bottom_certain = character(),
             bto_ring_position = character(),
             notes = character(),
             stringsAsFactors = FALSE
@@ -102,6 +107,7 @@ server <- function(input, output, session) {
         composition_to_add <- rbind(composition_data(), data.frame(
             date = input$composition_date,
             time = input$composition_time,
+            ringed = input$composition_ringed,
             colour_ring = input$composition_colour_ring,
             certain = input$composition_certain,
             left_top = input$composition_left_top,
@@ -145,6 +151,7 @@ server <- function(input, output, session) {
             n_ringed = integer(),
             other_species = character(),
             section = character(),
+            mist_net = character(),
             notes = character(),
             stringsAsFactors = FALSE
     ))
@@ -159,6 +166,7 @@ server <- function(input, output, session) {
             n_ringed = input$description_n_ringed,
             other_species = input$description_other_species,
             section = input$description_section,
+            mist_net = input$description_mist_net,
             notes = input$description_notes,
             stringsAsFactors = FALSE
         ))
@@ -177,7 +185,8 @@ server <- function(input, output, session) {
             flock_a = integer(),
             flock_b = integer(),
             type = character(),
-            notes = character()
+            notes = character(),
+            stringsAsFactors = FALSE
     ))
     shiny::observeEvent(input$add_interactions, {
         interactions_to_add <- rbind(interactions_data(), data.frame(

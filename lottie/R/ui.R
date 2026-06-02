@@ -281,7 +281,9 @@ ui <- bslib::page_sidebar(
             "gpx",
             "Choose GPX File(s)",
             multiple = TRUE, accept = c(".gpx")
-        ),
+            ),
+        ## @ns-rse 2026-06-02 : Show the filename of an uploaded file here
+        shiny::checkboxInput("gpx_complete", "GPS data accurate?", value = TRUE),
         cards[[1]]
     ),
     ## ns-rse : This is using non-standard evaluation but I think its an old form, newer methods are lazyeval
