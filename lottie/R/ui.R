@@ -164,7 +164,8 @@ cards <- list(
                                     updateOn = "blur"),
                    shiny::actionButton("add_composition", "Submit bird description"),
                    shiny::tableOutput("composition"),
-                   shiny::actionButton("submit_composition", "Submit all data.")
+                   shiny::p("When you have added all individuals submit your data."),
+                   shiny::actionButton("submit_composition", "Submit all composition data")
            )),
     bslib::card(
         full_screen = FALSE,
@@ -229,7 +230,8 @@ cards <- list(
                                    updateOn = "blur"),
                   shiny::actionButton("add_description", label = "Submit flock description"),
                   shiny::tableOutput("description"),
-                  shiny::actionButton("submit_description", label = "Submit all data.")
+                  shiny::p("When you have described all flocks submit your data."),
+                  shiny::actionButton("submit_description", label = "Submit all flock data")
     )),
     bslib::card(
         full_screen = FALSE,
@@ -254,17 +256,18 @@ cards <- list(
                                        max = 300,
                                        value = 0,
                                        step = 1),
-                   shiny::checkboxGroupInput("interactions_type",
-                                             label = "Type of Interaction : ",
-                                             choices = split(interactions_df$code,
-                                                             interactions_df$description)),
+                   shiny::selectInput("interactions_type",
+                                      label = "Type of Interaction : ",
+                                      choices = split(interactions_df$code,
+                                                      interactions_df$description)),
                    shiny::textInput("interactions_notes",
                                     label = "Notes : ",
                                     value = "",
                                     updateOn = "blur"),
                    shiny::actionButton("add_interactions", "Submit interaction"),
                    shiny::tableOutput("interactions"),
-                   shiny::actionButton("submit_composition", "Submit all data.")
+                   shiny::p("When you have added all interactions submit your data."),
+                   shiny::actionButton("submit_interactions", "Submit all interaction data")
            ))
 )
 

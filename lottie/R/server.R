@@ -85,6 +85,7 @@ if (testing) {
 
 server <- function(input, output, session) {
     ## Flock Composition
+    ## Build a data frame of birds within a flock when the "Submit bird description" button is clicked
     composition_data <- shiny::reactiveVal(data.frame(
             date = character(),
             time = character(),
@@ -126,14 +127,29 @@ server <- function(input, output, session) {
         ))
         composition_data(composition_to_add)
     })
+    ## The composition table is returned and rendered on the page
     output$composition <- shiny::renderTable(
         {
             composition_data()
         },
         striped = TRUE
-    )
+        )
+    ## Add data to SQLite database when the "Submit all composition data" button is pressed
+    shiny::observeEvent(input$submit_composition, {
+        RSQLite::dbWriteTable(
+                     conn = con,
+                     name = "Composition",
+                     composition_data(),
+                     overwrite = FALSE,
+                     append = TRUE)
+        ## @ns-rse 2026-06-02 Debugging...
+        ## print("WHAT HAVE WE GOT IN THE DATABASE Composition TABLE?")
+        ## query <- "SELECT * FROM Composition"
+        ## print(RSQLite::dbGetQuery(conn = con, query))
+    })
     ## Flock Description
-    description_data <- shiny::reactiveVal(data.frame(
+    ## Build a data frame of flock description when the "Submit flock description" button is clicked
+   description_data <- shiny::reactiveVal(data.frame(
             date = character(),
             start_time = character(),
             end_time = character(),
@@ -177,13 +193,28 @@ server <- function(input, output, session) {
                                     ))
         description_data(description_to_add)
     })
+    ## The description table is returned and rendered on the page
     output$description <- shiny::renderTable(
         {
             description_data()
         },
         striped = TRUE
     )
+    ## Add data to SQLite database when the "Submit all flock data" button is pressed
+    shiny::observeEvent(input$submit_description, {
+        RSQLite::dbWriteTable(
+                     conn = con,
+                     name = "Description",
+                     description_data(),
+                     overwrite = FALSE,
+                     append = TRUE)
+        ## @ns-rse 2026-06-02 Debugging...
+        ## print("WHAT HAVE WE GOT IN THE DATABASE Description TABLE?")
+        ## query <- "SELECT * FROM Description"
+        ## print(RSQLite::dbGetQuery(conn = con, query))
+    })
     ## Interactions
+    ## Build a data frame of interactions when the "Submit interaction" button is clocked
     interactions_data <- shiny::reactiveVal(data.frame(
             date = character(),
             time = character(),
@@ -205,10 +236,25 @@ server <- function(input, output, session) {
         ))
         interactions_data(interactions_to_add)
     })
+    ## The interaction table is returned and rendered on the page
     output$interactions <- shiny::renderTable(
         {
             interactions_data()
         },
         striped = TRUE
     )
+    ## Add data to SQLite database when the "Submit all interaction data" button is pressed
+    shiny::observeEvent(input$submit_interactions, {
+        RSQLite::dbWriteTable(
+                     conn = con,
+                     name = "Interactions",
+                     interactions_data(),
+                     overwrite = FALSE,
+                     append = TRUE)
+        ## @ns-rse 2026-06-02 Debugging...
+        ## print("WHAT HAVE WE GOT IN THE DATABASE Interactions TABLE?")
+        ## query <- "SELECT * FROM Interactions"
+        ## print(RSQLite::dbGetQuery(conn = con, query))
+    })
+
 }
