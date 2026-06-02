@@ -156,20 +156,24 @@ server <- function(input, output, session) {
             stringsAsFactors = FALSE
     ))
     shiny::observeEvent(input$add_description, {
-        description_to_add <- rbind(description_data(), data.frame(
-            date = input$description_date,
-            start_time = input$description_start_time,
-            end_time = input$description_end_time,
-            flock_type = input$description_flock_type,
-            whole_flock = input$description_whole_flock,
-            n_flock = input$description_n_flock,
-            n_ringed = input$description_n_ringed,
-            other_species = input$description_other_species,
-            section = input$description_section,
-            mist_net = input$description_mist_net,
-            notes = input$description_notes,
-            stringsAsFactors = FALSE
-        ))
+        shiny::validate(
+                   shiny::need(input$description_n_ringed <= input$description_n_flock,
+                        "You can not have more ringed birds than the total flock size."))
+        description_to_add <- rbind(description_data(),
+                                    data.frame(
+                                        date = input$description_date,
+                                        start_time = input$description_start_time,
+                                        end_time = input$description_end_time,
+                                        flock_type = input$description_flock_type,
+                                        whole_flock = input$description_whole_flock,
+                                        n_flock = input$description_n_flock,
+                                        n_ringed = input$description_n_ringed,
+                                        other_species = input$description_other_species,
+                                        section = input$description_section,
+                                        mist_net = input$description_mist_net,
+                                        notes = input$description_notes,
+                                        stringsAsFactors = FALSE
+                                    ))
         description_data(description_to_add)
     })
     output$description <- shiny::renderTable(
