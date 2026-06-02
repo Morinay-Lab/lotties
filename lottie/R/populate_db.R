@@ -122,14 +122,11 @@ RSQLite::dbWriteTable(
              overwrite = overwrite)
 
 
-## Create and add lookup tables
+## Create and add lookup tables. the dataframes themselves are defined in lookups.R so they can be used elsewhere, hence
+## the need to source()
 ##
+source("R/lookups.R")
 ## People
-person_df <- data.frame(
-    code = c("SB", "LN", "MJ", "ND"),
-    forename = c("Sarah", "Luke", "Micko", "Nina") ##,
-    ## surname = character("", "", "", "")
-)
 RSQLite::dbWriteTable(
              conn = con,
              name = "Person",
@@ -137,40 +134,6 @@ RSQLite::dbWriteTable(
              overwrite = overwrite)
 
 ## Other Species
-other_species_df <- data.frame(
-    code = c("bt",
-        "cc",
-        "ch",
-        "ct",
-        "du",
-        "gc",
-        "gt",
-        "nh",
-        "rb",
-        "sk",
-        "tc",
-        "ut",
-        "wp",
-        "wr",
-        "ww"),
-    description = c(
-        "BlueTit",
-        "Chiffchaff",
-        "Chaffinch",
-        "CoalTit",
-        "Dunnock",
-        "GC",
-        "GreatTit",
-        "Nuthatch",
-        "Robin",
-        "Siskin",
-        "Treecreeper",
-        "UnknownTit",
-        "GreaterSpottedWoodpecker",
-        "Wren",
-        "WillowWarbler"
-    )
-)
 RSQLite::dbWriteTable(
              conn = con,
              name = "OtherSpecies",
@@ -178,76 +141,18 @@ RSQLite::dbWriteTable(
              overwrite = overwrite)
 
 ## Rings
-rings_df <- data.frame(
-    code = c("B",
-        "D",
-        "F",
-        "G",
-        "M",
-        "N",
-        "O",
-        "P",
-        "R",
-        "U",
-        "W",
-        "Y",
-        "Sd",
-        "Sg",
-        "Sn",
-        "Sp",
-        "bm",
-        "dy",
-        "gd",
-        "ng",
-        "nr",
-        "od",
-        "on",
-        "rd",
-        "ry",
-        "B*",
-        "G*",
-        "N*",
-        "R*",
-        "W*",
-        "Y*"),
-    description = c(
-        "light blue",
-        "dark blue",
-        "flamingo (Old light pink)",
-        "green",
-        "mauve",
-        "black",
-        "orange", "pink", "red",
-        "umber (brown)",
-        "white",
-        "yellow",
-        "striped dark blue yellow",
-        "striped light green dark green",
-        "striped black white",
-        "striped black pink",
-        "split light blue mauve",
-        "split dark blue yellow",
-        "split green dark blue",
-        "split black green",
-        "split black red",
-        "split orange dark blue",
-        "split orange black",
-        "split red dark blue",
-        "split red yellow",
-        "pit-tag light blue",
-        "pit-tag green",
-        "pit-tag black",
-        "pit-tag red",
-        "pit-tag white",
-        "pit-tag yellow"
-    )
-)
 RSQLite::dbWriteTable(
              conn = con,
              name = "Rings",
              rings_df,
              overwrite = overwrite)
 
+## Sites
+RSQLite::dbWriteTable(
+             conn = con,
+             name = "Site",
+             site_df,
+             overwrite = overwrite)
 
 ## Extract information from the database (mainly as a reference for @ns-rse)!
 summary_stats <- list()

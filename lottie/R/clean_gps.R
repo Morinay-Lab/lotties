@@ -24,7 +24,7 @@ gps <- list()
 ##################################################################
 ## NB - Track_2025_07_09_SJB.csv is a different format to others so is removed and loaded separately needs
 ## cleaning/handling separately (likely handle by switching to using GPX files)
-GPX_AS_CSV_DIR <- paste0(CSV_DIR, "gpx/")
+GPX_AS_CSV_DIR <- paste0(CSV_DIR, "gps/")
 file_names <- paste0(GPX_AS_CSV_DIR, dir(GPX_AS_CSV_DIR))
 track_2025_07_09 <- paste0(GPX_AS_CSV_DIR, "Track_2025_07_09_SJB.csv")
 file_names <- file_names[!stringr::str_detect(file_names, "Track_2025_07_09_SJB.csv")]

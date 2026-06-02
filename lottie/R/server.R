@@ -14,32 +14,73 @@ if (testing) {
     ## ...otherwise we have a database in place and load it.
     db_path = "../data/sqlite/lottie.sql"
 }
+## Setup connection to database
+con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
 
-save_data <- function(data, db_path = db_path, table) {
-    conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
-    query <- sprintf("INSERT INTO %s (%s) VALUES ('%s')")
-    paste(names(data), collapse = ",")
-    paste(data, collapse = "','")
-    RSQLite::dbGetQuery(conn, query)
-    DBI::dbDisconnect()
-}
+
+#' Save data to SQLite database
 #'
-#' @param table str The table to pull data from, one of 'Person', 'Rings' or 'OtherSpecies'
+#' This generic function can be used to populate lookup tables when testing the database in memory or more generally
+#' when running the database to add data that has been entered.
+#'
+#' @param data dataframe Dataframe of data to be added to a table in the database.
 #' @param db_path str Path to database.
-get_lookups <- function(table, db_path = db_path) {
+#' @param table str Table to add data to.
+#' @param append bool Whether to append the data.
+save_data <- function(data, db_path = db_path, table, append = TRUE, overwrite = FALSE) {
     conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
-    query <- sprintf("SELECT * FROM %s", table)
-    lookup <- RSQLite::dbGetQuery(conn, query)
+    ## query <- sprintf("INSERT INTO %s (%s) VALUES ('%s')")
+    ## paste(names(data), collapse = ",")
+    ## paste(data, collapse = "','")
+    RSQLite::dbWriteTable(conn = conn, name = table, value = data, overwrite = overwrite)
     DBI::dbDisconnect()
-    lookup
 }
 
-get_rings <- function(db_path = db_path) {
-    conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
+if (testing) {
+    ## Load lookup dataframes and populate database if testing
+    source("lookups.R")
+    overwrite <- TRUE
+    ## People
+    RSQLite::dbWriteTable(
+                 conn = con,
+                 name = "Person",
+                 person_df,
+                 overwrite = overwrite)
+
+    ## Other Species
+    RSQLite::dbWriteTable(
+                 conn = con,
+                 name = "OtherSpecies",
+                 other_species_df,
+                 overwrite = overwrite)
+
+    ## Rings
+    RSQLite::dbWriteTable(
+                 conn = con,
+                 name = "Rings",
+                 rings_df,
+                 overwrite = overwrite)
+
+    ## Sites
+    RSQLite::dbWriteTable(
+                 conn = con,
+                 name = "Site",
+                 site_df,
+                 overwrite = overwrite)
+} else {
+    ## Otherwise extract lookups from database
+    ## Person
+    query <- "SELECT * FROM Person"
+    person_df <- RSQLite::dbGetQuery(con, query)
+    ## Other Species
+    query <- "SELECT * FROM OtherSpecies"
+    other_species_df <- RSQLite::dbGetQuery(con, query)
+    ## Rings
     query <- "SELECT * FROM Rings"
-    rings <- RSQLite::dbGetQuery(conn, query)
-    DBI::dbDisconnect()
-    rings
+    rings_df <- RSQLite::dbGetQuery(con, query)
+    ## Sites
+    query <- "SELECT * FROM Sites"
+    sites_df <- RSQLite::dbGetQuery(con, query)
 }
 
 server <- function(input, output, session) {
@@ -56,17 +97,21 @@ server <- function(input, output, session) {
             bto_ring_position = character(),
             notes = character(),
             stringsAsFactors = FALSE
-    ))
-    shiny::observeEvent(input$add_composition, {
+            ))
+   shiny::observeEvent(input$add_composition, {
         composition_to_add <- rbind(composition_data(), data.frame(
             date = input$composition_date,
             time = input$composition_time,
             colour_ring = input$composition_colour_ring,
-            ringed = input$composition_ringed,
-            left_leg = input$composition_left_leg,
-            left_certainty = input$composition_left_certainty,
-            right_leg = input$composition_right_leg,
-            right_certainty = input$composition_right_certainty,
+            certain = input$composition_certain,
+            left_top = input$composition_left_top,
+            left_top_certain = input$composition_left_top_certain,
+            left_bottom = input$composition_left_bottom,
+            left_bottom_certain = input$composition_left_bottom_certain,
+            right_top = input$composition_right_top,
+            right_top_certain = input$composition_right_top_certain,
+            right_bottom = input$composition_right_bottom,
+            right_bottom_certain = input$composition_right_bottom_certain,
             bto_ring_position = input$composition_bto_ring_position,
             notes = input$composition_notes,
             stringsAsFactors = FALSE
@@ -137,7 +182,7 @@ server <- function(input, output, session) {
     shiny::observeEvent(input$add_interactions, {
         interactions_to_add <- rbind(interactions_data(), data.frame(
             date = input$interactions_date,
-            time = input$interactions_start_time,
+            time = input$interactions_time,
             flock_a = input$interactions_flock_a,
             flock_b = input$interactions_flock_b,
             type = input$interactions_type,

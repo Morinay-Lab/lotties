@@ -43,6 +43,19 @@ shiny::runApp()
 
 A new tab should open in your default browser showing the Shiny User Interface.
 
+#### Option
+
+Useful options which can be set in your global or the project  `.Rprofile` are shown below. They set a consistent port
+for viewing the web-page locally (`shiny.port`), increase verbosity of the running server to help debugging
+(`shiny.trace`) and watch for changes in the underlying files and reload the site when changes to files are saved
+(`shiny.autoreload`). For more options see the [documentation][shiny_options].
+
+``` r
+## Shiny options
+options(shiny.autoreload = TRUE,
+        shiny.port = 8878,
+        shiny.trace = TRUE)
+```
 ## Resources
 
 Useful resources for R packages and Shiny development.
@@ -62,6 +75,7 @@ Useful resources for R packages and Shiny development.
 [rpackages]: https://r-pkgs.org/
 [rsqlite]: https://rsqlite.r-dbi.org/
 [shiny]: https://shiny.posit.co/
+[shiny_options]: https://shiny.posit.co/r/reference/shiny/1.0.3/shiny-options.html
 [shinydatabases]: https://posit.co/blog/shiny-with-databases
 [shinyreference]: https://shiny.posit.co/r/reference/shiny/latest/
 [shinytutorial]: https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/
