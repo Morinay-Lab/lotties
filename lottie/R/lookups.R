@@ -2,7 +2,8 @@
 ## Description : Define dataframes for lookup tables
 
 other_species_df <- data.frame(
-    code = c("bt",
+    code = c(
+        "bt",
         "cc",
         "ch",
         "ct",

@@ -88,6 +88,7 @@ server <- function(input, output, session) {
     composition_data <- shiny::reactiveVal(data.frame(
             date = character(),
             time = character(),
+            flock_number = integer(),
             ringed = character(),
             colour_ring = character(),
             certain = character(),
@@ -107,6 +108,7 @@ server <- function(input, output, session) {
         composition_to_add <- rbind(composition_data(), data.frame(
             date = input$composition_date,
             time = input$composition_time,
+            flock_number = input$composition_flock_number,
             ringed = input$composition_ringed,
             colour_ring = input$composition_colour_ring,
             certain = input$composition_certain,
@@ -124,9 +126,6 @@ server <- function(input, output, session) {
         ))
         composition_data(composition_to_add)
     })
-    ## output$composition_test <- shiny::renderTable({
-    ##     composition_data()
-    ## })
     output$composition <- shiny::renderTable(
         {
             composition_data()
@@ -134,18 +133,12 @@ server <- function(input, output, session) {
         striped = TRUE
     )
     ## Flock Description
-    ## ns-rse 2026-05-12
-    ## Warning: Error in data.frame: arguments imply differing number of rows: 1, 0
-    ## 89: stop
-    ## 88: data.frame
-    ## 85: observe [/home/neil/work/git/hub/Morinay-Lab/lotties/ns-rse/shiny/lottie/R/server.R#140]
-    ## 84: <observer:observeEvent(input$add_description)>
-    ##  1: shiny::runApp
     description_data <- shiny::reactiveVal(data.frame(
             date = character(),
             start_time = character(),
             end_time = character(),
-            flock_type= character(),
+            flock_type = character(),
+            flock_number = integer(),
             whole_flock = character(),
             n_flock = integer(),
             n_ringed = integer(),
@@ -158,17 +151,25 @@ server <- function(input, output, session) {
     shiny::observeEvent(input$add_description, {
         shiny::validate(
                    shiny::need(input$description_n_ringed <= input$description_n_flock,
-                        "You can not have more ringed birds than the total flock size."))
+                               "You can not have more ringed birds than the total flock size."))
+        ## We need to check if there are other species, if there are none then the value is NULL and this causes errors
+        ## when creating dataframes.
+        if (is.null(input$description_other_species)) {
+            description_other_species <- ""
+        } else {
+            description_other_species <- input$description_other_species
+        }
         description_to_add <- rbind(description_data(),
                                     data.frame(
                                         date = input$description_date,
                                         start_time = input$description_start_time,
                                         end_time = input$description_end_time,
                                         flock_type = input$description_flock_type,
+                                        flock_number = input$description_flock_number,
                                         whole_flock = input$description_whole_flock,
                                         n_flock = input$description_n_flock,
                                         n_ringed = input$description_n_ringed,
-                                        other_species = input$description_other_species,
+                                        other_species = description_other_species,
                                         section = input$description_section,
                                         mist_net = input$description_mist_net,
                                         notes = input$description_notes,
@@ -210,7 +211,4 @@ server <- function(input, output, session) {
         },
         striped = TRUE
     )
-    ## output$welcome <- shiny::renderPrint({
-    ##     paste0("Welcome ", input$user, ", how are you today?")
-    ## })
 }
