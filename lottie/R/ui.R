@@ -22,10 +22,8 @@ options(shiny.autoreload = TRUE, shiny.trace = TRUE)
 
 ## ns-rse ToDo
 ##
-## 1. Replace times with shinyTime (https://burgerga.github.io/shinyTime/)
-## 2. Ensure all inputs are unique, particularly dates/times across files
-## 3. Can we reuse sections or partially submit some input?
-## 4. Populate 'choices' from lookup tables in database
+## 1. Ensure all inputs are unique, particularly dates/times across files
+## 2. Can we reuse sections or partially submit some input?
 
 ## Load lookups
 source("lookups.R")
@@ -123,6 +121,7 @@ cards <- list(
                                       choices = c("Yes" = "yes", "No" = "no")),
                    shiny::selectInput("composition_colour_ring",
                                       label = "Colour Ring : ",
+                                      selected = "None",
                                       choices = colour_ring_df$code),
                    shiny::checkboxInput("composition_certain",
                                         label = "Certain? ",
@@ -268,14 +267,31 @@ cards <- list(
                    shiny::tableOutput("interactions"),
                    shiny::p("When you have added all interactions submit your data."),
                    shiny::actionButton("submit_interactions", "Submit all interaction data")
-           ))
+               )),
+    bslib::card(
+               full_screen = FALSE,
+               card_header = "Download Data",
+               bslib::card_body(
+                   shiny::h4("Raw data"),
+                   shiny::p("Please select the raw data tables you wish to extract. Files will be extracted to CSV and compressed into a single .zip file."),
+                   shiny::checkboxGroupInput("download_raw_data_selection",
+                                             label = "Select raw data to download : ",
+                                             choices = c("Flock Composition" = "Composition",
+                                                         "Flock Description" = "Description",
+                                                         "Flock Interactions" = "Interactions",
+                                                         "GPS" = "GPS"),
+                                             selected = c("Composition", "Description", "Interactions", "GPS")),
+                   shiny::downloadButton("download_raw_data", "Download"),
+                   shiny::h4("Cleaned data"),
+                   shiny::p("Please select the cleaned data tables you wish to extract. Files will be extracted to CSV and compressed into a single .zip file."),
+                   shiny::checkboxGroupInput("download_clean_data_selection",
+                                             label = "Select clean data to download : ",
+                                             choices = c("GPS" = "GPS"),
+                                             selected = c("GPS")),
+                   shiny::downloadButton("download_clean_data", "Download")
+               ))
 )
 
-data <- list(
-    bslib::card(full_screen = TRUE, card_header = "Flock Composition"),
-    bslib::card(full_screen = TRUE, card_header = "Flock Description"),
-    bslib::card(full_screen = TRUE, card_header = "Flock Interactions")
-)
 ui <- bslib::page_sidebar(
     title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
     sidebar = bslib::sidebar(
@@ -308,6 +324,7 @@ ui <- bslib::page_sidebar(
         title = "Flock Observations...",
         bslib::nav_panel("Composition", cards[[2]]),
         bslib::nav_panel("Description", cards[[3]]),
-        bslib::nav_panel("Interactions", cards[[4]])
+        bslib::nav_panel("Interactions", cards[[4]]),
+        bslib::nav_panel("Download", cards[[5]])
         )
 )

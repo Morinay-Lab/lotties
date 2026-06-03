@@ -38,7 +38,8 @@ other_species_df <- data.frame(
 )
 
 rings_df <- data.frame(
-    code = c("B",
+    code = c("None",
+        "B",
         "D",
         "F",
         "G",
@@ -70,6 +71,7 @@ rings_df <- data.frame(
         "W*",
         "Y*"),
     description = c(
+        NA,
         "light blue (B)",
         "dark blue (D)",
         "flamingo (/Old light pink) (F)",
@@ -141,7 +143,7 @@ interactions_df <- data.frame(
 
 ## Ring Combinations
 colour_ring_df <- data.frame(
-    code = c("B*BL","B*BR","B*DL","B*DR","B*GL","B*GR","B*ML","B*NL","B*NR","B*OL","B*OR","B*PL",
+    code = c("None", "BTO L", "BTO R", "B*BL","B*BR","B*DL","B*DR","B*GL","B*GR","B*ML","B*NL","B*NR","B*OL","B*OR","B*PL",
              "B*RL","B*SdL","B*SdR","B*SgL","B*SgR","B*SnL","B*SnR","B*SpL","B*SpR","B*SrR",
              "B*SyL","B*SyR", "B*UL", "B*WR", "B*YL", "B*gdR", "B*ngL", "B*ngR", "BBR", "BMR", "BOL", "BR*R", "BRR",
     "BSnR", "BSpL", "BUR", "BYR", "BbmL", "BbmR", "BgdL", "BgdR", "BmbL", "BmbR", "BngL", "BngR", "ByrR", "DB*L",

@@ -5,14 +5,16 @@ library(RSQLite)
 library(bslib)
 library(shiny)
 
+## When developing set to TRUE, otherwise set to FALSE
 testing <- TRUE
-## If testing we need to clean existing data and populate the database in memory with this data.
+## testing <- FALSE
+## If testing we load the database in memory with this data.
 if (testing) {
-    db_path = ":memory:"
+    db_path <- ":memory:"
     ## source("clean.R")
 } else {
-    ## ...otherwise we have a database in place and load it.
-    db_path = "../data/sqlite/lottie.sql"
+    ## ...otherwise we have a database on disc and load it.
+    db_path <- "../data/sqlite/lottie.sql"
 }
 ## Setup connection to database
 con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
@@ -34,6 +36,32 @@ save_data <- function(data, db_path = db_path, table, append = TRUE, overwrite =
     ## paste(data, collapse = "','")
     RSQLite::dbWriteTable(conn = conn, name = table, value = data, overwrite = overwrite)
     DBI::dbDisconnect()
+}
+
+#' Extract and compress data from database to zip file.
+#'
+#' @param zip_file str Zip filename.
+#' @param conn Database connection
+#' @param input List of tables to extract
+extract_and_compress_data <- function(zip_file, conn, input) {
+    ## Loop over selected tables
+    csv_files <- list()
+    for (table in input$download_raw_data_selection) {
+        ## Select all from given table
+        query <- paste0("SELECT * FROM ", table)
+        df <- RSQLite::dbGetQuery(conn=conn, query=query)
+        ## Lowercase table name and add .csv
+        file_name <- paste0(tolower(table), ".csv")
+        ## Write CSV file
+        write.csv(df, file_name, row.names = FALSE)
+        ## Add filename to list for zipping
+        csv_files[[tolower(table)]] <- file_name
+    }
+    zip::zip(
+        zipfile = zip_file,
+        files = unlist(csv_files)
+    )
+    ## TODO : Remove CSV files from system
 }
 
 if (testing) {
@@ -61,11 +89,11 @@ if (testing) {
                  rings_df,
                  overwrite = overwrite)
 
-    ## Sites
+    ## Section
     RSQLite::dbWriteTable(
                  conn = con,
                  name = "Site",
-                 site_df,
+                 section_df,
                  overwrite = overwrite)
 } else {
     ## Otherwise extract lookups from database
@@ -256,5 +284,75 @@ server <- function(input, output, session) {
         ## query <- "SELECT * FROM Interactions"
         ## print(RSQLite::dbGetQuery(conn = con, query))
     })
-
+    ## Download Raw Data
+    output$download_raw_data <- shiny::downloadHandler(
+        filename = function() {
+            paste0(
+                "lottie",
+                stringr::str_replace(
+                    Sys.time(),
+                    " ",
+                    "_"
+                ),
+                ".zip"
+            )
+        },
+    ## ns-rse 2026-06-08 : Would like to avoid duplication of code and have a single function but this errors with
+    ##
+    ## Warning: Error in download$func: unused argument (tmpdata)
+    ##     content = function() {
+    ##         extract_and_compress_data(
+    ##             zip_file = file,
+    ##             conn = con,
+    ##             input = input$download_raw_data_selection
+    ##     )}
+    ## )
+        content = function(file) {
+            ## Loop over selected tables
+            csv_files <- list()
+            for (table in input$download_raw_data_selection) {
+                ## Select all from given table
+                query <- paste0("SELECT * FROM ", table)
+                df <- RSQLite::dbGetQuery(con, query)
+                ## Lowercase table name and add .csv
+                file_name <- paste0(tolower(table), ".csv")
+                ## Write CSV file
+                write.csv(df, file_name, row.names = FALSE)
+                ## Add filename to list for zipping
+                csv_files[[tolower(table)]] <- file_name
+            }
+            zip::zip(
+                zipfile = file,
+                files = unlist(csv_files)
+            )
+            ## ns-rse 2026-06-08 : Remove CSV files from the system
+        })
+    output$download_clean_data <- shiny::downloadHandler(
+        filename = function() {
+            paste0("lottie",
+                   stringr::str_replace(Sys.time(),
+                                        " ",
+                                        "_"),
+                   ".zip")
+        },
+        content = function(file) {
+            ## Loop over selected tables
+            csv_files <- list()
+            for (table in input$download_raw_data_selection) {
+                ## Select all from given table
+                query <- paste0("SELECT * FROM ", table)
+                df <- RSQLite::dbGetQuery(con, query)
+                ## Lowercase table name and add .csv
+                file_name <- paste0(tolower(table), ".csv")
+                ## Write CSV file
+                write.csv(df, file_name, row.names = FALSE)
+                ## Add filename to list for zipping
+                csv_files[[tolower(table)]] <- file_name
+            }
+            zip::zip(
+                zipfile = file,
+                files = unlist(csv_files)
+            )
+            ## ns-rse 2026-06-08 : Remove CSV files from the system
+        })
 }
