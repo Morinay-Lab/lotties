@@ -112,6 +112,15 @@ if (testing) {
 }
 
 server <- function(input, output, session) {
+    ## GPS
+    ## output$gps_data <- shiny::observeEvent(input$gpx, {
+    ##     ## Extract the file name(s)
+    ##     gps_filename <- input$gps$name
+    ##     ## @ns-rse 2026-06-08 - Extract the data
+
+    ##     ## Return the file name(s)
+    ##     gps_filename
+    ## })
     ## Flock Composition
     ## Build a data frame of birds within a flock when the "Submit bird description" button is clicked
     composition_data <- shiny::reactiveVal(data.frame(

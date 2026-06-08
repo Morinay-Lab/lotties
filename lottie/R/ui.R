@@ -74,29 +74,22 @@ source("lookups.R")
 cards <- list(
     bslib::card(
         full_screen = TRUE,
-        card_header = "Survey Conditions",
+        card_header = "Survey Conditions & GPS",
         bslib::card_body(
-                   shiny::dateInput("conditions_date",
-                                    "Date : ",
-                                    format = "yyyy-mm-dd"),
-                   shinyTime::timeInput("conditions_start_time",
-                                        label = "Start Time : ",
-                                        seconds = FALSE,
-                                        value = Sys.time()),
-                   shinyTime::timeInput("conditions_end_time",
-                                        label = "End Time : ",
-                                        seconds = FALSE,
-                                        value = Sys.time()),
-                   shiny::checkboxGroupInput("conditions_weather",
-                                             label="Weather : ",
-                                             choices = split(conditions_df$code,
-                                                             conditions_df$description)),
-                   shiny::selectInput("conditions_visibility",
-                                      label = "Visibility : ",
-                                      choices = split(visibility_df$code,
-                                                      visibility_df$description)),
-                   shiny::actionButton("submit_conditions", "Submit")
-               )),
+            ## Record user
+            ## Upload GPX file
+            shiny::h4("GPS Data"),
+            shiny::p("You can only upload a single GPX file at a time. This should correspond to the observations you will be entering under the Flock Composition, Description and Interactions tab."),
+            shiny::fileInput(
+                "gpx",
+                "Choose GPX File",
+                multiple = FALSE,
+                accept = c(".gpx")),
+            shiny::p("Uploaded GPS file(s) :"),
+            shiny::tableOutput("gps_file_table"),
+            ## @ns-rse 2026-06-02 : Show the filename of an uploaded file here
+            shiny::checkboxInput("gpx_complete", "GPS data accurate?", value = TRUE),
+            )),
     bslib::card(
         full_screen = FALSE,
         card_header = "Flock Composition",
@@ -296,20 +289,48 @@ ui <- bslib::page_sidebar(
     title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
     sidebar = bslib::sidebar(
         title = "Conditions",
-        ## Record user
         shiny::selectInput("user",
                            label = "User",
                            choices = split(person_df$code,
                                            person_df$forename)),
-        ## Upload GPX file
-        shiny::fileInput(
-            "gpx",
-            "Choose GPX File(s)",
-            multiple = TRUE, accept = c(".gpx")
-            ),
+        shiny::dateInput("conditions_date",
+                         "Date : ",
+                         format = "yyyy-mm-dd"),
+        shinyTime::timeInput("conditions_start_time",
+                             label = "Start Time : ",
+                             seconds = FALSE,
+                             value = Sys.time()),
+        shinyTime::timeInput("conditions_end_time",
+                             label = "End Time : ",
+                             seconds = FALSE,
+                             value = Sys.time()),
+        shiny::checkboxGroupInput("conditions_weather",
+                                  label="Weather : ",
+                                  choices = split(conditions_df$code,
+                                                  conditions_df$description)),
+        shiny::selectInput("conditions_visibility",
+                           label = "Visibility : ",
+                           choices = split(visibility_df$code,
+                                           visibility_df$description)),
+        shiny::actionButton("submit_conditions", "Submit")        ## Record user
+        ## shiny::selectInput("user",
+        ##                    label = "User",
+        ##                    choices = split(person_df$code,
+        ##                                    person_df$forename)),
+    ##     ## Upload GPX file
+    ##     shiny::h4("GPS Data"),
+    ##     shiny::p("You can upload multiple files but they can not be a mixture of accurate/complete and inaccurate/incomplete files, do not mix and match files."),
+    ##     shiny::fileInput(
+    ##         "gpx",
+    ##         "Choose GPX File(s)",
+    ##         multiple = TRUE,
+    ##         accept = c(".gpx")
+    ##         ),
+    ##     shiny::p("Uploaded GPS file(s) :"),
+    ##     shiny::textOutput("gps_filename"),
         ## @ns-rse 2026-06-02 : Show the filename of an uploaded file here
-        shiny::checkboxInput("gpx_complete", "GPS data accurate?", value = TRUE),
-        cards[[1]]
+        ## shiny::checkboxInput("gpx_complete", "GPS data accurate?", value = TRUE),
+        ## cards[[1]]
     ),
     ## ns-rse : This is using non-standard evaluation but I think its an old form, newer methods are lazyeval
     ## (https://cran.r-project.org/web/packages/lazyeval/vignettes/lazyeval.html)
@@ -322,6 +343,7 @@ ui <- bslib::page_sidebar(
     ##    heights_equal = "all",
     bslib::navset_card_underline(
         title = "Flock Observations...",
+        bslib::nav_panel("GPS", cards[[1]]),
         bslib::nav_panel("Composition", cards[[2]]),
         bslib::nav_panel("Description", cards[[3]]),
         bslib::nav_panel("Interactions", cards[[4]]),
