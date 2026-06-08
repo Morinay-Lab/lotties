@@ -49,7 +49,7 @@ extract_and_compress_data <- function(zip_file, conn, input) {
     for (table in input$download_raw_data_selection) {
         ## Select all from given table
         query <- paste0("SELECT * FROM ", table)
-        df <- RSQLite::dbGetQuery(conn=conn, query=query)
+        df <- RSQLite::dbGetQuery(conn = conn, query = query)
         ## Lowercase table name and add .csv
         file_name <- paste0(tolower(table), ".csv")
         ## Write CSV file
@@ -62,6 +62,20 @@ extract_and_compress_data <- function(zip_file, conn, input) {
         files = unlist(csv_files)
     )
     ## TODO : Remove CSV files from system
+}
+
+#' Add missing columns to a data frame.
+#'
+#' @param df data.frame Data frame to be augmented.
+#' @param expected_cols list[str] List of columns that the data frame should hold.
+#'
+add_missing_columns <- function(df, expected_cols) {
+    for (missing_col in expected_cols) {
+        if (!(missing_col %in% colnames(df))) {
+            df[[missing_col]] <- FALSE
+        }
+    }
+    df
 }
 
 if (testing) {
@@ -91,10 +105,37 @@ if (testing) {
 
     ## Section
     RSQLite::dbWriteTable(
-                 conn = con,
-                 name = "Site",
-                 section_df,
-                 overwrite = overwrite)
+        conn = con,
+        name = "Site",
+        section_df,
+        overwrite = overwrite
+    )
+    ## Conditions
+    ## This needs creating up-front because we reshape the input data from long to wide and can not guarantee that the
+    ## first entry will include all possible values for "weather". This would mean that the table in the database was
+    ## missing some columns and subsequent attempts to append data would fail.
+    RSQLite::dbWriteTable(
+        conn = con,
+        name = "Conditions",
+        data.frame(
+            "user" = character(),
+            "date" = character(),
+            "start_time" = character(),
+            "end_time" = character(),
+            "weather" = character(),
+            "visibility" = character(),
+            "cloudy/ grey" = logical(),
+            "foggy" = logical(),
+            "light rain" = logical(),
+            "partly cloudy" = logical(),
+            "really rainy" = logical(),
+            "sunny" = logical(),
+            "windy" = logical(),
+            stringsAsFactors = FALSE,
+            check.names = FALSE
+        ),
+        overwrite = overwrite
+    )
 } else {
     ## Otherwise extract lookups from database
     ## Person
@@ -133,11 +174,30 @@ server <- function(input, output, session) {
             stringsAsFactors = FALSE
         ))
         conditions_data(conditions_to_add)
-        ## ns-rse 2026-06-06 - Reshape data to wide so there are boolean columns for weather
+        ## ns-rse - Reshape the data to wide as weather column can have multiple values and these expand to long format
+        ## data
+        ## 2026-06-08
+        conditions_wide <- conditions_data() |>
+            dplyr::mutate(present = TRUE) |>
+            tidyr::pivot_wider(
+                names_from = weather,
+                values_from = present,
+                values_fill = FALSE
+            )
+        ## Add potentially missing columns
+        expected_cols <- c("cloudy/ grey",
+                           "foggy",
+                           "light rain",
+                           "partly cloudy",
+                           "really rainy",
+                           "sunny",
+                           "windy")
+        conditions_wide <- add_missing_columns(df = conditions_wide, expected_cols = expected_cols)
         RSQLite::dbWriteTable(
             conn = con,
             name = "Conditions",
-            conditions_data(),
+            ## conditions_data(),
+            conditions_wide,
             overwrite = FALSE,
             append = TRUE
         )
