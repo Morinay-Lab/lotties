@@ -112,15 +112,59 @@ if (testing) {
 }
 
 server <- function(input, output, session) {
+    ## Conditions
+    conditions_data <- shiny::reactiveVal(data.frame(
+        user = character(),
+        date = character(),
+        start_time = character(),
+        end_time = character(),
+        weather = character(),
+        visibility = character(),
+        stringsAsFactors = FALSE
+    ))
+    shiny::observeEvent(input$submit_conditions, {
+        conditions_to_add <- rbind(conditions_data(), data.frame(
+            user = input$user,
+            date = input$conditions_date,
+            start_time = input$conditions_start_time,
+            end_time = input$conditions_end_time,
+            weather = input$conditions_weather,
+            visibility = input$conditions_visibility,
+            stringsAsFactors = FALSE
+        ))
+        conditions_data(conditions_to_add)
+        ## ns-rse 2026-06-06 - Reshape data to wide so there are boolean columns for weather
+        RSQLite::dbWriteTable(
+            conn = con,
+            name = "Conditions",
+            conditions_data(),
+            overwrite = FALSE,
+            append = TRUE
+        )
+        ## @ns-rse 2026-06-08 Debugging...
+        ## print("WHAT HAVE WE GOT IN THE DATABASE Conditions TABLE?")
+        ## query <- "SELECT * FROM Conditions"
+        ## print(RSQLite::dbGetQuery(conn = con, query))
+    })
     ## GPS
     ## output$gps_data <- shiny::observeEvent(input$gpx, {
     ##     ## Extract the file name(s)
     ##     gps_filename <- input$gps$name
     ##     ## @ns-rse 2026-06-08 - Extract the data
-
     ##     ## Return the file name(s)
     ##     gps_filename
     ## })
+    ## Make a table out of the single GPX filename
+    output$gps_file_table <- renderTable(
+    {
+        req(input$gpx)
+        gps_filenames <- dplyr::select(input$gpx, name) |>
+            data.frame()
+        colnames(gps_filenames) <- c("GPX File(s)...")
+        gps_filenames
+        },
+        striped = TRUE
+    )
     ## Flock Composition
     ## Build a data frame of birds within a flock when the "Submit bird description" button is clicked
     composition_data <- shiny::reactiveVal(data.frame(
@@ -163,6 +207,17 @@ server <- function(input, output, session) {
             stringsAsFactors = FALSE
         ))
         composition_data(composition_to_add)
+        RSQLite::dbWriteTable(
+            conn = con,
+            name = "Composition",
+            composition_data(),
+            overwrite = FALSE,
+            append = TRUE
+        )
+        ## @ns-rse 2026-06-02 Debugging...
+        ## print("WHAT HAVE WE GOT IN THE DATABASE Composition TABLE?")
+        ## query <- "SELECT * FROM Composition"
+        ## print(RSQLite::dbGetQuery(conn = con, query))
     })
     ## The composition table is returned and rendered on the page
     output$composition <- shiny::renderTable(
@@ -239,6 +294,7 @@ server <- function(input, output, session) {
     )
     ## Add data to SQLite database when the "Submit all flock data" button is pressed
     shiny::observeEvent(input$submit_description, {
+        ## ns-rse 2026-06-06 - Reshape data to wide so there are boolean columns for other_species
         RSQLite::dbWriteTable(
                      conn = con,
                      name = "Description",
