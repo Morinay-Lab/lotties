@@ -176,7 +176,6 @@ server <- function(input, output, session) {
         conditions_data(conditions_to_add)
         ## ns-rse - Reshape the data to wide as weather column can have multiple values and these expand to long format
         ## data
-        ## 2026-06-08
         conditions_wide <- conditions_data() |>
             dplyr::mutate(present = TRUE) |>
             tidyr::pivot_wider(
@@ -185,14 +184,10 @@ server <- function(input, output, session) {
                 values_fill = FALSE
             )
         ## Add potentially missing columns
-        expected_cols <- c("cloudy/ grey",
-                           "foggy",
-                           "light rain",
-                           "partly cloudy",
-                           "really rainy",
-                           "sunny",
-                           "windy")
-        conditions_wide <- add_missing_columns(df = conditions_wide, expected_cols = expected_cols)
+        conditions_wide <- add_missing_columns(
+            df = conditions_wide,
+            expected_cols = as.list(conditions_df$code)
+        )
         RSQLite::dbWriteTable(
             conn = con,
             name = "Conditions",
@@ -310,11 +305,26 @@ server <- function(input, output, session) {
             whole_flock = character(),
             n_flock = integer(),
             n_ringed = integer(),
-            other_species = character(),
             section = character(),
             mist_net = character(),
             notes = character(),
-            stringsAsFactors = FALSE
+            blue_tit = logical(),
+            chiff_chaff = logical(),
+            chaffinch = logical(),
+            coal_tit = logical(),
+            dunnock = logical(),
+            gc = logical(),
+            great_it = logical(),
+            nuthatch = logical(),
+            robin = logical(),
+            siskin = logical(),
+            tree_creeper = logical(),
+            unknown_tit = logical(),
+            woodpecker = logical(),
+            wren = logical(),
+            willow_warbler = logical(),
+            stringsAsFactors = FALSE,
+            check.names = FALSE
     ))
     shiny::observeEvent(input$add_description, {
         shiny::validate(
@@ -327,22 +337,32 @@ server <- function(input, output, session) {
         } else {
             description_other_species <- input$description_other_species
         }
+        ## ns-rse - Reshape the data to wide as other_species column can have multiple
+        ## values and are captured in long format
+        to_add <-data.frame(
+            date = input$description_date,
+            start_time = input$description_start_time,
+            end_time = input$description_end_time,
+            flock_type = input$description_flock_type,
+            flock_number = input$description_flock_number,
+            whole_flock = input$description_whole_flock,
+            n_flock = input$description_n_flock,
+            n_ringed = input$description_n_ringed,
+            other_species = description_other_species,
+            section = input$description_section,
+            mist_net = input$description_mist_net,
+            notes = input$description_notes,
+            stringsAsFactors = FALSE) |>
+            dplyr::mutate(present = TRUE) |>
+            tidyr::pivot_wider(
+                names_from = other_species,
+                values_from = present,
+                values_fill = FALSE
+            )
+        ## Add potentially missing columns
+        to_add <- add_missing_columns(df = to_add, expected_cols = as.list(other_species_df$code))
         description_to_add <- rbind(description_data(),
-                                    data.frame(
-                                        date = input$description_date,
-                                        start_time = input$description_start_time,
-                                        end_time = input$description_end_time,
-                                        flock_type = input$description_flock_type,
-                                        flock_number = input$description_flock_number,
-                                        whole_flock = input$description_whole_flock,
-                                        n_flock = input$description_n_flock,
-                                        n_ringed = input$description_n_ringed,
-                                        other_species = description_other_species,
-                                        section = input$description_section,
-                                        mist_net = input$description_mist_net,
-                                        notes = input$description_notes,
-                                        stringsAsFactors = FALSE
-                                    ))
+                                    to_add)
         description_data(description_to_add)
     })
     ## The description table is returned and rendered on the page
@@ -354,7 +374,6 @@ server <- function(input, output, session) {
     )
     ## Add data to SQLite database when the "Submit all flock data" button is pressed
     shiny::observeEvent(input$submit_description, {
-        ## ns-rse 2026-06-06 - Reshape data to wide so there are boolean columns for other_species
         RSQLite::dbWriteTable(
                      conn = con,
                      name = "Description",
