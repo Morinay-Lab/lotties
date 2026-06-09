@@ -28,47 +28,45 @@ options(shiny.autoreload = TRUE, shiny.trace = TRUE)
 ## Load lookups
 source("lookups.R")
 
-## Setup ring cards
-## https://pkgs.rstudio.com/bslib/articles/filling/index.html
-##
-## @ns-rse 2026-06-02 : Not sure it is possible to have nested page_fillable() items so this may be a blind alley
-## plot_card <- function(header, ...) {
-##   card(
-##     full_screen = TRUE,
-##     card_header(header, class = "bg-dark"),
-##     card_body(..., min_height = 150)
-##   )
-## }
-## ring_cards <- list(
-##     "left_top" = plot_card("Left Leg (Top)...",
-##                            shiny::selectInput("composition_left_leg_top",
-##                                               "Left Leg Top Ring : ",
-##                                               selected = NULL,
-##                                               choices = split(rings_df$code, rings_df$description)),
-##                            shiny::checkboxInput("composition_left_leg_top_certain",
-##                                                   "Left Leg Top Ring Certain")),
-##     "left_bottom" = plot_card("Left Leg (Bottom)",
-##                               shiny::selectInput("composition_left_leg_bottom",
-##                                                  "Left Leg Bottom Ring : ",
-##                                                  selected = NULL,
-##                                                  choices = split(rings_df$description, rings_df$code)),
-##                               shiny::checkboxInput("composition_left_leg_bottom_certain",
-##                                                    "Left Leg Bottom Ring Certain")),
-##     "right_top" = plot_card("Right Leg (Top)...",
-##                            shiny::selectInput("composition_right_leg_top",
-##                                               "Right Leg Top Ring : ",
-##                                               selected = NULL,
-##                                               choices = split(rings_df$code, rings_df$description)),
-##                            shiny::checkboxInput("composition_right_leg_top_certain",
-##                                                   "Right Leg Top Ring Certain")),
-##     "right_bottom" = plot_card("Right Leg (Bottom)",
-##                               shiny::selectInput("composition_right_leg_bottom",
-##                                                  "Right Leg Bottom Ring : ",
-##                                                  selected = NULL,
-##                                                  choices = split(rings_df$description, rings_df$code)),
-##                               shiny::checkboxInput("composition_right_leg_bottom_certain",
-##                                                    "Right Leg Bottom Ring Certain"))
-## )
+#' Simple card
+#'
+#' @param header Card header
+#' @param ... Card contents
+#'
+#' @returns bslib::card()
+simple_card <- function(header, ...) {
+  card(
+    card_header(header, class = "bg-dark"),
+    card_body(..., min_height = 150)
+  )
+}
+
+#' Colour ring inputs
+#'
+#' @param position Position, one of "lt", "lb", "rt", or "rb"
+#'
+#' @returns List containing colour ring select and checkbox
+colour_ring_inputs <- function(position, ...) {
+  pos_vars <- switch(
+    position,
+    lt = list(title = "Left Leg Top Ring", tag = "left_leg_top"),
+    lb = list(title = "Left Leg Bottom Ring", tag = "left_leg_bottom"),
+    rt = list(title = "Right Leg Top Ring", tag = "right_leg_top"),
+    rb = list(title = "Right Leg Bottom Ring", tag = "right_leg_bottom")
+  )
+  list(
+    shiny::selectInput(
+      paste("composition", pos_vars$tag, sep = "_"),
+      paste(pos_vars$title, ":"),
+      selected = NULL,
+      choices = split(rings_df$code, rings_df$description)
+    ),
+    shiny::checkboxInput(
+      paste("composition", pos_vars$tag, "certain", sep = "_"),
+      paste(pos_vars$title, "Certain")
+    )
+  )
+}
 
 ## Setup cards
 cards <- list(
@@ -119,32 +117,17 @@ cards <- list(
                    shiny::checkboxInput("composition_certain",
                                         label = "Certain? ",
                                         value = FALSE),
-                   shiny::h5("Left Leg..."),
-                   shiny::selectInput("composition_left_top",
-                                      label = "Left Leg Top Ring : ",
-                                      choices = split(rings_df$code, rings_df$description)),
-                   shiny::checkboxInput("composition_left_top_certain",
-                                        label = "Left Leg Top Ring Certain",
-                                        value = FALSE),
-                   shiny::selectInput("composition_left_bottom",
-                                      label = "Left Leg Bottom Ring : ",
-                                      choices = split(rings_df$code, rings_df$description)),
-                   shiny::checkboxInput("composition_left_bottom_certain",
-                                        label = "Left Leg Bottom Ring Certain",
-                                        value = FALSE),
-                   shiny::h5("Right Leg..."),
-                   shiny::selectInput("composition_right_top",
-                                      label = "Right Leg Top Ring : ",
-                                      choices = split(rings_df$code, rings_df$description)),
-                   shiny::checkboxInput("composition_right_top_certain",
-                                        label = "Right Leg Top Ring Certain",
-                                        value = FALSE),
-                   shiny::selectInput("composition_right_bottom",
-                                      label = "Right Leg Bottom Ring : ",
-                                      choices = split(rings_df$code, rings_df$description)),
-                   shiny::checkboxInput("composition_right_bottom_certain",
-                                        label = "Right Leg Bottom Ring Certain",
-                                        value = FALSE),
+                   layout_column_wrap(
+                     simple_card("Left Leg...",
+                                 colour_ring_inputs("lt"),
+                                 colour_ring_inputs("lb")
+                     ),
+                     simple_card("Right Leg...",
+                                 colour_ring_inputs("rt"),
+                                 colour_ring_inputs("rb")
+                     ),
+                     fill = FALSE
+                   ),
                    shiny::h4("Other..."),
                    shiny::selectInput("composition_bto_ring_position",
                                       label = "BTO Ring Position : ",
