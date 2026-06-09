@@ -35,9 +35,9 @@ source("lookups.R")
 #'
 #' @returns bslib::card()
 simple_card <- function(header, ...) {
-  card(
-    card_header(header, class = "bg-dark"),
-    card_body(..., min_height = 150)
+  bslib::card(
+    bslib::card_header(header, class = "bg-dark"),
+    bslib::card_body(..., min_height = 150)
   )
 }
 
@@ -117,7 +117,7 @@ cards <- list(
                    shiny::checkboxInput("composition_certain",
                                         label = "Certain? ",
                                         value = FALSE),
-                   layout_column_wrap(
+                   bslib::layout_column_wrap(
                      simple_card("Left Leg...",
                                  colour_ring_inputs("lt"),
                                  colour_ring_inputs("lb")
