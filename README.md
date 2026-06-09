@@ -43,6 +43,23 @@ shiny::runApp()
 
 A new tab should open in your default browser showing the Shiny User Interface.
 
+By default `testing <- TRUE` and so no data is required. SQLite databases are created on the fly in memory for testing
+functionality. If you wish to deploy the application you should edit `lottie/R/server.R` and modify line 9 to set this
+to `FALSE` and if necessary update the `db_path` location, by default it is `../data/sqlite/lottie.sql` (see below).
+
+``` r
+## testing <- TRUE
+testing <- FALSE
+## If testing we load the database in memory with this data.
+if (testing) {
+    db_path <- ":memory:"
+    ## source("clean.R")
+} else {
+    ## ...otherwise we have a database on disc and load it.
+    db_path <- "../data/sqlite/lottie.sql"
+}
+```
+
 #### Option
 
 Useful options which can be set in your global or the project  `.Rprofile` are shown below. They set a consistent port

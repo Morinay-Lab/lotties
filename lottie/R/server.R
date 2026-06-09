@@ -191,8 +191,7 @@ server <- function(input, output, session) {
         RSQLite::dbWriteTable(
             conn = con,
             name = "Conditions",
-            ## conditions_data(),
-            conditions_wide,
+            unique(conditions_wide),
             overwrite = FALSE,
             append = TRUE
         )
@@ -265,7 +264,7 @@ server <- function(input, output, session) {
         RSQLite::dbWriteTable(
             conn = con,
             name = "Composition",
-            composition_data(),
+            unique(composition_data()),
             overwrite = FALSE,
             append = TRUE
         )
@@ -377,7 +376,7 @@ server <- function(input, output, session) {
         RSQLite::dbWriteTable(
                      conn = con,
                      name = "Description",
-                     description_data(),
+                     unique(description_data()),
                      overwrite = FALSE,
                      append = TRUE)
         ## @ns-rse 2026-06-02 Debugging...
@@ -420,7 +419,7 @@ server <- function(input, output, session) {
         RSQLite::dbWriteTable(
                      conn = con,
                      name = "Interactions",
-                     interactions_data(),
+                     unique(interactions_data()),
                      overwrite = FALSE,
                      append = TRUE)
         ## @ns-rse 2026-06-02 Debugging...

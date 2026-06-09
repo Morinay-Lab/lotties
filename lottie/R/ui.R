@@ -156,7 +156,7 @@ cards <- list(
                                     updateOn = "blur"),
                    shiny::actionButton("add_composition", "Submit bird description"),
                    shiny::tableOutput("composition"),
-                   shiny::p("When you have added all individuals submit your data."),
+                   shiny::p("When you have added all individuals submit your data. NB - Duplicate observations in the above table will be removed on submission."),
                    shiny::actionButton("submit_composition", "Submit all composition data")
            )),
     bslib::card(
@@ -222,7 +222,7 @@ cards <- list(
                                    updateOn = "blur"),
                   shiny::actionButton("add_description", label = "Submit flock description"),
                   shiny::tableOutput("description"),
-                  shiny::p("When you have described all flocks submit your data."),
+                  shiny::p("When you have described all flocks submit your data. NB - Duplicate observations in the above table will be removed on submission."),
                   shiny::actionButton("submit_description", label = "Submit all flock data")
     )),
     bslib::card(
@@ -258,7 +258,7 @@ cards <- list(
                                     updateOn = "blur"),
                    shiny::actionButton("add_interactions", "Submit interaction"),
                    shiny::tableOutput("interactions"),
-                   shiny::p("When you have added all interactions submit your data."),
+                   shiny::p("When you have added all interactions submit your data. NB - Duplicate observations in the above table will be removed on submission."),
                    shiny::actionButton("submit_interactions", "Submit all interaction data")
                )),
     bslib::card(
