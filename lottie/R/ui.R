@@ -70,9 +70,8 @@ colour_ring_inputs <- function(position, selected, ...) {
   )
 }
 
-## Setup cards
-cards <- list(
-    bslib::card(
+## GPS card
+gps_card <- bslib::card(
         full_screen = TRUE,
         card_header = "GPS",
         bslib::card_body(
@@ -88,9 +87,11 @@ cards <- list(
             shiny::p("Uploaded GPS file(s) :"),
             shiny::tableOutput("gps_file_table"),
             ## @ns-rse 2026-06-02 : Show the filename of an uploaded file here
-            shiny::checkboxInput("gpx_complete", "GPS data accurate?", value = TRUE),
-            )),
-    bslib::card(
+            shiny::checkboxInput("gpx_complete", "GPS data accurate?", value = TRUE)
+            ))
+
+## Individual flock member card
+individual_card <- bslib::card(
         full_screen = FALSE,
         card_header = "Flock Composition",
         bslib::card_body(
@@ -143,8 +144,10 @@ cards <- list(
                    shiny::tableOutput("composition"),
                    shiny::p("When you have added all individuals submit your data. NB - Duplicate observations in the above table will be removed on submission."),
                    shiny::actionButton("submit_composition", label = "Submit all composition data")
-           )),
-    bslib::card(
+           ))
+
+## Flock description card
+flock_card <- bslib::card(
         full_screen = FALSE,
         card_header = "Flock Description",
         bslib::card_body(
@@ -209,8 +212,10 @@ cards <- list(
                   shiny::tableOutput("description"),
                   shiny::p("When you have described all flocks submit your data. NB - Duplicate observations in the above table will be removed on submission."),
                   shiny::actionButton("submit_description", label = "Submit all flock data")
-    )),
-    bslib::card(
+    ))
+
+## Flock interaction card
+interaction_card <- bslib::card(
         full_screen = FALSE,
         card_header = "Flock Interactions",
         bslib::card_body(
@@ -245,8 +250,10 @@ cards <- list(
                    shiny::tableOutput("interactions"),
                    shiny::p("When you have added all interactions submit your data. NB - Duplicate observations in the above table will be removed on submission."),
                    shiny::actionButton("submit_interactions", "Submit all interaction data")
-               )),
-    bslib::card(
+               ))
+
+## Download card
+download_card <- bslib::card(
                full_screen = FALSE,
                card_header = "Download Data",
                bslib::card_body(
@@ -270,7 +277,6 @@ cards <- list(
                                              selected = c("GPS")),
                    shiny::downloadButton("download_clean_data", "Download")
                ))
-)
 
 ui <- bslib::page_sidebar(
     title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
@@ -331,10 +337,10 @@ ui <- bslib::page_sidebar(
     ##    heights_equal = "all",
     bslib::navset_card_underline(
         title = "Flock Observations...",
-        bslib::nav_panel("GPS", cards[[1]]),
-        bslib::nav_panel("Composition", cards[[2]]),
-        bslib::nav_panel("Description", cards[[3]]),
-        bslib::nav_panel("Interactions", cards[[4]]),
-        bslib::nav_panel("Download", cards[[5]])
+        bslib::nav_panel("GPS", gps_card),
+        bslib::nav_panel("Description", flock_card),
+        bslib::nav_panel("Composition", individual_card),
+        bslib::nav_panel("Interactions", interaction_card),
+        bslib::nav_panel("Download", download_card)
         )
 )
