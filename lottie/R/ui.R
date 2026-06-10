@@ -49,10 +49,10 @@ simple_card <- function(header, ...) {
 colour_ring_inputs <- function(position, ...) {
   pos_vars <- switch(
     position,
-    lt = list(title = "Left Leg Top Ring", tag = "left_leg_top"),
-    lb = list(title = "Left Leg Bottom Ring", tag = "left_leg_bottom"),
-    rt = list(title = "Right Leg Top Ring", tag = "right_leg_top"),
-    rb = list(title = "Right Leg Bottom Ring", tag = "right_leg_bottom")
+    lt = list(title = "Left Leg Top Ring", tag = "left_top"),
+    lb = list(title = "Left Leg Bottom Ring", tag = "left_bottom"),
+    rt = list(title = "Right Leg Top Ring", tag = "right_top"),
+    rb = list(title = "Right Leg Bottom Ring", tag = "right_bottom")
   )
   list(
     shiny::selectInput(
