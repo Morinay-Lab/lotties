@@ -129,7 +129,7 @@ clean_flock_description <- function(df, person) {
             # no_other_species,
             notes
         )
-
+}
 
 #' Clean Flock Composition data.
 #'
@@ -148,7 +148,7 @@ clean_flock_description <- function(df, person) {
 ## IDD
 ## indiv_certainty
 ## day_of_year
-clean_flock_composition <- function() {}
+## clean_flock_composition <- function() {}
 
 
 #' Clean Flock Interactions data.
@@ -161,7 +161,82 @@ clean_flock_composition <- function() {}
 #'
 #'
 ## Need the following columns
+## clean_flock_interactions <- function(df, person) {
+##     df <- df |> dplyr::mutate(date = composition_date,)
+## }
 
-clean_flock_interactions <- function(df, person) {
-    df <- df |> dplyr::mutate(date = composition_date,)
+
+#' Extract rings
+#'
+#' @param code str The code from which rings and leg are to be extracted.
+#' @param valid_codes list List of valid codes, if `code` is not in `valid_codes` it is not extracted.
+#' @param known_rings list List of rings used.
+extract_rings <- function(code, valid_codes, known_rings) {
+    ## Validate that the supplied code is valid
+    if (!(code %in% known_rings)) {
+        print(print0("WARNING!!! The provided combination (", code, ") is not in known_rings."))
+    }
+    code_length <- stringr::str_length(code)
+    rings <- list()
+    rings$leg <- stringr::str_sub(code, start = -1)
+
+    ## @ns-rse 2026-06-16 : Handle BTO rings first, felt it was simpler to follow the logic if done this way
+    if (stringr::str_detect(code, "\\*")) {
+        if (code_length == 3) {
+            rings$top <- stringr::str_sub(code, 1, 2)
+            rings$bottom <- ""
+        } else if (code_length == 4) {
+            if (stringr::str_locate(code, "\\*")[1] == 2) {
+                rings$top <- stringr::str_sub(code, 1, 2)
+                rings$bottom <- stringr::str_sub(code, 3, 3)
+            } else {
+                rings$top <- stringr::str_sub(code, 1, 1)
+                rings$bottom <- stringr::str_sub(code, 2, 3)
+            }
+        } else if (code_length == 5) {
+            rings$top <- stringr::str_sub(code, 1, 2)
+            rings$bottom <- stringr::str_sub(code, 3, 4)
+        } else {
+            print(paste0("WARNING : code is > 5 characters : ", code))
+        }
+    } else if (code_length == 3) {
+        ## If length is 3 then all codes are upper case and single letter codes are used, we can therefore easily split the
+        ## top and bottom rings out
+        rings$top <- stringr::str_sub(code, 1, 1)
+        rings$bottom <- stringr::str_sub(code, 2, 2)
+    } else if (code_length == 5) {
+        ## If length is 5 then all codes are two letter and we can easily split top and bottom
+        rings$top <- stringr::str_sub(code, 1, 2)
+        rings$bottom <- stringr::str_sub(code, 3, 4)
+        ## If length is 4 then it is trickier, we do not know if it is the first or second ring that is 2 characters
+    } else if (code_length == 4) {
+        ## We check to see if the first two characters are in the subset of rings that are two characters in length, if so we
+        ## use the first two characters as the top and the third is the bottom
+        known_rings2 <- known_rings[stringr::str_length(known_rings) == 2]
+        if (code == "None") {
+            rings$leg <- ""
+            rings$top <- ""
+            rings$bottom <- ""
+        } else if (stringr::str_sub(code, 1, 2) %in% known_rings2) {
+            rings$top <- stringr::str_sub(code, 1, 2)
+            rings$bottom <- stringr::str_sub(code, 3, 3)
+        ## If not then the first character is the top and the second and third are the bottom.
+        } else {
+            rings$top <- stringr::str_sub(code, 1, 1)
+            rings$bottom <- stringr::str_sub(code, 2, 3)
+        }
+    }
+    ## Check
+    if (!(rings$leg %in% c("L", "R"))) {
+        print(paste0("WARNING!!! Ring is neither L nor R : ", rings$leg))
+    }
+    if (!(rings$top %in% valid_codes)) {
+        print(paste0("WARNING!!! Top ring is unknown : ", rings$top))
+    }
+    if (!(rings$bottom %in% valid_codes)) {
+        print(paste0("WARNING!!! Bottom ring is unknown : ", rings$bottom))
+    }
+    rings
 }
+
+## End of file

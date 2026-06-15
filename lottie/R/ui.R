@@ -43,10 +43,12 @@ simple_card <- function(header, ...) {
 
 #' Colour ring inputs
 #'
-#' @param position Position, one of "lt", "lb", "rt", or "rb"
+#' @param position str Position, one of "lt", "lb", "rt", or "rb"
+#' @param selected str Ring that is selected, initially blank until the ``Colour Ring`` has been selected.
 #'
 #' @returns List containing colour ring select and checkbox
-colour_ring_inputs <- function(position, ...) {
+colour_ring_inputs <- function(position, selected, ...) {
+## colour_ring_inputs <- function(position, ...) {
   pos_vars <- switch(
     position,
     lt = list(title = "Left Leg Top Ring", tag = "left_top"),
@@ -57,13 +59,13 @@ colour_ring_inputs <- function(position, ...) {
   list(
     shiny::selectInput(
       paste("composition", pos_vars$tag, sep = "_"),
-      paste(pos_vars$title, ":"),
-      selected = NULL,
+      label = paste(pos_vars$title, ":"),
+      selected = selected,
       choices = split(rings_df$code, rings_df$description)
     ),
     shiny::checkboxInput(
       paste("composition", pos_vars$tag, "certain", sep = "_"),
-      paste(pos_vars$title, "Certain")
+      label = paste(pos_vars$title, "Certain")
     )
   )
 }
@@ -72,7 +74,7 @@ colour_ring_inputs <- function(position, ...) {
 cards <- list(
     bslib::card(
         full_screen = TRUE,
-        card_header = "Survey Conditions & GPS",
+        card_header = "GPS",
         bslib::card_body(
             ## Record user
             ## Upload GPX file
@@ -80,7 +82,7 @@ cards <- list(
             shiny::p("You can only upload a single GPX file at a time. This should correspond to the observations you will be entering under the Flock Composition, Description and Interactions tab."),
             shiny::fileInput(
                 "gpx",
-                "Choose GPX File",
+                label = "Choose GPX File",
                 multiple = FALSE,
                 accept = c(".gpx")),
             shiny::p("Uploaded GPS file(s) :"),
@@ -96,7 +98,7 @@ cards <- list(
                                     label = "Date : ",
                                     format = "yyyy-mm-dd"),
                    shinyTime::timeInput("composition_time",
-                                        "Time : ",
+                                        label = "Time : ",
                                         seconds = FALSE,
                                         value = Sys.time()),
                   shiny::numericInput("composition_flock_number",
@@ -119,12 +121,12 @@ cards <- list(
                                         value = FALSE),
                    bslib::layout_column_wrap(
                      simple_card("Left Leg...",
-                                 colour_ring_inputs("lt"),
-                                 colour_ring_inputs("lb")
+                                 colour_ring_inputs(position = "lt", selected = ""),
+                                 colour_ring_inputs(position = "lb", selected = "")
                      ),
                      simple_card("Right Leg...",
-                                 colour_ring_inputs("rt"),
-                                 colour_ring_inputs("rb")
+                                 colour_ring_inputs(position = "rt", selected = ""),
+                                 colour_ring_inputs(position = "rb", selected = "")
                      ),
                      fill = FALSE
                    ),
@@ -140,7 +142,7 @@ cards <- list(
                    shiny::actionButton("add_composition", "Submit bird description"),
                    shiny::tableOutput("composition"),
                    shiny::p("When you have added all individuals submit your data. NB - Duplicate observations in the above table will be removed on submission."),
-                   shiny::actionButton("submit_composition", "Submit all composition data")
+                   shiny::actionButton("submit_composition", label = "Submit all composition data")
            )),
     bslib::card(
         full_screen = FALSE,
@@ -290,14 +292,15 @@ ui <- bslib::page_sidebar(
                              seconds = FALSE,
                              value = Sys.time()),
         shiny::checkboxGroupInput("conditions_weather",
-                                  label="Weather : ",
+                                  label = "Weather : ",
+                                  selected = "sunny",
                                   choices = split(conditions_df$code,
                                                   conditions_df$description)),
         shiny::selectInput("conditions_visibility",
                            label = "Visibility : ",
                            choices = split(visibility_df$code,
                                            visibility_df$description)),
-        shiny::actionButton("submit_conditions", "Submit")        ## Record user
+        shiny::actionButton("submit_conditions", label = "Submit")        ## Record user
         ## shiny::selectInput("user",
         ##                    label = "User",
         ##                    choices = split(person_df$code,

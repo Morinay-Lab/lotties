@@ -5,6 +5,10 @@ library(RSQLite)
 library(bslib)
 library(shiny)
 
+## ns-rse 2026-06-15 - hack to load the extract_ring() function, need to work out how to get package installed in renv
+## so we can use `lottie::extract_ring()`
+source("utils.R")
+
 ## When developing set to TRUE, otherwise set to FALSE
 testing <- TRUE
 ## testing <- FALSE
@@ -210,15 +214,49 @@ server <- function(input, output, session) {
     ## })
     ## Make a table out of the single GPX filename
     output$gps_file_table <- renderTable(
-    {
-        req(input$gpx)
-        gps_filenames <- dplyr::select(input$gpx, name) |>
-            data.frame()
-        colnames(gps_filenames) <- c("GPX File(s)...")
-        gps_filenames
+        {
+            req(input$gpx)
+            gps_filenames <- dplyr::select(input$gpx, name) |>
+                data.frame()
+            colnames(gps_filenames) <- c("GPX File(s)...")
+            gps_filenames
         },
         striped = TRUE
     )
+    ## Extract ring colours from selection so they can be used to populate the `selectInput(..., choices=)` of the
+    ## `colour_ring_inputs()` function (see https://stackoverflow.com/a/21467399/1444043) second solution using
+    ## shiny::updateSelectInput()
+    selected_rings <- shiny::reactive({
+        ## We split the returned code using lottie::extract_rings(), this returns rings$leg, rings$top and rings$bottom
+        rings <- extract_rings(
+            code = input$composition_colour_ring,
+            valid_codes = rings_df$code,
+            known_rings = colour_ring_df$code
+        )
+        rings
+    })
+    ## Having split the rings we can now use the leg and and assign the top/bottom to be selected automagically in the
+    ## UI
+    shiny::observe({
+        rings <- selected_rings()
+        if (rings$leg == "L") {
+            shiny::updateSelectInput(session, "composition_left_top", selected = rings$top)
+            shiny::updateSelectInput(session, "composition_left_bottom", selected = rings$bottom)
+            shiny::updateSelectInput(session, "composition_right_top", selected = "")
+            shiny::updateSelectInput(session, "composition_right_bottom", selected = "")
+        }
+        else if (rings$leg == "R") {
+            shiny::updateSelectInput(session, "composition_left_top", selected = "")
+            shiny::updateSelectInput(session, "composition_left_bottom", selected = "")
+            shiny::updateSelectInput(session, "composition_right_top", selected = rings$top)
+            shiny::updateSelectInput(session, "composition_right_bottom", selected = rings$bottom)
+        } else {
+            shiny::updateSelectInput(session, "composition_left_top", selected = "")
+            shiny::updateSelectInput(session, "composition_left_bottom", selected = "")
+            shiny::updateSelectInput(session, "composition_right_top", selected = "")
+            shiny::updateSelectInput(session, "composition_right_bottom", selected = "")
+        }
+    })
     ## Flock Composition
     ## Build a data frame of birds within a flock when the "Submit bird description" button is clicked
     composition_data <- shiny::reactiveVal(data.frame(
