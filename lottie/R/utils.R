@@ -179,29 +179,42 @@ extract_rings <- function(code, valid_codes, known_rings) {
     code_length <- stringr::str_length(code)
     rings <- list()
     rings$leg <- stringr::str_sub(code, start = -1)
+    rings$bto <- FALSE
 
     ## @ns-rse 2026-06-16 : Handle BTO rings first, felt it was simpler to follow the logic if done this way
     if (stringr::str_detect(code, "\\*")) {
+        rings$bto <- TRUE
+        ## If length is 3 then it is a BTO ring (first two characters) and a leg
         if (code_length == 3) {
             rings$top <- stringr::str_sub(code, 1, 2)
             rings$bottom <- ""
         } else if (code_length == 4) {
+            ## If '*' is at the second position then BTO is top
             if (stringr::str_locate(code, "\\*")[1] == 2) {
                 rings$top <- stringr::str_sub(code, 1, 2)
                 rings$bottom <- stringr::str_sub(code, 3, 3)
+                rings$bto_pos <- "Top"
+            ## Otherwise BTO is bottom
             } else {
                 rings$top <- stringr::str_sub(code, 1, 1)
                 rings$bottom <- stringr::str_sub(code, 2, 3)
+                rings$bto_pos <- "Bottom"
             }
         } else if (code_length == 5) {
             rings$top <- stringr::str_sub(code, 1, 2)
             rings$bottom <- stringr::str_sub(code, 3, 4)
+            ## If '*' is at the second position then BTO is top
+            if (stringr::str_locate(code, "\\*")[1] == 2) {
+                rings$bto_pos <- "Top"
+            ## Otherwise BTO is bottom
+            } else {
+                rings$bto_pos <- "Bottom"
+            }
         } else {
             print(paste0("WARNING : code is > 5 characters : ", code))
         }
     } else if (code_length == 3) {
-        ## If length is 3 then all codes are upper case and single letter codes are used, we can therefore easily split the
-        ## top and bottom rings out
+        ## If length is 3 then all codes are single letters, we can therefore easily split the top and bottom rings out
         rings$top <- stringr::str_sub(code, 1, 1)
         rings$bottom <- stringr::str_sub(code, 2, 2)
     } else if (code_length == 5) {
