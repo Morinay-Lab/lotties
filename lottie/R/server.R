@@ -4,6 +4,7 @@ library(DBI)
 library(RSQLite)
 library(bslib)
 library(shiny)
+library(xml2)
 
 ## ns-rse 2026-06-15 - hack to load the extract_ring() function, need to work out how to get package installed in renv
 ## so we can use `lottie::extract_ring()`
@@ -139,6 +140,20 @@ if (testing) {
             check.names = FALSE
         ),
         overwrite = overwrite
+        )
+    ## GPS
+    RSQLite::dbWriteTable(
+        conn = con,
+        name = "GPS",
+        data.frame(
+             "time" = character(),
+             "lat" = numeric(),
+             "lon" = numeric(),
+             "ele" = numeric(),
+             "filename" = character(),
+             stringsAsFactors = FALSE,
+             check.names = FALSE),
+        overwrite = overwrite
     )
 } else {
     ## Otherwise extract lookups from database
@@ -204,25 +219,81 @@ server <- function(input, output, session) {
         ## query <- "SELECT * FROM Conditions"
         ## print(RSQLite::dbGetQuery(conn = con, query))
     })
-    ## GPS
-    ## output$gps_data <- shiny::observeEvent(input$gpx, {
-    ##     ## Extract the file name(s)
-    ##     gps_filename <- input$gps$name
-    ##     ## @ns-rse 2026-06-08 - Extract the data
-    ##     ## Return the file name(s)
-    ##     gps_filename
-    ## })
+    ## GPS - Extract data and summarise
+    gps_data <- shiny::observeEvent(input$gpx, {
+        ## Load GPX data from input$gpx ($datapath is the path to the temporary file that has been uploaded)
+        gpx_data <- xml2::read_xml(input$gpx$datapath)
+        ## Extract the namespace
+        gpx_namespace <- xml2::xml_ns(gpx_data)
+        ## Extract the trkpt (the lat/lon)
+        trkpts <- xml2::xml_find_all(gpx_data, ".//d1:trkpt", gpx_namespace)
+        ## Extract the lat/lon from trkpts and convert to numeric
+        lat <- xml2::xml_attr(trkpts, "lat") |> as.numeric()
+        lon <- xml2::xml_attr(trkpts, "lon") |> as.numeric()
+        ## ns-rse 2026-06-18 - Extract to a function in utils.R
+        ## Extract the ele, handling missing
+        ele <- vapply(trkpts, function(n) {
+            x <- xml2::xml_find_first(n, "d1:ele", gpx_namespace)
+            if (is.na(x)) NA_character_ else xml2::xml_text(x)
+        }, character(1))
+        ele <- as.numeric(ele)
+        ## Extract the time, handling missing
+        time <- vapply(trkpts, function(n) {
+            x <- xml2::xml_find_first(n, "d1:time", gpx_namespace)
+            if (is.na(x)) NA_character_ else xml2::xml_text(x)
+        }, character(1))
+        time <- as.POSIXct(time, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+        ## Extract filename
+        filename <- paste0(
+            xml2::xml_find_first(gpx_data, ".//d1:trk/d1:name", gpx_namespace) |> xml2::xml_text(),
+            ".gpx")
+        ## Build dataframe
+        gps_df <- data.frame(
+            time = time,
+            lat = lat,
+            lon = lon,
+            ele = ele,
+            filename = rep(filename, length(lat)))
+        ## Add to database
+        RSQLite::dbWriteTable(
+            conn = con,
+            name = "GPS",
+            gps_df,
+            overwrite = FALSE,
+            append = TRUE)
+        ## @ns-rse 2026-06-02 Debugging...
+        ## print("WHAT HAVE WE GOT IN THE DATABASE GPS TABLE?")
+        ## query <- "SELECT * FROM GPS"
+        ## print(RSQLite::dbGetQuery(conn = con, query))
+        ## gps_df
+    })
+
     ## Make a table out of the single GPX filename
     output$gps_file_table <- renderTable(
         {
             req(input$gpx)
-            gps_filenames <- dplyr::select(input$gpx, name) |>
-                data.frame()
-            colnames(gps_filenames) <- c("GPX File(s)...")
-            gps_filenames
+            ## ns-rse 2026-06-19- ideally I would like to use the `gps_df` from the above shiny::observeEvent() but
+            ## haven't been able to work out how to access it
+            gpx_data <- xml2::read_xml(input$gpx$datapath)
+            ## Extract the namespace
+            gpx_namespace <- xml2::xml_ns(gpx_data)
+            ## Extract the trkpt (the lat/lon)
+            trkpts <- xml2::xml_find_all(gpx_data, ".//d1:trkpt", gpx_namespace)
+            ## Extract the time, handling missing
+            time <- vapply(trkpts, function(n) {
+                x <- xml2::xml_find_first(n, "d1:time", gpx_namespace)
+                if (is.na(x)) NA_character_ else xml2::xml_text(x)
+            }, character(1))
+            time <- as.POSIXct(time, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+            gps_summary <- data.frame(
+                "Filename" = dplyr::select(input$gpx, name),
+                "Points" = length(trkpts),
+                "Start" = min(time),
+                "Finish" = max(time)
+            )
+            gps_summary
         },
-        striped = TRUE
-    )
+        striped = TRUE)
     ## Extract ring colours from selection so they can be used to populate the `selectInput(..., choices=)` of the
     ## `colour_ring_inputs()` function (see https://stackoverflow.com/a/21467399/1444043) second solution using
     ## shiny::updateSelectInput()
@@ -231,8 +302,7 @@ server <- function(input, output, session) {
         rings <- extract_rings(
             code = input$composition_colour_ring,
             valid_codes = rings_df$code,
-            known_rings = colour_ring_df$code
-        )
+            known_rings = colour_ring_df$code)
         rings
     })
     ## Having split the rings we can now use the leg and and assign the top/bottom to be selected automagically in the
@@ -333,8 +403,7 @@ server <- function(input, output, session) {
             name = "Composition",
             unique(composition_data()),
             overwrite = FALSE,
-            append = TRUE
-        )
+            append = TRUE)
         ## @ns-rse 2026-06-02 Debugging...
         ## print("WHAT HAVE WE GOT IN THE DATABASE Composition TABLE?")
         ## query <- "SELECT * FROM Composition"
@@ -345,8 +414,7 @@ server <- function(input, output, session) {
         {
             composition_data()
         },
-        striped = TRUE
-        )
+        striped = TRUE)
     ## Add data to SQLite database when the "Submit all composition data" button is pressed
     shiny::observeEvent(input$submit_composition, {
         RSQLite::dbWriteTable(
@@ -423,8 +491,7 @@ server <- function(input, output, session) {
             tidyr::pivot_wider(
                 names_from = other_species,
                 values_from = present,
-                values_fill = FALSE
-            )
+                values_fill = FALSE)
         ## Add potentially missing columns
         to_add <- add_missing_columns(df = to_add, expected_cols = as.list(other_species_df$code))
         description_to_add <- rbind(description_data(),
@@ -436,8 +503,7 @@ server <- function(input, output, session) {
         {
             description_data()
         },
-        striped = TRUE
-    )
+        striped = TRUE)
     ## Add data to SQLite database when the "Submit all flock data" button is pressed
     shiny::observeEvent(input$submit_description, {
         RSQLite::dbWriteTable(
@@ -479,8 +545,7 @@ server <- function(input, output, session) {
         {
             interactions_data()
         },
-        striped = TRUE
-    )
+        striped = TRUE)
     ## Add data to SQLite database when the "Submit all interaction data" button is pressed
     shiny::observeEvent(input$submit_interactions, {
         RSQLite::dbWriteTable(
@@ -504,8 +569,7 @@ server <- function(input, output, session) {
                     " ",
                     "_"
                 ),
-                ".zip"
-            )
+                ".zip")
         },
     ## ns-rse 2026-06-08 : Would like to avoid duplication of code and have a single function but this errors with
     ##
@@ -533,8 +597,7 @@ server <- function(input, output, session) {
             }
             zip::zip(
                 zipfile = file,
-                files = unlist(csv_files)
-            )
+                files = unlist(csv_files))
             ## ns-rse 2026-06-08 : Remove CSV files from the system
         })
     output$download_clean_data <- shiny::downloadHandler(
@@ -561,8 +624,7 @@ server <- function(input, output, session) {
             }
             zip::zip(
                 zipfile = file,
-                files = unlist(csv_files)
-            )
+                files = unlist(csv_files))
             ## ns-rse 2026-06-08 : Remove CSV files from the system
         })
 }
