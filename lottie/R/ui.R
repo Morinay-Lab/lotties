@@ -1,6 +1,8 @@
+library(bsicons)
 library(bslib)
 library(shiny)
 library(shinyTime)
+library(xml2)
 
 options(shiny.autoreload = TRUE, shiny.trace = TRUE)
 ## Notes
