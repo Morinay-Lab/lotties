@@ -611,7 +611,7 @@ server <- function(input, output, session) {
         content = function(file) {
             ## Loop over selected tables
             csv_files <- list()
-            for (table in input$download_raw_data_selection) {
+            for (table in input$download_clean_data_selection) {
                 ## Select all from given table
                 query <- paste0("SELECT * FROM ", table)
                 df <- RSQLite::dbGetQuery(con, query)
