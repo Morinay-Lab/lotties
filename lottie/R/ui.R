@@ -302,7 +302,7 @@ interaction_card <- bslib::card(
 )
 
 ## Download card
-download_card <- layout_column_wrap(
+download_card <- bslib::layout_column_wrap(
   width = 1/2,
   bslib::card(
     bslib::card_header("Raw data"),
