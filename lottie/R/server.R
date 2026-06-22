@@ -185,9 +185,9 @@ server <- function(input, output, session) {
     shiny::observeEvent(input$submit_conditions, {
         conditions_to_add <- rbind(conditions_data(), data.frame(
             user = input$user,
-            date = input$conditions_date,
-            start_time = input$conditions_start_time,
-            end_time = input$conditions_end_time,
+            date = as.character(input$conditions_date),
+            start_time = as.character(input$conditions_start_time),
+            end_time = as.character(input$conditions_end_time),
             weather = input$conditions_weather,
             visibility = input$conditions_visibility,
             stringsAsFactors = FALSE
@@ -249,7 +249,7 @@ server <- function(input, output, session) {
             ".gpx")
         ## Build dataframe
         gps_df <- data.frame(
-            time = time,
+            time = as.character(time),
             lat = lat,
             lon = lon,
             ele = ele,
@@ -288,8 +288,8 @@ server <- function(input, output, session) {
             gps_summary <- data.frame(
                 "Filename" = dplyr::select(input$gpx, name),
                 "Points" = length(trkpts),
-                "Start" = min(time),
-                "Finish" = max(time)
+                "Start" = as.character(min(time)),
+                "Finish" = as.character(max(time))
             )
             gps_summary
         },
@@ -379,8 +379,8 @@ server <- function(input, output, session) {
             ))
    shiny::observeEvent(input$add_composition, {
         composition_to_add <- rbind(composition_data(), data.frame(
-            date = input$composition_date,
-            time = input$composition_time,
+            date = as.character(input$composition_date),
+            time = as.character(input$composition_time),
             flock_number = input$composition_flock_number,
             ringed = input$composition_ringed,
             colour_ring = input$composition_colour_ring,
@@ -474,9 +474,9 @@ server <- function(input, output, session) {
         ## ns-rse - Reshape the data to wide as other_species column can have multiple
         ## values and are captured in long format
         to_add <-data.frame(
-            date = input$description_date,
-            start_time = input$description_start_time,
-            end_time = input$description_end_time,
+            date = as.character(input$description_date),
+            start_time = as.character(input$description_start_time),
+            end_time = as.character(input$description_end_time),
             flock_type = input$description_flock_type,
             flock_number = input$description_flock_number,
             whole_flock = input$description_whole_flock,
@@ -530,8 +530,8 @@ server <- function(input, output, session) {
     ))
     shiny::observeEvent(input$add_interactions, {
         interactions_to_add <- rbind(interactions_data(), data.frame(
-            date = input$interactions_date,
-            time = input$interactions_time,
+            date = as.character(input$interactions_date),
+            time = as.character(input$interactions_time),
             flock_a = input$interactions_flock_a,
             flock_b = input$interactions_flock_b,
             type = input$interactions_type,
