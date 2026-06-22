@@ -302,30 +302,44 @@ interaction_card <- bslib::card(
 )
 
 ## Download card
-download_card <- bslib::card(
-  full_screen = FALSE,
-  fill = FALSE,
-  bslib::card_header("Download Data"),
-  bslib::card_body(
-    shiny::h4("Raw data"),
-    shiny::p("Please select the raw data tables you wish to extract. Files will be extracted to CSV and compressed into a single .zip file."),
-    shiny::checkboxGroupInput("download_raw_data_selection",
-                              label = "Select raw data to download : ",
-                              choices = c(
-                                "Conditions" = "Conditions",
-                                "Flock Composition" = "Composition",
-                                "Flock Description" = "Description",
-                                "Flock Interactions" = "Interactions",
-                                "GPS" = "GPS"),
-                              selected = c("Conditions", "Composition", "Description", "Interactions", "GPS")),
-    shiny::downloadButton("download_raw_data", "Download"),
-    shiny::h4("Cleaned data"),
-    shiny::p("Please select the cleaned data tables you wish to extract. Files will be extracted to CSV and compressed into a single .zip file."),
-    shiny::checkboxGroupInput("download_clean_data_selection",
-                              label = "Select clean data to download : ",
-                              choices = c("GPS" = "GPS"),
-                              selected = c("GPS")),
-    shiny::downloadButton("download_clean_data", "Download")
+download_card <- layout_column_wrap(
+  width = 1/2,
+  bslib::card(
+    bslib::card_header("Raw data"),
+    bslib::card_body(
+      shiny::helpText(
+        "Please select the", shiny::em("raw"), "data tables you wish to extract.",
+        "Files will be extracted to CSV and compressed into a single .zip file."
+      ),
+      shiny::checkboxGroupInput(
+        "download_raw_data_selection",
+        label = "",
+        choices = c(
+          "Conditions" = "Conditions",
+          "Flock Composition" = "Composition",
+          "Flock Description" = "Description",
+          "Flock Interactions" = "Interactions",
+          "GPS" = "GPS"),
+        selected = c("Conditions", "Composition", "Description", "Interactions", "GPS")
+      ),
+      shiny::downloadButton("download_raw_data", label = "Download raw data"),
+    )
+  ),
+  bslib::card(
+    bslib::card_header("Cleaned data"),
+    bslib::card_body(
+      shiny::helpText(
+        "Please select the", shiny::em("cleaned"), "data tables you wish to extract.",
+        "Files will be extracted to CSV and compressed into a single .zip file."
+      ),
+      shiny::checkboxGroupInput(
+        "download_clean_data_selection",
+        label = "",
+        choices = c("GPS" = "GPS"),
+        selected = c("GPS")
+      ),
+      shiny::downloadButton("download_clean_data", label = "Download cleaned data")
+    )
   )
 )
 
@@ -414,9 +428,17 @@ ui <- bslib::page_sidebar(
     #     bslib::nav_panel("Interactions", interaction_card),
     #     bslib::nav_panel("Download", download_card)
     #     )
-    gps_card,
-    flock_card,
-    individual_card,
-    interaction_card,
-    download_card
+    bslib::navset_card_underline(
+      bslib::nav_panel(
+        "Observations",
+        gps_card,
+        flock_card,
+        individual_card,
+        interaction_card
+      ),
+      bslib::nav_panel(
+        "Download",
+        download_card
+      )
+    )
 )
