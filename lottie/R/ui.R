@@ -71,6 +71,21 @@ colour_ring_inputs <- function(position, selected, ...) {
   )
 }
 
+#' Display section
+#'
+#' @param header Card header
+#' @param ... Card contents
+#'
+#' @returns bslib::card()
+display_section <- function(header, ...) {
+  bslib::card(
+    full_screen = TRUE,
+    fill = FALSE,
+    bslib::card_header(header),
+    bslib::card_body(...)
+  )
+}
+
 ## GPS card
 gps_inputs <- list(
   ## Upload GPX file
@@ -89,16 +104,11 @@ gps_inputs <- list(
   )
 )
 
-gps_card <- bslib::card(
-  full_screen = TRUE,
-  fill = FALSE,
-  bslib::card_header("GPS Data"),
-  bslib::card_body(
-    ## !!!gps_inputs,
-    shiny::p("Uploaded GPS file :"),
-    ## @ns-rse 2026-06-02 : Show the filename of an uploaded file here
-    shiny::tableOutput("gps_file_table")
-  )
+gps_card <- display_section(
+  header = "GPS Data",
+  shiny::p("Uploaded GPS file :"),
+  ## @ns-rse 2026-06-02 : Show the filename of an uploaded file here
+  shiny::tableOutput("gps_file_table")
 )
 
 ## Individual flock member card
@@ -169,16 +179,11 @@ individual_inputs <- list(
   shiny::actionButton("add_composition", label = "Submit bird description")
 )
 
-individual_card <- bslib::card(
-  full_screen = FALSE,
-  fill = FALSE,
-  bslib::card_header("Flock Composition"),
-  bslib::card_body(
-    ## !!!individual_inputs,
-    shiny::tableOutput("composition"),
-    shiny::helpText("When you have added all individuals submit your data. NB - Duplicate observations in the above table will be removed on submission."),
-    shiny::actionButton("submit_composition", label = "Submit all composition data")
-  )
+individual_card <- display_section(
+  header = "Flock Composition",
+  shiny::tableOutput("composition"),
+  shiny::helpText("When you have added all individuals submit your data. NB - Duplicate observations in the above table will be removed on submission."),
+  shiny::actionButton("submit_composition", label = "Submit all composition data")
 )
 
 ## Flock description card
@@ -245,16 +250,11 @@ flock_inputs <- list(
   shiny::actionButton("add_description", label = "Submit flock description")
 )
 
-flock_card <- bslib::card(
-  full_screen = FALSE,
-  fill = FALSE,
-  bslib::card_header("Flocks"),
-  bslib::card_body(
-    ## !!!flock_inputs,
-    shiny::tableOutput("description"),
-    shiny::helpText("When you have described all flocks submit your data. NB - Duplicate observations in the above table will be removed on submission."),
-    shiny::actionButton("submit_description", label = "Submit all flock data")
-  )
+flock_card <- display_section(
+  header = "Flocks",
+  shiny::tableOutput("description"),
+  shiny::helpText("When you have described all flocks submit your data. NB - Duplicate observations in the above table will be removed on submission."),
+  shiny::actionButton("submit_description", label = "Submit all flock data")
 )
 
 ## Flock interaction card
@@ -289,16 +289,11 @@ interaction_inputs <- list(
   shiny::actionButton("add_interactions", label = "Submit interaction")
 )
 
-interaction_card <- bslib::card(
-  full_screen = FALSE,
-  fill = FALSE,
-  bslib::card_header("Flock Interactions"),
-  bslib::card_body(
-    ## !!!interaction_inputs,
-    shiny::tableOutput("interactions"),
-    shiny::helpText("When you have added all interactions submit your data. NB - Duplicate observations in the above table will be removed on submission."),
-    shiny::actionButton("submit_interactions", label = "Submit all interaction data")
-  )
+interaction_card <- display_section(
+  header = "Flock Interactions",
+  shiny::tableOutput("interactions"),
+  shiny::helpText("When you have added all interactions submit your data. NB - Duplicate observations in the above table will be removed on submission."),
+  shiny::actionButton("submit_interactions", label = "Submit all interaction data")
 )
 
 ## Download card
