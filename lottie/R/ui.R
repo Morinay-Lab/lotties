@@ -225,6 +225,7 @@ flock_inputs <- list(
                       step = 1),
   shiny::checkboxGroupInput("description_other_species",
                             label = "Other Species : ",
+                            selected = "none",
                             choices = split(other_species_df$code,
                                             other_species_df$description)),
   shiny::selectInput("description_section",

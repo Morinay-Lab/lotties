@@ -3,6 +3,7 @@
 
 other_species_df <- data.frame(
     code = c(
+        "none",
         "blue_tit",
         "chiff_chaff",
         "chaffinch",
@@ -19,6 +20,7 @@ other_species_df <- data.frame(
         "wren",
         "willow_warbler"),
     description = c(
+        "None",
         "Blue Tit (bt)",
         "Chiff Chaff (cc)",
         "Chaffinch (ch)",

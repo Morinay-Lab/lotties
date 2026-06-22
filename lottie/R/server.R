@@ -71,6 +71,9 @@ extract_and_compress_data <- function(zip_file, conn, input) {
 
 #' Add missing columns to a data frame.
 #'
+#' If a column for 'none' is present, e.g. if no other species are observed) or it was no unchecked when adding other
+#' species, then it will be dropped automatically.
+#'
 #' @param df data.frame Data frame to be augmented.
 #' @param expected_cols list[str] List of columns that the data frame should hold.
 #'
@@ -80,9 +83,25 @@ add_missing_columns <- function(df, expected_cols) {
             df[[missing_col]] <- FALSE
         }
     }
+    df <- remove_none_column(df)
     df
 }
 
+#' Remove 'none' column from a dataframe
+#'
+#' When recording "Other Species" the default check box that is selected is "None" so that we do not observe and error
+#' when reshaping the data. Here we check if any other species have been selected and if so ensure that the "none"
+#'
+#' @param df data.frame Data frame to be augmented.
+remove_none_column <- function(df, expected_cols) {
+    if ("none" %in% colnames(df)) {
+        df <- df |> dplyr::select(-none)
+    }
+    df
+}
+
+
+## Load lookup dataframes and populate database if testing
 if (testing) {
     ## Load lookup dataframes and populate database if testing
     source("lookups.R")
