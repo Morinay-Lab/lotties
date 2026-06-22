@@ -252,4 +252,19 @@ extract_rings <- function(code, valid_codes, known_rings) {
     rings
 }
 
+#' Update individual ring certainty based on overall certainty
+#'
+#' If the "Certainty" box is ticked for the overall ring code this function updates the relevant individual "Certainty"
+#' checkbox for the given "tag"
+#'
+#' @param ring_certainty bool Whether the overall certainty is 'TRUE' or 'FALSE'.
+#' @param tag str The individual certainty box to be updated ('left_top' | 'left_bottom' | 'right_top' | 'right_bottom')
+#' @param session The Shiny session to update.
+update_certainty <- function(ring_certainty, tag, session) {
+    shiny::updateCheckboxInput(
+               session,
+               paste("composition", tag, "certain", sep = "_"),
+               value = ring_certainty)
+}
+
 ## End of file
