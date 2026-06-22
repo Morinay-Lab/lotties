@@ -417,12 +417,13 @@ server <- function(input, output, session) {
             stringsAsFactors = FALSE
         ))
         composition_data(composition_to_add)
-        RSQLite::dbWriteTable(
-            conn = con,
-            name = "Composition",
-            unique(composition_data()),
-            overwrite = FALSE,
-            append = TRUE)
+        ## @ns-rse 2026-06-22 this shouldn't be here we only submit data on input$submit_composition
+        ## RSQLite::dbWriteTable(
+        ##     conn = con,
+        ##     name = "Composition",
+        ##     unique(composition_data()),
+        ##     overwrite = FALSE,
+        ##     append = TRUE)
         ## @ns-rse 2026-06-02 Debugging...
         ## print("WHAT HAVE WE GOT IN THE DATABASE Composition TABLE?")
         ## query <- "SELECT * FROM Composition"

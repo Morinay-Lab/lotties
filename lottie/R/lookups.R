@@ -82,6 +82,7 @@ rings_df <- data.frame(
         "B*",
         "G*",
         "N*",
+        "P*",
         "R*",
         "W*",
         "Y*"),
@@ -128,6 +129,7 @@ rings_df <- data.frame(
         "Pit-tag light blue (B*)",
         "Pit-tag green (G*)",
         "Pit-tag black (N*)",
+        "Pit-tag pink (P*)",
         "Pit-tag red (R*)",
         "Pit-tag white (W*)",
         "Pit-tag yellow (Y*)"
