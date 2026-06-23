@@ -1,0 +1,27 @@
+Package: lottie
+Title: Long-tailed Tits Database and Shiny App
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Tamora", "James", , "t.d.james@sheffield.ac.uk", role = c("aut")),
+    person("Neil", "Shephard", , "n.shephard@sheffield.ac.uk", role=c("aut", "cre")),
+    person("Jennifer", "Morinay", , "j.morinay@sheffield.ac.uk", role=c("aut")))
+Description: A Shiny WebUI and SQLite database for capturing, validating, cleaning and analysing data from a long-term study of the Long-tailed Tit (_Aegithalos caudatus_).
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports:
+    bsicons,
+    bslib,
+    dplyr,
+    ggplot2,
+    RSQLite,
+    shiny,
+    shinyjs,
+    shinyTime,
+    testthat,
+    tidyr,
+    watcher,
+    xml2
+Suggests: testthat (>= 3.0.0)
+Config/testthat/edition: 3
