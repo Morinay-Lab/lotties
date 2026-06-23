@@ -2,7 +2,6 @@
 ## Description : Shiny server
 library(DBI)
 library(RSQLite)
-library(bslib)
 library(shiny)
 library(xml2)
 
@@ -446,8 +445,8 @@ server <- function(input, output, session) {
             chaffinch = logical(),
             coal_tit = logical(),
             dunnock = logical(),
-            gc = logical(),
-            great_it = logical(),
+            goldcrest = logical(),
+            great_tit = logical(),
             nuthatch = logical(),
             robin = logical(),
             siskin = logical(),
@@ -492,7 +491,7 @@ server <- function(input, output, session) {
                 values_from = present,
                 values_fill = FALSE)
         ## Add potentially missing columns
-        to_add <- add_missing_columns(df = to_add, expected_cols = as.list(other_species_df$code))
+        to_add <- tidy_other_species_columns(df = to_add, expected_cols = as.list(other_species_df$code))
         description_to_add <- rbind(description_data(),
                                     to_add)
         description_data(description_to_add)

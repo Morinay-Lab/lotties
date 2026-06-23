@@ -131,24 +131,6 @@ clean_flock_description <- function(df, person) {
         )
 }
 
-#' Clean Flock Composition data.
-#'
-#' Mostly this is just a case of renaming variables. The data points as captured are cleaner.
-#'
-#' @param df data.frame Data frame to be cleaned.
-#' @param person str Person data petains to, should be one of 'LN', 'MJ', 'ND', 'SB'.
-#' @export
-#'
-#'
-## Need the following columns
-## date
-## time
-## colour_ring_certainty
-## person
-## IDD
-## indiv_certainty
-## day_of_year
-## clean_flock_composition <- function() {}
 
 
 #' Clean Flock Interactions data.
@@ -164,6 +146,42 @@ clean_flock_description <- function(df, person) {
 ## clean_flock_interactions <- function(df, person) {
 ##     df <- df |> dplyr::mutate(date = composition_date,)
 ## }
+
+#' Tidy other bird species columns.
+#'
+#' Ensures there is a boolean column for each possible "Other species" that might be observed. This is required because
+#' if a species is _not_ observed then after reshaping to wide there is no boolean column for that species. As a
+#' consequence combining the dataframe with other flock description observations during that session will fail and
+#' attempting to update the database will also fail.
+#'
+#' Further when recording "Other Species" the default check box that is selected is "None" so that we do not observe an
+#' error when reshaping the data if no "Other Species" are observed. As a consequence it is possible for the reshaped
+#' data frame to contain a column called `none` which is irrelevant (whether this is because it was not unchecked when
+#' adding "Other Species" or there were genuinely no "Other Species" observed). A call is therefore made to the
+#' `remove_none_column()` function so that if the "None" check box was checked the resulting column is removed.
+#'
+#' @param df data.frame Data frame to be augmented.
+#' @param expected_cols list[str] List of columns that the data frame should hold.
+#'
+tidy_other_species_columns <- function(df, expected_cols) {
+    for (missing_col in expected_cols) {
+        if (!(missing_col %in% colnames(df))) {
+            df[[missing_col]] <- FALSE
+        }
+    }
+    df <- remove_none_column(df)
+    df
+}
+
+#' Remove 'none' column from a dataframe if it exists.
+#'
+#' @param df data.frame Data frame to be augmented.
+remove_none_column <- function(df) {
+    if ("none" %in% colnames(df)) {
+        df <- df |> dplyr::select(-none)
+    }
+    df
+}
 
 
 #' Extract rings
