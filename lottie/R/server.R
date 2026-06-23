@@ -295,52 +295,7 @@ server <- function(input, output, session) {
     ## UI
     shiny::observe({
         rings <- selected_rings()
-        ## We again deal with BTO ring logic separately
-        if (rings$bto == TRUE) {
-            ## Coloured ring is on Left leg...
-            if (rings$leg == "L") {
-                ## But we need to pull the ring from the correct top/bottom which is conditional on whether the BTO ring
-                ## was listed first, this has been stored in the rings$bto_pos
-                if (rings$bto_pos == "Top") {
-                    shiny::updateSelectInput(session, "composition_left_top", selected = rings$bottom)
-                    shiny::updateSelectInput(session, "composition_right_top", selected = rings$top)
-                } else {
-                    shiny::updateSelectInput(session, "composition_left_top", selected = rings$top)
-                    shiny::updateSelectInput(session, "composition_right_top", selected = rings$bottom)
-                }
-                shiny::updateSelectInput(session, "composition_bto_ring_position", selected = "right")
-                ## Coloured ring is on the Right leg...
-            } else {
-                if (rings$bto_pos == "Top") {
-                    shiny::updateSelectInput(session, "composition_left_top", selected = rings$top)
-                    shiny::updateSelectInput(session, "composition_right_top", selected = rings$bottom)
-                } else {
-                    shiny::updateSelectInput(session, "composition_left_top", selected = rings$bottom)
-                    shiny::updateSelectInput(session, "composition_right_top", selected = rings$top)
-                }
-                shiny::updateSelectInput(session, "composition_bto_ring_position", selected = "left")
-            }
-            ## Because with BTO rings there is always a ring on each leg we set the bottom to ""
-            shiny::updateSelectInput(session, "composition_left_bottom", selected = "")
-            shiny::updateSelectInput(session, "composition_right_bottom", selected = "")
-        }
-        ## Now set rings for birds with just coloured tags
-        else if (rings$leg == "L") {
-            shiny::updateSelectInput(session, "composition_left_top", selected = rings$top)
-            shiny::updateSelectInput(session, "composition_left_bottom", selected = rings$bottom)
-            shiny::updateSelectInput(session, "composition_right_top", selected = "")
-            shiny::updateSelectInput(session, "composition_right_bottom", selected = "")
-        } else if (rings$leg == "R") {
-            shiny::updateSelectInput(session, "composition_left_top", selected = "")
-            shiny::updateSelectInput(session, "composition_left_bottom", selected = "")
-            shiny::updateSelectInput(session, "composition_right_top", selected = rings$top)
-            shiny::updateSelectInput(session, "composition_right_bottom", selected = rings$bottom)
-        } else {
-            shiny::updateSelectInput(session, "composition_left_top", selected = "")
-            shiny::updateSelectInput(session, "composition_left_bottom", selected = "")
-            shiny::updateSelectInput(session, "composition_right_top", selected = "")
-            shiny::updateSelectInput(session, "composition_right_bottom", selected = "")
-        }
+        update_all_rings(rings, session)
     })
     ## Update certainty boxes
     ring_composition_certain <- shiny::reactive({

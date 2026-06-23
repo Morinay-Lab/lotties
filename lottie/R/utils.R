@@ -186,6 +186,10 @@ remove_none_column <- function(df) {
 
 #' Extract rings
 #'
+#' See the document
+#' \href{https://docs.google.com/document/d/10JnL50Fm5DneEl9PgqYLbxUDLo6wcnaUbGvY6e3j8Oc/edit?tab=t.0}{Reading Colour
+#' Rings} for further details on the rules used in the coding system.
+#'
 #' @param code str The code from which rings and leg are to be extracted.
 #' @param valid_codes list List of valid codes, if `code` is not in `valid_codes` it is not extracted.
 #' @param known_rings list List of rings used.
@@ -196,49 +200,62 @@ extract_rings <- function(code, valid_codes, known_rings) {
     }
     code_length <- stringr::str_length(code)
     rings <- list()
+    rings$code <- code
     rings$leg <- stringr::str_sub(code, start = -1)
-    rings$bto <- FALSE
-
-    ## @ns-rse 2026-06-16 : Handle BTO rings first, felt it was simpler to follow the logic if done this way
+    rings$pit <- FALSE
+    ## BTO ring is always on the other leg to coloured rings...
+    if (rings$leg == "L") {
+        rings$bto <- "R"
+    } else {
+        rings$bto <- "L"
+    }
+    ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
+    ## the indicated leg.
+    if (stringr::str_sub(code, start = 1, end = 3) == "BTO") {
+        rings$bto <- stringr::str_sub(code, start = -1)
+        rings$leg <- stringr::str_sub(code, start = -1)
+        return(rings)
+    }
+    ## @ns-rse 2026-06-16 : Handle PIT rings first, felt it was simpler to follow the logic if done this way
     if (stringr::str_detect(code, "\\*")) {
-        rings$bto <- TRUE
-        ## If length is 3 then it is a BTO ring (first two characters) and a leg
+        rings$pit <- TRUE
+        ## If length is 3 then it is a PIT ring (first two characters) and a leg
         if (code_length == 3) {
-            rings$top <- stringr::str_sub(code, 1, 2)
-            rings$bottom <- ""
+            rings$first <- stringr::str_sub(code, 1, 2)
+            rings$second <- ""
         } else if (code_length == 4) {
-            ## If '*' is at the second position then BTO is top
+            ## If '*' is at the second position then PIT is first
             if (stringr::str_locate(code, "\\*")[1] == 2) {
-                rings$top <- stringr::str_sub(code, 1, 2)
-                rings$bottom <- stringr::str_sub(code, 3, 3)
-                rings$bto_pos <- "Top"
-            ## Otherwise BTO is bottom
+                rings$first <- stringr::str_sub(code, 1, 2)
+                rings$second <- stringr::str_sub(code, 3, 3)
+                rings$pit_pos <- "first"
+            ## Otherwise PIT is bottom
             } else {
-                rings$top <- stringr::str_sub(code, 1, 1)
-                rings$bottom <- stringr::str_sub(code, 2, 3)
-                rings$bto_pos <- "Bottom"
+                rings$first <- stringr::str_sub(code, 1, 1)
+                rings$second <- stringr::str_sub(code, 2, 3)
+                rings$pit_pos <- "second"
             }
         } else if (code_length == 5) {
-            rings$top <- stringr::str_sub(code, 1, 2)
-            rings$bottom <- stringr::str_sub(code, 3, 4)
-            ## If '*' is at the second position then BTO is top
+            rings$first <- stringr::str_sub(code, 1, 2)
+            rings$second <- stringr::str_sub(code, 3, 4)
+            ## If '*' is at the second position then PIT is top
             if (stringr::str_locate(code, "\\*")[1] == 2) {
-                rings$bto_pos <- "Top"
-            ## Otherwise BTO is bottom
+                rings$pit_pos <- "first"
+            ## Otherwise PIT is bottom
             } else {
-                rings$bto_pos <- "Bottom"
+                rings$pit_pos <- "second"
             }
         } else {
             print(paste0("WARNING : code is > 5 characters : ", code))
         }
     } else if (code_length == 3) {
         ## If length is 3 then all codes are single letters, we can therefore easily split the top and bottom rings out
-        rings$top <- stringr::str_sub(code, 1, 1)
-        rings$bottom <- stringr::str_sub(code, 2, 2)
+        rings$first <- stringr::str_sub(code, 1, 1)
+        rings$second <- stringr::str_sub(code, 2, 2)
     } else if (code_length == 5) {
         ## If length is 5 then all codes are two letter and we can easily split top and bottom
-        rings$top <- stringr::str_sub(code, 1, 2)
-        rings$bottom <- stringr::str_sub(code, 3, 4)
+        rings$first <- stringr::str_sub(code, 1, 2)
+        rings$second <- stringr::str_sub(code, 3, 4)
         ## If length is 4 then it is trickier, we do not know if it is the first or second ring that is 2 characters
     } else if (code_length == 4) {
         ## We check to see if the first two characters are in the subset of rings that are two characters in length, if so we
@@ -246,28 +263,147 @@ extract_rings <- function(code, valid_codes, known_rings) {
         known_rings2 <- known_rings[stringr::str_length(known_rings) == 2]
         if (code == "None") {
             rings$leg <- ""
-            rings$top <- ""
-            rings$bottom <- ""
+            rings$first <- ""
+            rings$second <- ""
         } else if (stringr::str_sub(code, 1, 2) %in% known_rings2) {
-            rings$top <- stringr::str_sub(code, 1, 2)
-            rings$bottom <- stringr::str_sub(code, 3, 3)
+            rings$first <- stringr::str_sub(code, 1, 2)
+            rings$second <- stringr::str_sub(code, 3, 3)
         ## If not then the first character is the top and the second and third are the bottom.
         } else {
-            rings$top <- stringr::str_sub(code, 1, 1)
-            rings$bottom <- stringr::str_sub(code, 2, 3)
+            rings$first <- stringr::str_sub(code, 1, 1)
+            rings$second <- stringr::str_sub(code, 2, 3)
         }
     }
     ## Check
     if (!(rings$leg %in% c("L", "R"))) {
         print(paste0("WARNING!!! Ring is neither L nor R : ", rings$leg))
     }
-    if (!(rings$top %in% valid_codes)) {
-        print(paste0("WARNING!!! Top ring is unknown : ", rings$top))
+    if (!(rings$first %in% valid_codes)) {
+        print(paste0("WARNING!!! Top ring is unknown : ", rings$first))
     }
-    if (!(rings$bottom %in% valid_codes)) {
-        print(paste0("WARNING!!! Bottom ring is unknown : ", rings$bottom))
+    if (!(rings$second %in% valid_codes)) {
+        print(paste0("WARNING!!! Bottom ring is unknown : ", rings$second))
     }
     rings
+}
+
+#' Update the selected value of a specific leg position.
+#'
+#' @param session Shiny session which is to be updated.
+#' @param tag str A string indicating the leg/position to be updated (one of `left_top`, `left_bottom`, `right_top`,
+#' `right_bottom`).
+#' @param selected str The value to update the given tag with.
+update_ring <- function(session, tag, selected) {
+    ## ns-rse 2026-06-23 - debugging
+    ## print(paste0("Setting : ", tag))
+    ## print(paste0("To : ", selected))
+    shiny::updateSelectInput(
+               session,
+               paste("composition",
+                     tag,
+                     sep = "_"),
+               selected = selected)
+}
+#' Update individual ring options based on global selection.
+#'
+#' Takes the selected rings that have been split using `extract_ring()` and updates the displayed ring for individual
+#' left/right top/left options.
+#'
+#' The logic handles PIT rings first, then BTO rings before handling any that are just coloured rings alone. BTO rings
+#' are always present but are rarely explicitly stated.
+#'
+#' @param rings list A named list of ring attributes, returned by `extract_ring()`.
+#' @param session A shiny session which is to be updated.
+update_all_rings <- function(rings, session) {        ## We again deal with PIT ring logic separately
+    if (rings$pit == TRUE) {
+        ## ns-rse 2026-06-23 - Debugging
+        ## print("PIT RING!")
+        ## Coloured ring is on Left leg...
+        if (rings$leg == "L") {
+            ## ns-rse 2026-06-23 - Debugging
+            ## print("LEFT")
+            ## But we need to pull the ring from the correct top/bottom which is conditional on whether the PIT ring
+            ## was listed first, this has been stored in the rings$pit_pos
+            if (rings$pit_pos == "first") {
+                ## ns-rse 2026-06-23 - Debugging
+                ## print("PIT first")
+                update_ring(session, tag = "left_top", selected = rings$first)
+                update_ring(session, tag = "left_bottom", selected = "")
+                update_ring(session, tag = "right_top", selected = "BTO")
+                update_ring(session, tag = "right_bottom", selected = rings$second)
+            } else {
+                ## ns-rse 2026-06-23 - Debugging
+                ## print("PIT second")
+                update_ring(session, tag = "left_top", selected = rings$second)
+                update_ring(session, tag = "left_bottom", selected = "")
+                update_ring(session, tag = "right_top", selected = rings$first)
+                update_ring(session, tag = "right_bottom", selected = "BTO")
+            }
+            ## Coloured ring is on the Right leg...
+        } else {
+            ## ns-rse 2026-06-23 - Debugging
+            ## print("RIGHT")
+            if (rings$pit_pos == "first") {
+                ## ns-rse 2026-06-23 - Debugging
+                ## print("PIT first")
+                update_ring(session, tag = "left_top", selected = "BTO")
+                update_ring(session, tag = "left_bottom", selected = rings$second)
+                update_ring(session, tag = "right_top", selected = rings$first)
+                update_ring(session, tag = "right_bottom", selected = "")
+            } else {
+                ## ns-rse 2026-06-23 - Debugging
+                ## print("PIT second")
+                update_ring(session, tag = "left_top", selected = rings$first)
+                update_ring(session, tag = "left_bottom", selected = "BTO")
+                update_ring(session, tag = "right_top", selected = rings$second)
+                update_ring(session, tag = "right_bottom", selected = "")
+            }
+        }
+    }
+    ## Now set rings for birds with just BTO
+    else if( stringr::str_sub(rings$code, 1, 3) == "BTO") {
+        ## ns-rse 2026-06-23 - Debugging
+        ## print("JUST BTO")
+        if (rings$bto == "L") {
+            ## ns-rse 2026-06-23 - Debugging
+            ## print("LEFT")
+            update_ring(session, tag = "left_top", selected = "BTO")
+            update_ring(session, tag = "right_top", selected = "")
+        } else {
+            ## ns-rse 2026-06-23 - Debugging
+            ## print("RIGHT")
+            update_ring(session, tag = "left_top", selected = "")
+            update_ring(session, tag = "right_top", selected = "BTO")
+        }
+        update_ring(session, tag = "left_bottom", selected = "")
+        update_ring(session, tag = "right_bottom", selected = "")
+    }
+    ## Finally set rings for birds with just colour (no PIT but BTO on opposite leg)
+    else if (rings$leg == "L") {
+        ## ns-rse 2026-06-23 - Debugging
+        ## print("NO PIT, JUST COLOUR")
+        ## print("LEFT")
+        update_ring(session, tag = "left_top", selected = rings$first)
+        update_ring(session, tag = "left_bottom", selected = rings$second)
+        update_ring(session, tag = "right_top", selected = "BTO")
+        update_ring(session, tag = "right_bottom", selected = "")
+    } else if (rings$leg == "R") {
+        ## ns-rse 2026-06-23 - Debugging
+        ## print("NO PIT, JUST COLOUR")
+        ## print("RIGHT")
+        update_ring(session, tag = "left_top", selected = "BTO")
+        update_ring(session, tag = "left_bottom", selected = "")
+        update_ring(session, tag = "right_top", selected = rings$first)
+        update_ring(session, tag = "right_bottom", selected = rings$second)
+    } else if(rings$code == "None"){
+        ## ns-rse 2026-06-23 - Debugging
+        ## print("NO RINGS")
+        update_ring(session, tag = "left_top", selected = "")
+        update_ring(session, tag = "left_bottom", selected = "")
+        update_ring(session, tag = "right_top", selected = "")
+        update_ring(session, tag = "right_bottom", selected = "")
+    }
+    update_ring(session, tag = "bto_ring_position", selected = rings$bto)
 }
 
 #' Update individual ring certainty based on overall certainty

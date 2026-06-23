@@ -40,7 +40,9 @@ other_species_df <- data.frame(
 )
 
 rings_df <- data.frame(
-    code = c("None",
+    code = c(
+        "None",
+        "BTO",
         "B",
         "D",
         "F",
@@ -88,6 +90,7 @@ rings_df <- data.frame(
         "Y*"),
     description = c(
         NA,
+        "BTO",
         "Light blue (B)",
         "Dark blue (D)",
         "Flamingo (/Old light pink) (F)",

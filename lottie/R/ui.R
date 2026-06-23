@@ -52,10 +52,10 @@ colour_ring_inputs <- function(position, selected, ...) {
 ## colour_ring_inputs <- function(position, ...) {
   pos_vars <- switch(
     position,
-    lt = list(title = "Left Leg Top Ring", tag = "left_top"),
-    lb = list(title = "Left Leg Bottom Ring", tag = "left_bottom"),
-    rt = list(title = "Right Leg Top Ring", tag = "right_top"),
-    rb = list(title = "Right Leg Bottom Ring", tag = "right_bottom")
+    lt = list(title = "Top Ring", tag = "left_top"),
+    lb = list(title = "Bottom Ring", tag = "left_bottom"),
+    rt = list(title = "Top Ring", tag = "right_top"),
+    rb = list(title = "Bottom Ring", tag = "right_bottom")
   )
   list(
     shiny::selectInput(
@@ -123,6 +123,12 @@ individual_inputs <- list(
     step = 1
   ),
   shiny::h4("Rings..."),
+  shiny::helpText(
+      "For details on reading rings see the document",
+      tags$a(
+          href="https://docs.google.com/document/d/10JnL50Fm5DneEl9PgqYLbxUDLo6wcnaUbGvY6e3j8Oc/edit?tab=t.0",
+          "Reading Colour Rings"),
+      "."),
   shiny::selectInput(
     "composition_ringed",
     label = "Ringed : ",
@@ -155,7 +161,7 @@ individual_inputs <- list(
   shiny::selectInput("composition_bto_ring_position",
                      label = "BTO Ring Position : ",
                      selected = "None",
-                     choices = c("None" = NA, "Left" = "left", "Right" = "right")),
+                     choices = c("None" = NA, "Left" = "L", "Right" = "R")),
   shiny::textInput("composition_notes",
                    label = "Notes : ",
                    value = "",
