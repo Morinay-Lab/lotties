@@ -232,21 +232,39 @@ server <- function(input, output, session) {
         ## Extract filename
         filename <- paste0(
             xml2::xml_find_first(gpx_data, ".//d1:trk/d1:name", gpx_namespace) |> xml2::xml_text(),
-            ".gpx")
+            ".gpx"
+        )
         ## Build dataframe
         gps_df <- data.frame(
             time = as.character(time),
             lat = lat,
             lon = lon,
             ele = ele,
-            filename = rep(filename, length(lat)))
+            filename = rep(filename, length(lat))
+        )
+        ## Update the date/time fields with those from GPX file, these may not be exact but are closer than using the
+        ## current date/time
+        start_date_time= min(gps_df$time)
+        end_date_time= max(gps_df$time)
+        update_date(date=start_date_time, tag="conditions_date", session)
+        update_time(date=start_date_time, tag="conditions_start_time", session)
+        update_time(date=end_date_time, tag="conditions_end_time", session)
+        update_date(date=start_date_time, tag="composition_date", session)
+        update_time(date=start_date_time, tag="composition_time", session)
+        update_date(date=start_date_time, tag="description_date", session)
+        update_time(date=start_date_time, tag="description_start_time", session)
+        update_time(date=end_date_time, tag="description_end_time", session)
+        update_date(date=start_date_time, tag="interactions_date", session)
+        update_time(date=start_date_time, tag="interactions_time", session)
+
         ## Add to database
         RSQLite::dbWriteTable(
             conn = con,
             name = "GPS",
             gps_df,
             overwrite = FALSE,
-            append = TRUE)
+            append = TRUE
+        )
         ## @ns-rse 2026-06-02 Debugging...
         ## print("WHAT HAVE WE GOT IN THE DATABASE GPS TABLE?")
         ## query <- "SELECT * FROM GPS"
@@ -280,6 +298,7 @@ server <- function(input, output, session) {
             gps_summary
         },
         striped = TRUE)
+    ## Flock Composition
     ## Extract ring colours from selection so they can be used to populate the `selectInput(..., choices=)` of the
     ## `colour_ring_inputs()` function (see https://stackoverflow.com/a/21467399/1444043) second solution using
     ## shiny::updateSelectInput()
@@ -308,7 +327,6 @@ server <- function(input, output, session) {
         update_certainty(ring_certainty, tag = "right_top", session)
         update_certainty(ring_certainty, tag = "right_bottom", session)
     })
-    ## Flock Composition
     ## Build a data frame of birds within a flock when the "Submit bird description" button is clicked
     composition_data <- shiny::reactiveVal(data.frame(
             date = character(),
