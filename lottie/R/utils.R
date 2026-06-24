@@ -421,4 +421,22 @@ update_certainty <- function(ring_certainty, tag, session) {
                value = ring_certainty)
 }
 
+#' Update a `shiny::dateInput()` field.
+#'
+#' @param date Date/time to update with.
+#' @param tag str The `inputID` of the element to be updated.
+#' @param session Shiny session to update from.
+update_date <- function(date, tag, session) {
+    shiny::updateDateInput(session=session, tag, value=date)
+}
+
+#' Update a `shinyTime::timeInput()` field.
+#'
+#' @param date Date/time to update with.
+#' @param tag str The `inputID` of the element to be updated.
+#' @param session Shiny session to update from.
+update_time <- function(date, tag, session) {
+    shinyTime::updateTimeInput(session=session, tag, value=date)
+}
+
 ## End of file
