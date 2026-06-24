@@ -93,6 +93,7 @@ gps_inputs <- list(
     "Upload a GPX file corresponding to the observations you will be entering under the Flock Composition,
     Description and Interactions tab."
   ),
+  shiny::br(),
   shiny::fileInput(
     "gpx",
     "Choose GPX File",
@@ -113,48 +114,66 @@ gps_card <- display_section(
 
 ## Individual flock member card
 individual_inputs <- list(
-  shiny::dateInput(
-    "composition_date",
-    label = "Date : ",
-    format = "yyyy-mm-dd"
-  ),
-  shinyTime::timeInput(
-    "composition_time",
-    "Time : ",
-    seconds = FALSE,
-    value = Sys.time()
+  bslib::layout_column_wrap(
+    shiny::dateInput(
+      "composition_date",
+      label = "Date : ",
+      format = "yyyy-mm-dd"
+    ),
+    shiny::div(
+      class = "shiny-input-container bslib-gap-spacing",
+      shinyTime::timeInput(
+        "composition_time",
+        "Time : ",
+        seconds = FALSE,
+        value = Sys.time()
+      )
+    )
   ),
   shiny::numericInput(
     "composition_flock_number",
-    label = "Flock number",
+    label = "Flock Number : ",
     min = 1,
     max = 60,
     value = 1,
     step = 1
   ),
-  shiny::h4("Rings..."),
+  bslib::card_title("Rings"),
   shiny::helpText(
       "For details on reading rings see the document",
       tags$a(
           href="https://docs.google.com/document/d/10JnL50Fm5DneEl9PgqYLbxUDLo6wcnaUbGvY6e3j8Oc/edit?tab=t.0",
           "Reading Colour Rings"),
       "."),
-  shiny::selectInput(
-    "composition_ringed",
-    label = "Ringed : ",
-    selected = "Yes",
-    choices = c("Yes" = "yes", "No" = "no")
-  ),
-  shiny::selectInput(
-    "composition_colour_ring",
-    label = "Colour Ring : ",
-    selected = "None",
-    choices = colour_ring_df$code
-  ),
-  shiny::checkboxInput(
-    "composition_certain",
-    label = "Certain? ",
-    value = FALSE
+  shiny::br(),
+  bslib::layout_column_wrap(
+    list(
+      shiny::selectInput(
+        "composition_ringed",
+        label = "Ringed : ",
+        selected = "Yes",
+        choices = c("Yes" = "yes", "No" = "no")
+      ),
+      shiny::selectInput(
+        "composition_bto_ring_position",
+        label = "BTO Ring Position : ",
+        selected = "None",
+        choices = c("None" = NA, "Left" = "L", "Right" = "R")
+      )
+    ),
+    list(
+      shiny::selectInput(
+        "composition_colour_ring",
+        label = "Colour Ring : ",
+        selected = "None",
+        choices = colour_ring_df$code
+      ),
+      shiny::checkboxInput(
+        "composition_certain",
+        label = "Certain? ",
+        value = FALSE
+      )
+    )
   ),
   bslib::layout_column_wrap(
     simple_card("Left Leg...",
@@ -167,11 +186,6 @@ individual_inputs <- list(
                 ),
     fill = FALSE
   ),
-  shiny::h4("Other..."),
-  shiny::selectInput("composition_bto_ring_position",
-                     label = "BTO Ring Position : ",
-                     selected = "None",
-                     choices = c("None" = NA, "Left" = "L", "Right" = "R")),
   shiny::textInput("composition_notes",
                    label = "Notes : ",
                    value = "",
@@ -188,52 +202,73 @@ individual_card <- display_section(
 
 ## Flock description card
 flock_inputs <- list(
-  shiny::h4("First seen..."),
   shiny::dateInput("description_date",
                    label = "Date : ",
                    format = "yyyy-mm-dd"
   ),
-  shinyTime::timeInput("description_start_time",
-                       label = "Time : ",
-                       seconds = FALSE,
-                       value = Sys.time()
+  bslib::layout_column_wrap(
+    shiny::div(
+      class = "shiny-input-container bslib-gap-spacing",
+      shinyTime::timeInput("description_start_time",
+                           label = "Time First Seen : ",
+                           seconds = FALSE,
+                           value = Sys.time()
+      )
+    ),
+    shiny::div(
+      class = "shiny-input-container bslib-gap-spacing",
+      shinyTime::timeInput("description_end_time",
+                           label = "Time Lost / Left : ",
+                           seconds = FALSE,
+                           value = Sys.time()
+      )
+    )
   ),
-  shinyTime::timeInput("description_end_time",
-                       label = "Time : ",
-                       seconds = FALSE,
-                       value = Sys.time()
+  bslib::layout_column_wrap(
+    shiny::numericInput(
+      "description_flock_number",
+      label = "Flock Number : ",
+      min = 1,
+      max = 60,
+      value = 1,
+      step = 1
+    ),
+    shiny::selectInput(
+      "description_flock_type",
+      label =  "Flock Type : ",
+      selected = NULL,
+      choices = c("Flock" = "flock",
+                  "Pair" = "pair",
+                  "Individual" = "individual")
+    )
   ),
-  shiny::h4("Flock features..."),
-  shiny::selectInput("description_flock_type",
-                     width = "60%",
-                     label =  "Flock type : ",
-                     selected = NULL,
-                     choices = c("In flock" = "flock",
-                                 "Pair" = "pair",
-                                 "Individual" = "individual")),
-  shiny::numericInput("description_flock_number",
-                      label = "Flock number",
-                      min = 1,
-                      max = 60,
-                      value = 1,
-                      step = 1),
-  shiny::checkboxInput("description_whole_flock",
-                       label = "Whole flock identified?"),
-  shiny::checkboxInput("description_mist_net",
-                       label = "Flock captured in mist net?",
-                       value = FALSE),
-  shiny::numericInput("description_n_flock",
-                      label = "Flock Size : ",
-                      min = 0,
-                      max = 60,
-                      value = 12,
-                      step = 1),
-  shiny::numericInput("description_n_ringed",
-                      label = "Ringed Birds : ",
-                      min = 0,
-                      max = 60,
-                      value = 12,
-                      step = 1),
+  shiny::checkboxInput(
+    "description_whole_flock",
+    label = "Whole flock identified?"
+  ),
+  shiny::checkboxInput(
+    "description_mist_net",
+    label = "Flock captured in mist net?",
+    value = FALSE
+  ),
+  bslib::layout_column_wrap(
+    shiny::numericInput(
+      "description_n_flock",
+      label = "Flock Size : ",
+      min = 0,
+      max = 60,
+      value = 12,
+      step = 1
+    ),
+    shiny::numericInput(
+      "description_n_ringed",
+      label = "Number of Ringed Birds : ",
+      min = 0,
+      max = 60,
+      value = 12,
+      step = 1
+    )
+  ),
   shiny::checkboxGroupInput("description_other_species",
                             label = "Other Species : ",
                             selected = "none",
@@ -259,25 +294,40 @@ flock_card <- display_section(
 
 ## Flock interaction card
 interaction_inputs <- list(
-  shiny::dateInput("interactions_date",
-                   label = "Date : ",
-                   format = "yyyy-mm-dd"),
-  shinyTime::timeInput("interactions_time",
-                       label = "Time : ",
-                       seconds = FALSE,
-                       value = Sys.time()),
-  shiny::numericInput("interactions_flock_a",
-                      label = "Flock A (numeric ID) : ",
-                      min = 0,
-                      max = 300,
-                      value = 0,
-                      step = 1),
-  shiny::numericInput("interactions_flock_b",
-                      label = "Flock B (numeric ID) : ",
-                      min = 0,
-                      max = 300,
-                      value = 0,
-                      step = 1),
+  bslib::layout_column_wrap(
+    shiny::dateInput(
+      "interactions_date",
+      label = "Date : ",
+      format = "yyyy-mm-dd"
+    ),
+    shiny::div(
+      class = "shiny-input-container bslib-gap-spacing",
+      shinyTime::timeInput(
+        "interactions_time",
+        label = "Time : ",
+        seconds = FALSE,
+        value = Sys.time()
+      )
+    )
+  ),
+  bslib::layout_column_wrap(
+    shiny::numericInput(
+      "interactions_flock_a",
+      label = "Flock A (numeric ID) : ",
+      min = 0,
+      max = 300,
+      value = 0,
+      step = 1
+    ),
+    shiny::numericInput(
+      "interactions_flock_b",
+      label = "Flock B (numeric ID) : ",
+      min = 0,
+      max = 300,
+      value = 0,
+      step = 1
+    )
+  ),
   shiny::selectInput("interactions_type",
                      label = "Type of Interaction : ",
                      choices = split(interactions_df$code,
@@ -346,24 +396,43 @@ conditions_inputs <- list(
   shiny::dateInput("conditions_date",
                    "Date : ",
                    format = "yyyy-mm-dd"),
-  shinyTime::timeInput("conditions_start_time",
-                       label = "Start Time : ",
-                       seconds = FALSE,
-                       value = Sys.time()),
-  shinyTime::timeInput("conditions_end_time",
-                       label = "End Time : ",
-                       seconds = FALSE,
-                       value = Sys.time()),
-  shiny::checkboxGroupInput("conditions_weather",
-                            label="Weather : ",
-                            selected = "sunny",
-                            choices = split(conditions_df$code,
-                                            conditions_df$description)),
-  shiny::selectInput("conditions_visibility",
-                     label = "Visibility : ",
-                     choices = split(visibility_df$code,
-                                     visibility_df$description)),
-  shiny::actionButton("submit_conditions", label = "Submit")        ## Record user
+  bslib::layout_column_wrap(
+    shiny::div(
+      class = "shiny-input-container bslib-gap-spacing",
+      shinyTime::timeInput(
+        "conditions_start_time",
+        label = "Start Time : ",
+        seconds = FALSE,
+        value = Sys.time()
+      )
+    ),
+    shiny::div(
+      class = "shiny-input-container bslib-gap-spacing",
+      shinyTime::timeInput(
+        "conditions_end_time",
+        label = "End Time : ",
+        seconds = FALSE,
+        value = Sys.time()
+      )
+    )
+  ),
+  bslib::layout_column_wrap(
+    shiny::checkboxGroupInput(
+      "conditions_weather",
+      label="Weather : ",
+      selected = "sunny",
+      choices = split(conditions_df$code,
+                      conditions_df$description)
+    ),
+    shiny::selectInput(
+      "conditions_visibility",
+      label = "Visibility : ",
+      choices = split(visibility_df$code,
+                      visibility_df$description)
+    )
+  ),
+  shiny::actionButton("submit_conditions", label = "Submit metadata")
+  ## Record user
   ## shiny::selectInput("user",
   ##                    label = "User",
   ##                    choices = split(person_df$code,
@@ -371,17 +440,18 @@ conditions_inputs <- list(
 )
 
 sidebar_accordion <- bslib::sidebar(
-  title = "Flock observation data...",
   width = "33%",
+  shiny::helpText("Enter your flock observation data here. Data will be displayed in the Observations tab as you add it.",
+                  "When you have finished adding all of your data you can submit your observations to the database."),
   bslib::accordion(
     multiple = FALSE,
     bslib::accordion_panel(
-      "Observation metadata", icon = bsicons::bs_icon("sliders"),
-      !!!conditions_inputs
+      "GPS data", icon = bsicons::bs_icon("geo-alt"),
+      !!!gps_inputs
     ),
     bslib::accordion_panel(
-      "GPS data", icon = bsicons::bs_icon("sliders"),
-      !!!gps_inputs
+      "Observation metadata", icon = bsicons::bs_icon("sun"),
+      !!!conditions_inputs
     ),
     bslib::accordion_panel(
       "Flock data", icon = bsicons::bs_icon("sliders"),
