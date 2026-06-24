@@ -146,7 +146,7 @@ server <- function(input, output, session) {
                 values_fill = FALSE
             )
         ## Add potentially missing columns
-        conditions_wide <- add_missing_columns(
+        conditions_wide <- tidy_columns(
             df = conditions_wide,
             expected_cols = as.list(conditions_df$code)
         )
@@ -161,7 +161,14 @@ server <- function(input, output, session) {
         ## print("WHAT HAVE WE GOT IN THE DATABASE Conditions TABLE?")
         ## query <- "SELECT * FROM Conditions"
         ## print(RSQLite::dbGetQuery(conn = con, query))
+        unique(conditions_wide)
     })
+    output$conditions <- shiny::renderTable(
+        {
+            conditions_data()
+        },
+        striped = TRUE
+    )
     ## GPS - Extract data and summarise
     gps_data <- shiny::observeEvent(input$gpx, {
         ## Load GPX data from input$gpx ($datapath is the path to the temporary file that has been uploaded)
@@ -201,18 +208,18 @@ server <- function(input, output, session) {
         )
         ## Update the date/time fields with those from GPX file, these may not be exact but are closer than using the
         ## current date/time
-        start_date_time= min(gps_df$time)
-        end_date_time= max(gps_df$time)
-        update_date(date=start_date_time, tag="conditions_date", session)
-        update_time(date=start_date_time, tag="conditions_start_time", session)
-        update_time(date=end_date_time, tag="conditions_end_time", session)
-        update_date(date=start_date_time, tag="composition_date", session)
-        update_time(date=start_date_time, tag="composition_time", session)
-        update_date(date=start_date_time, tag="description_date", session)
-        update_time(date=start_date_time, tag="description_start_time", session)
-        update_time(date=end_date_time, tag="description_end_time", session)
-        update_date(date=start_date_time, tag="interactions_date", session)
-        update_time(date=start_date_time, tag="interactions_time", session)
+        start_date_time = min(gps_df$time)
+        end_date_time = max(gps_df$time)
+        update_date(date = start_date_time, tag = "conditions_date", session)
+        update_time(date = start_date_time, tag = "conditions_start_time", session)
+        update_time(date = end_date_time, tag = "conditions_end_time", session)
+        update_date(date = start_date_time, tag = "composition_date", session)
+        update_time(date = start_date_time, tag = "composition_time", session)
+        update_date(date = start_date_time, tag = "description_date", session)
+        update_time(date = start_date_time, tag = "description_start_time", session)
+        update_time(date = end_date_time, tag = "description_end_time", session)
+        update_date(date = start_date_time, tag = "interactions_date", session)
+        update_time(date = start_date_time, tag = "interactions_time", session)
 
         ## Add to database
         RSQLite::dbWriteTable(
@@ -325,17 +332,6 @@ server <- function(input, output, session) {
             stringsAsFactors = FALSE
         ))
         composition_data(composition_to_add)
-        ## @ns-rse 2026-06-22 this shouldn't be here we only submit data on input$submit_composition
-        ## RSQLite::dbWriteTable(
-        ##     conn = con,
-        ##     name = "Composition",
-        ##     unique(composition_data()),
-        ##     overwrite = FALSE,
-        ##     append = TRUE)
-        ## @ns-rse 2026-06-02 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Composition TABLE?")
-        ## query <- "SELECT * FROM Composition"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
     })
     ## The composition table is returned and rendered on the page
     output$composition <- shiny::renderTable(
@@ -421,7 +417,7 @@ server <- function(input, output, session) {
                 values_from = present,
                 values_fill = FALSE)
         ## Add potentially missing columns
-        to_add <- tidy_other_species_columns(df = to_add, expected_cols = as.list(other_species_df$code))
+        to_add <- tidy_columns(df = to_add, expected_cols = as.list(other_species_df$code))
         description_to_add <- rbind(description_data(),
                                     to_add)
         description_data(description_to_add)

@@ -163,7 +163,7 @@ clean_flock_description <- function(df, person) {
 #' @param df data.frame Data frame to be augmented.
 #' @param expected_cols list[str] List of columns that the data frame should hold.
 #'
-tidy_other_species_columns <- function(df, expected_cols) {
+tidy_columns <- function(df, expected_cols) {
     for (missing_col in expected_cols) {
         if (!(missing_col %in% colnames(df))) {
             df[[missing_col]] <- FALSE
