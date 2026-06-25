@@ -334,7 +334,7 @@ interaction_inputs <- list(
       step = 1
     )
   ),
-  shiny::selectInput("interactions_type",
+  shiny::checkboxGroupInput("interactions_type",
                      label = "Type of Interaction : ",
                      choices = split(interactions_df$code,
                                      interactions_df$description)),

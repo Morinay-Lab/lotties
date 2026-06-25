@@ -169,8 +169,8 @@ visibility_df <- data.frame(
 
 ## Interactions
 interactions_df <- data.frame(
-    code = c("foraging together", "a chasing b", "b chasing a", "being close but not interacting",
-             "other - see comments"),
+    code = c("foraging_together", "a_chasing_b", "b_chasing_a", "close_but_not_interacting",
+             "other"),
     description = c("Foraging together", "A chasing B", "B chasing A", "Near but not interacting", "Other (see notes)")
 )
 
