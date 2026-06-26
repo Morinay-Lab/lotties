@@ -73,7 +73,7 @@ colour_ring_inputs <- function(position, selected, ...) {
 
 #' Display section
 #'
-#' Shows a table of data that has been entered but not submitted to the database.
+#' Create a UI display section from the passed in objects.
 #'
 #' @param header Card header
 #' @param ... Card contents

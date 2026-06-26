@@ -72,11 +72,11 @@ if (testing) {
             "end_time" = character(),
             "weather" = character(),
             "visibility" = character(),
-            "cloudy/ grey" = logical(),
+            "cloudy_grey" = logical(),
             "foggy" = logical(),
-            "light rain" = logical(),
-            "partly cloudy" = logical(),
-            "really rainy" = logical(),
+            "light_rain" = logical(),
+            "partly_cloudy" = logical(),
+            "really_rainy" = logical(),
             "sunny" = logical(),
             "windy" = logical(),
             stringsAsFactors = FALSE,
@@ -121,39 +121,41 @@ server <- function(input, output, session) {
         date = character(),
         start_time = character(),
         end_time = character(),
-        weather = character(),
+        sunny = character(),
+        partly_cloudy = character(),
+        cloudy_grey = character(),
+        foggy = character(),
+        windy = character(),
+        light_rain = character(),
+        really_rain = character(),
         visibility = character(),
         stringsAsFactors = FALSE
     ))
     shiny::observeEvent(input$submit_conditions, {
-        conditions_to_add <- rbind(conditions_data(), data.frame(
+        ## ns-rse - Reshape the data to wide as weather column can have multiple values and these expand to long format
+        ## data
+        to_add <- data.frame(
             user = input$user,
             date = as.character(input$conditions_date),
             start_time = as.character(input$conditions_start_time),
             end_time = as.character(input$conditions_end_time),
             weather = input$conditions_weather,
             visibility = input$conditions_visibility,
-            stringsAsFactors = FALSE
-        ))
-        conditions_data(conditions_to_add)
-        ## ns-rse - Reshape the data to wide as weather column can have multiple values and these expand to long format
-        ## data
-        conditions_wide <- conditions_data() |>
-            dplyr::mutate(present = TRUE) |>
+            stringsAsFactors = FALSE) |>
+        dplyr::mutate(present = TRUE) |>
             tidyr::pivot_wider(
                 names_from = weather,
                 values_from = present,
-                values_fill = FALSE
-            )
-        ## Add potentially missing columns
-        conditions_wide <- tidy_columns(
-            df = conditions_wide,
-            expected_cols = as.list(conditions_df$code)
-        )
+                values_fill = FALSE)
+        print(to_add)
+        to_add <- tidy_columns(df = to_add, expected_cols = as.list(conditions_df$code))
+        print(to_add)
+        conditions_to_add <- rbind(conditions_data(),  to_add)
+        conditions_data(conditions_to_add)
         RSQLite::dbWriteTable(
             conn = con,
             name = "Conditions",
-            unique(conditions_wide),
+            unique(conditions_to_add),
             overwrite = FALSE,
             append = TRUE
         )
@@ -161,7 +163,6 @@ server <- function(input, output, session) {
         ## print("WHAT HAVE WE GOT IN THE DATABASE Conditions TABLE?")
         ## query <- "SELECT * FROM Conditions"
         ## print(RSQLite::dbGetQuery(conn = con, query))
-        unique(conditions_wide)
     })
     output$conditions <- shiny::renderTable(
         {
