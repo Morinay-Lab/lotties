@@ -163,7 +163,7 @@ clean_flock_description <- function(df, person) {
 #' @param df data.frame Data frame to be augmented.
 #' @param expected_cols list[str] List of columns that the data frame should hold.
 #'
-tidy_other_species_columns <- function(df, expected_cols) {
+tidy_columns <- function(df, expected_cols) {
     for (missing_col in expected_cols) {
         if (!(missing_col %in% colnames(df))) {
             df[[missing_col]] <- FALSE
@@ -437,6 +437,51 @@ update_date <- function(date, tag, session) {
 #' @param session Shiny session to update from.
 update_time <- function(date, tag, session) {
     shinyTime::updateTimeInput(session=session, tag, value=date)
+}
+
+
+#' Save data to SQLite database
+#'
+#' This generic function can be used to populate lookup tables when testing the database in memory or more generally
+#' when running the database to add data that has been entered.
+#'
+#' @param data dataframe Dataframe of data to be added to a table in the database.
+#' @param db_path str Path to database.
+#' @param table str Table to add data to.
+#' @param append bool Whether to append the data.
+save_data <- function(data, db_path = db_path, table, append = TRUE, overwrite = FALSE) {
+    conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
+    ## query <- sprintf("INSERT INTO %s (%s) VALUES ('%s')")
+    ## paste(names(data), collapse = ",")
+    ## paste(data, collapse = "','")
+    RSQLite::dbWriteTable(conn = conn, name = table, value = data, overwrite = overwrite)
+    DBI::dbDisconnect()
+}
+
+#' Extract and compress data from database to zip file.
+#'
+#' @param zip_file str Zip filename.
+#' @param conn Database connection
+#' @param input List of tables to extract
+extract_and_compress_data <- function(zip_file, conn, input) {
+    ## Loop over selected tables
+    csv_files <- list()
+    for (table in input$download_raw_data_selection) {
+        ## Select all from given table
+        query <- paste0("SELECT * FROM ", table)
+        df <- RSQLite::dbGetQuery(conn = conn, query = query)
+        ## Lowercase table name and add .csv
+        file_name <- paste0(tolower(table), ".csv")
+        ## Write CSV file
+        write.csv(df, file_name, row.names = FALSE)
+        ## Add filename to list for zipping
+        csv_files[[tolower(table)]] <- file_name
+    }
+    zip::zip(
+        zipfile = zip_file,
+        files = unlist(csv_files)
+    )
+    ## TODO : Remove CSV files from system
 }
 
 ## End of file

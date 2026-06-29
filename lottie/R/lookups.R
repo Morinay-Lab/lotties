@@ -157,7 +157,7 @@ section_df <- data.frame(
 
 ## Conditions
 conditions_df <- data.frame(
-    code = c("sunny", "partly cloudy", "cloudy/ grey", "foggy", "windy", "light rain", "really rainy"),
+    code = c("sunny", "partly_cloudy", "cloudy_grey", "foggy", "windy", "light_rain", "really_rainy"),
     description = c("Sunny", "Partly cloudy", "Cloudy/ grey", "Foggy", "Windy", "Light rain", "Really rainy")
 )
 

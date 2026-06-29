@@ -73,6 +73,8 @@ colour_ring_inputs <- function(position, selected, ...) {
 
 #' Display section
 #'
+#' Create a UI display section from the passed in objects.
+#'
 #' @param header Card header
 #' @param ... Card contents
 #'
@@ -108,10 +110,14 @@ gps_inputs <- list(
 gps_card <- display_section(
   header = "GPS Data",
   shiny::p("Uploaded GPS file :"),
-  ## @ns-rse 2026-06-02 : Show the filename of an uploaded file here
   shiny::tableOutput("gps_file_table")
 )
 
+## Observation metadata card
+conditions_card <- display_section(
+    header = "Observation Metadata",
+    shiny::tableOutput("conditions")
+)
 ## Individual flock member card
 individual_inputs <- list(
   bslib::layout_column_wrap(
@@ -497,6 +503,7 @@ ui <- bslib::page_sidebar(
       bslib::nav_panel(
         "Observations",
         gps_card,
+        conditions_card,
         flock_card,
         individual_card,
         interaction_card

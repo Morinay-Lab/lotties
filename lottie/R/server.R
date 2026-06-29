@@ -24,49 +24,6 @@ if (testing) {
 con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
 
 
-#' Save data to SQLite database
-#'
-#' This generic function can be used to populate lookup tables when testing the database in memory or more generally
-#' when running the database to add data that has been entered.
-#'
-#' @param data dataframe Dataframe of data to be added to a table in the database.
-#' @param db_path str Path to database.
-#' @param table str Table to add data to.
-#' @param append bool Whether to append the data.
-save_data <- function(data, db_path = db_path, table, append = TRUE, overwrite = FALSE) {
-    conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
-    ## query <- sprintf("INSERT INTO %s (%s) VALUES ('%s')")
-    ## paste(names(data), collapse = ",")
-    ## paste(data, collapse = "','")
-    RSQLite::dbWriteTable(conn = conn, name = table, value = data, overwrite = overwrite)
-    DBI::dbDisconnect()
-}
-
-#' Extract and compress data from database to zip file.
-#'
-#' @param zip_file str Zip filename.
-#' @param conn Database connection
-#' @param input List of tables to extract
-extract_and_compress_data <- function(zip_file, conn, input) {
-    ## Loop over selected tables
-    csv_files <- list()
-    for (table in input$download_raw_data_selection) {
-        ## Select all from given table
-        query <- paste0("SELECT * FROM ", table)
-        df <- RSQLite::dbGetQuery(conn = conn, query = query)
-        ## Lowercase table name and add .csv
-        file_name <- paste0(tolower(table), ".csv")
-        ## Write CSV file
-        write.csv(df, file_name, row.names = FALSE)
-        ## Add filename to list for zipping
-        csv_files[[tolower(table)]] <- file_name
-    }
-    zip::zip(
-        zipfile = zip_file,
-        files = unlist(csv_files)
-    )
-    ## TODO : Remove CSV files from system
-}
 
 ## Load lookup dataframes and populate database if testing
 if (testing) {
@@ -115,11 +72,11 @@ if (testing) {
             "end_time" = character(),
             "weather" = character(),
             "visibility" = character(),
-            "cloudy/ grey" = logical(),
+            "cloudy_grey" = logical(),
             "foggy" = logical(),
-            "light rain" = logical(),
-            "partly cloudy" = logical(),
-            "really rainy" = logical(),
+            "light_rain" = logical(),
+            "partly_cloudy" = logical(),
+            "really_rainy" = logical(),
             "sunny" = logical(),
             "windy" = logical(),
             stringsAsFactors = FALSE,
@@ -164,39 +121,41 @@ server <- function(input, output, session) {
         date = character(),
         start_time = character(),
         end_time = character(),
-        weather = character(),
+        sunny = character(),
+        partly_cloudy = character(),
+        cloudy_grey = character(),
+        foggy = character(),
+        windy = character(),
+        light_rain = character(),
+        really_rain = character(),
         visibility = character(),
         stringsAsFactors = FALSE
     ))
     shiny::observeEvent(input$submit_conditions, {
-        conditions_to_add <- rbind(conditions_data(), data.frame(
+        ## ns-rse - Reshape the data to wide as weather column can have multiple values and these expand to long format
+        ## data
+        to_add <- data.frame(
             user = input$user,
             date = as.character(input$conditions_date),
             start_time = as.character(input$conditions_start_time),
             end_time = as.character(input$conditions_end_time),
             weather = input$conditions_weather,
             visibility = input$conditions_visibility,
-            stringsAsFactors = FALSE
-        ))
-        conditions_data(conditions_to_add)
-        ## ns-rse - Reshape the data to wide as weather column can have multiple values and these expand to long format
-        ## data
-        conditions_wide <- conditions_data() |>
-            dplyr::mutate(present = TRUE) |>
+            stringsAsFactors = FALSE) |>
+        dplyr::mutate(present = TRUE) |>
             tidyr::pivot_wider(
                 names_from = weather,
                 values_from = present,
-                values_fill = FALSE
-            )
-        ## Add potentially missing columns
-        conditions_wide <- add_missing_columns(
-            df = conditions_wide,
-            expected_cols = as.list(conditions_df$code)
-        )
+                values_fill = FALSE)
+        print(to_add)
+        to_add <- tidy_columns(df = to_add, expected_cols = as.list(conditions_df$code))
+        print(to_add)
+        conditions_to_add <- rbind(conditions_data(),  to_add)
+        conditions_data(conditions_to_add)
         RSQLite::dbWriteTable(
             conn = con,
             name = "Conditions",
-            unique(conditions_wide),
+            unique(conditions_to_add),
             overwrite = FALSE,
             append = TRUE
         )
@@ -205,6 +164,12 @@ server <- function(input, output, session) {
         ## query <- "SELECT * FROM Conditions"
         ## print(RSQLite::dbGetQuery(conn = con, query))
     })
+    output$conditions <- shiny::renderTable(
+        {
+            conditions_data()
+        },
+        striped = TRUE
+    )
     ## GPS - Extract data and summarise
     gps_data <- shiny::observeEvent(input$gpx, {
         ## Load GPX data from input$gpx ($datapath is the path to the temporary file that has been uploaded)
@@ -244,18 +209,18 @@ server <- function(input, output, session) {
         )
         ## Update the date/time fields with those from GPX file, these may not be exact but are closer than using the
         ## current date/time
-        start_date_time= min(gps_df$time)
-        end_date_time= max(gps_df$time)
-        update_date(date=start_date_time, tag="conditions_date", session)
-        update_time(date=start_date_time, tag="conditions_start_time", session)
-        update_time(date=end_date_time, tag="conditions_end_time", session)
-        update_date(date=start_date_time, tag="composition_date", session)
-        update_time(date=start_date_time, tag="composition_time", session)
-        update_date(date=start_date_time, tag="description_date", session)
-        update_time(date=start_date_time, tag="description_start_time", session)
-        update_time(date=end_date_time, tag="description_end_time", session)
-        update_date(date=start_date_time, tag="interactions_date", session)
-        update_time(date=start_date_time, tag="interactions_time", session)
+        start_date_time = min(gps_df$time)
+        end_date_time = max(gps_df$time)
+        update_date(date = start_date_time, tag = "conditions_date", session)
+        update_time(date = start_date_time, tag = "conditions_start_time", session)
+        update_time(date = end_date_time, tag = "conditions_end_time", session)
+        update_date(date = start_date_time, tag = "composition_date", session)
+        update_time(date = start_date_time, tag = "composition_time", session)
+        update_date(date = start_date_time, tag = "description_date", session)
+        update_time(date = start_date_time, tag = "description_start_time", session)
+        update_time(date = end_date_time, tag = "description_end_time", session)
+        update_date(date = start_date_time, tag = "interactions_date", session)
+        update_time(date = start_date_time, tag = "interactions_time", session)
 
         ## Add to database
         RSQLite::dbWriteTable(
@@ -368,17 +333,6 @@ server <- function(input, output, session) {
             stringsAsFactors = FALSE
         ))
         composition_data(composition_to_add)
-        ## @ns-rse 2026-06-22 this shouldn't be here we only submit data on input$submit_composition
-        ## RSQLite::dbWriteTable(
-        ##     conn = con,
-        ##     name = "Composition",
-        ##     unique(composition_data()),
-        ##     overwrite = FALSE,
-        ##     append = TRUE)
-        ## @ns-rse 2026-06-02 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Composition TABLE?")
-        ## query <- "SELECT * FROM Composition"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
     })
     ## The composition table is returned and rendered on the page
     output$composition <- shiny::renderTable(
@@ -464,7 +418,7 @@ server <- function(input, output, session) {
                 values_from = present,
                 values_fill = FALSE)
         ## Add potentially missing columns
-        to_add <- tidy_other_species_columns(df = to_add, expected_cols = as.list(other_species_df$code))
+        to_add <- tidy_columns(df = to_add, expected_cols = as.list(other_species_df$code))
         description_to_add <- rbind(description_data(),
                                     to_add)
         description_data(description_to_add)
