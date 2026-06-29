@@ -449,20 +449,29 @@ server <- function(input, output, session) {
             time = character(),
             flock_a = integer(),
             flock_b = integer(),
-            type = character(),
+            ## type = character(),
+            foraging_together = logical(),
+            a_chasing_b = logical(),
+            b_chasing_a = logical(),
+            close_but_not_interacting = logical(),
+            other = logical(),
             notes = character(),
-            stringsAsFactors = FALSE
-    ))
+            stringsAsFactors = FALSE))
     shiny::observeEvent(input$add_interactions, {
-        interactions_to_add <- rbind(interactions_data(), data.frame(
+        ## ns-rse - Reshape the data to wide as type column can have multiple
+        ## values and are captured in long format
+        to_add <- data.frame(
             date = as.character(input$interactions_date),
             time = as.character(input$interactions_time),
             flock_a = input$interactions_flock_a,
             flock_b = input$interactions_flock_b,
             type = input$interactions_type,
             notes = input$interactions_notes,
-            stringsAsFactors = FALSE
-        ))
+            stringsAsFactors = FALSE) |>
+            dplyr::mutate(present = TRUE) |>
+            tidyr::pivot_wider(names_from = type, values_from = present, values_fill = FALSE)
+        to_add <- tidy_columns(df = to_add, expected_cols = as.list(interactions_df$code))
+        interactions_to_add <- rbind(interactions_data(), to_add)
         interactions_data(interactions_to_add)
     })
     ## The interaction table is returned and rendered on the page
