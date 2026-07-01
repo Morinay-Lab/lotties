@@ -547,7 +547,8 @@ server <- function(input, output, session) {
             zip::zip(
                 zipfile = file,
                 files = unlist(csv_files))
-            ## ns-rse 2026-06-08 : Remove CSV files from the system
+            ## Remove CSV files from the system
+            unlink(csv_files)
         })
     output$download_clean_data <- shiny::downloadHandler(
         filename = function() {
@@ -574,6 +575,7 @@ server <- function(input, output, session) {
             zip::zip(
                 zipfile = file,
                 files = unlist(csv_files))
-            ## ns-rse 2026-06-08 : Remove CSV files from the system
+            ## Remove CSV files from the system
+            unlink(csv_files)
         })
 }
