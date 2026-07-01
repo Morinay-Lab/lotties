@@ -202,8 +202,7 @@ individual_inputs <- list(
 individual_card <- display_section(
   header = "Flock Composition",
   shiny::tableOutput("composition"),
-  shiny::helpText("When you have added all individuals submit your data. NB - Duplicate observations in the above table will be removed on submission."),
-  shiny::actionButton("submit_composition", label = "Submit all composition data")
+  shiny::helpText("When you have added all individuals submit your data. NB - Duplicate observations of ringed birds in the above table will be removed on submission.")
 )
 
 ## Flock description card
@@ -294,8 +293,14 @@ flock_inputs <- list(
 flock_card <- display_section(
   header = "Flocks",
   shiny::tableOutput("description"),
-  shiny::helpText("When you have described all flocks submit your data. NB - Duplicate observations in the above table will be removed on submission."),
-  shiny::actionButton("submit_description", label = "Submit all flock data")
+  shiny::helpText("When you have described all flocks submit your data. NB - Duplicate observations in the above table will be removed on submission.")
+)
+
+## Submit data to database
+submit_card <- display_section(
+    header = "Submit data",
+    shiny::helpText("When you have entered all data and are ready to submit it to the database click on the button below."),
+    shiny::actionButton("submit_all", label = "Submit all data")
 )
 
 ## Flock interaction card
@@ -348,8 +353,7 @@ interaction_inputs <- list(
 interaction_card <- display_section(
   header = "Flock Interactions",
   shiny::tableOutput("interactions"),
-  shiny::helpText("When you have added all interactions submit your data. NB - Duplicate observations in the above table will be removed on submission."),
-  shiny::actionButton("submit_interactions", label = "Submit all interaction data")
+  shiny::helpText("When you have added all interactions submit your data. NB - Duplicate observations in the above table will be removed on submission.")
 )
 
 ## Download card
@@ -482,23 +486,6 @@ sidebar_orig <- bslib::sidebar(
 ui <- bslib::page_sidebar(
     title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
     sidebar = sidebar_accordion,
-    ## ns-rse : This is using non-standard evaluation but I think its an old form, newer methods are lazyeval
-    ## (https://cran.r-project.org/web/packages/lazyeval/vignettes/lazyeval.html)
-    ## ns-rse 2026-05-12 : Consider switching to column-layout
-    ## https://rstudio.github.io/bslib/articles/column-layout/index.html
-    ## bslib::layout_column_wrap(
-    ##    width = "300px",
-    ##    height = 300,
-    ##    fixed_width = FALSE,
-    ##    heights_equal = "all",
-    # bslib::navset_card_underline(
-    #     title = "Flock Observations...",
-    #     bslib::nav_panel("GPS", gps_card),
-    #     bslib::nav_panel("Description", flock_card),
-    #     bslib::nav_panel("Composition", individual_card),
-    #     bslib::nav_panel("Interactions", interaction_card),
-    #     bslib::nav_panel("Download", download_card)
-    #     )
     bslib::navset_card_underline(
       bslib::nav_panel(
         "Observations",
@@ -506,7 +493,8 @@ ui <- bslib::page_sidebar(
         conditions_card,
         flock_card,
         individual_card,
-        interaction_card
+        interaction_card,
+        submit_card
       ),
       bslib::nav_panel(
         "Download",
