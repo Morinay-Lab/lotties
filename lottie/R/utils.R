@@ -484,4 +484,14 @@ extract_and_compress_data <- function(zip_file, conn, input) {
     ## TODO : Remove CSV files from system
 }
 
+#' Query a database table to check contents for debugging.
+#'
+#' @param conn Database connection.
+#' @param table str Name of table to query.
+db_table_debug <- function(conn, table) {
+    print(paste0("Checking table : "))
+    query <- paste0("SELECT * FROM ", table)
+    print(RSQLite::dbGetQuery(conn, query))
+}
+
 ## End of file

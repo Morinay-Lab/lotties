@@ -115,7 +115,9 @@ if (testing) {
 }
 
 server <- function(input, output, session) {
-    ## Conditions
+    #################################################################################
+    ## Conditions                                                                  ##
+    #################################################################################
     conditions_data <- shiny::reactiveVal(data.frame(
         user = character(),
         date = character(),
@@ -147,22 +149,9 @@ server <- function(input, output, session) {
                 names_from = weather,
                 values_from = present,
                 values_fill = FALSE)
-        print(to_add)
         to_add <- tidy_columns(df = to_add, expected_cols = as.list(conditions_df$code))
-        print(to_add)
         conditions_to_add <- rbind(conditions_data(),  to_add)
         conditions_data(conditions_to_add)
-        RSQLite::dbWriteTable(
-            conn = con,
-            name = "Conditions",
-            unique(conditions_to_add),
-            overwrite = FALSE,
-            append = TRUE
-        )
-        ## @ns-rse 2026-06-08 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Conditions TABLE?")
-        ## query <- "SELECT * FROM Conditions"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
     })
     output$conditions <- shiny::renderTable(
         {
@@ -170,7 +159,10 @@ server <- function(input, output, session) {
         },
         striped = TRUE
     )
-    ## GPS - Extract data and summarise
+
+    #################################################################################
+    ## GPS                                                                         ##
+    #################################################################################
     gps_data <- shiny::observeEvent(input$gpx, {
         ## Load GPX data from input$gpx ($datapath is the path to the temporary file that has been uploaded)
         gpx_data <- xml2::read_xml(input$gpx$datapath)
@@ -263,10 +255,12 @@ server <- function(input, output, session) {
             gps_summary
         },
         striped = TRUE)
-    ## Flock Composition
+
+    #################################################################################
+    ## Flock Composition                                                           ##
+    #################################################################################
     ## Extract ring colours from selection so they can be used to populate the `selectInput(..., choices=)` of the
-    ## `colour_ring_inputs()` function (see https://stackoverflow.com/a/21467399/1444043) second solution using
-    ## shiny::updateSelectInput()
+    ## `colour_ring_inputs()` function
     selected_rings <- shiny::reactive({
         ## We split the returned code using lottie::extract_rings(), this returns rings$leg, rings$top and rings$bottom
         rings <- extract_rings(
@@ -340,20 +334,10 @@ server <- function(input, output, session) {
             composition_data()
         },
         striped = TRUE)
-    ## Add data to SQLite database when the "Submit all composition data" button is pressed
-    shiny::observeEvent(input$submit_composition, {
-        RSQLite::dbWriteTable(
-                     conn = con,
-                     name = "Composition",
-                     composition_data(),
-                     overwrite = FALSE,
-                     append = TRUE)
-        ## @ns-rse 2026-06-02 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Composition TABLE?")
-        ## query <- "SELECT * FROM Composition"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
-    })
-    ## Flock Description
+
+    #################################################################################
+    ## Flock Description                                                           ##
+    #################################################################################
     ## Build a data frame of flock description when the "Submit flock description" button is clicked
    description_data <- shiny::reactiveVal(data.frame(
             date = character(),
@@ -429,20 +413,10 @@ server <- function(input, output, session) {
             description_data()
         },
         striped = TRUE)
-    ## Add data to SQLite database when the "Submit all flock data" button is pressed
-    shiny::observeEvent(input$submit_description, {
-        RSQLite::dbWriteTable(
-                     conn = con,
-                     name = "Description",
-                     unique(description_data()),
-                     overwrite = FALSE,
-                     append = TRUE)
-        ## @ns-rse 2026-06-02 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Description TABLE?")
-        ## query <- "SELECT * FROM Description"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
-    })
-    ## Interactions
+
+    #################################################################################
+    ## Interactions                                                                ##
+    #################################################################################
     ## Build a data frame of interactions when the "Submit interaction" button is clocked
     interactions_data <- shiny::reactiveVal(data.frame(
             date = character(),
@@ -480,18 +454,51 @@ server <- function(input, output, session) {
             interactions_data()
         },
         striped = TRUE)
-    ## Add data to SQLite database when the "Submit all interaction data" button is pressed
-    shiny::observeEvent(input$submit_interactions, {
+
+    #################################################################################
+    ## Database submission                                                         ##
+    #################################################################################
+    ## Add data to SQLite database when the "Submit all data" button is pressed
+    shiny::observeEvent(input$submit_all, {
+        ## GPS data is submitted on file upload
+        ## Conditions/metadata
+        RSQLite::dbWriteTable(
+            conn = con,
+            name = "Conditions",
+            unique(conditions_data()),
+            overwrite = FALSE,
+            append = TRUE
+        )
+        ## @ns-rse 2026-06-08 Debugging...
+        db_table_debug(conn = con, table = "Conditions")
+        ## Composition
         RSQLite::dbWriteTable(
                      conn = con,
-                     name = "Interactions",
-                     unique(interactions_data()),
+                     name = "Composition",
+                     composition_data(),
                      overwrite = FALSE,
                      append = TRUE)
         ## @ns-rse 2026-06-02 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Interactions TABLE?")
-        ## query <- "SELECT * FROM Interactions"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
+        db_table_debug(conn = con, table = "Composition")
+        ## Description
+        RSQLite::dbWriteTable(
+            conn = con,
+            name = "Description",
+            unique(description_data()),
+            overwrite = FALSE,
+            append = TRUE)
+        ## @ns-rse 2026-06-02 Debugging...
+        db_table_debug(conn = con, table = "Description")
+        ## Interactions
+        RSQLite::dbWriteTable(
+            conn = con,
+            name = "Interactions",
+            unique(interactions_data()),
+            overwrite = FALSE,
+            append = TRUE
+        )
+        ## @ns-rse 2026-06-02 Debugging...
+        db_table_debug(conn = con, table = "Interactions")
     })
     ## Download Raw Data
     output$download_raw_data <- shiny::downloadHandler(
