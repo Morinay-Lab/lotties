@@ -470,9 +470,7 @@ server <- function(input, output, session) {
             append = TRUE
         )
         ## @ns-rse 2026-06-08 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Conditions TABLE?")
-        ## query <- "SELECT * FROM Conditions"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
+        db_table_debug(conn = con, table = "Conditions")
         ## Composition
         RSQLite::dbWriteTable(
                      conn = con,
@@ -481,9 +479,7 @@ server <- function(input, output, session) {
                      overwrite = FALSE,
                      append = TRUE)
         ## @ns-rse 2026-06-02 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Composition TABLE?")
-        ## query <- "SELECT * FROM Composition"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
+        db_table_debug(conn = con, table = "Composition")
         ## Description
         RSQLite::dbWriteTable(
             conn = con,
@@ -492,9 +488,7 @@ server <- function(input, output, session) {
             overwrite = FALSE,
             append = TRUE)
         ## @ns-rse 2026-06-02 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Description TABLE?")
-        ## query <- "SELECT * FROM Description"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
+        db_table_debug(conn = con, table = "Description")
         ## Interactions
         RSQLite::dbWriteTable(
             conn = con,
@@ -504,9 +498,7 @@ server <- function(input, output, session) {
             append = TRUE
         )
         ## @ns-rse 2026-06-02 Debugging...
-        ## print("WHAT HAVE WE GOT IN THE DATABASE Interactions TABLE?")
-        ## query <- "SELECT * FROM Interactions"
-        ## print(RSQLite::dbGetQuery(conn = con, query))
+        db_table_debug(conn = con, table = "Interactions")
     })
     ## Download Raw Data
     output$download_raw_data <- shiny::downloadHandler(
