@@ -202,7 +202,7 @@ individual_inputs <- list(
 individual_card <- display_section(
   header = "Flock Composition",
   shiny::tableOutput("composition"),
-  shiny::helpText("When you have added all individuals submit your data. NB - Duplicate observations of ringed birds in the above table will be removed on submission.")
+  shiny::helpText("NB - Duplicate observations of ringed birds in the above table will be removed on submission.")
 )
 
 ## Flock description card
@@ -293,7 +293,7 @@ flock_inputs <- list(
 flock_card <- display_section(
   header = "Flocks",
   shiny::tableOutput("description"),
-  shiny::helpText("When you have described all flocks submit your data. NB - Duplicate observations in the above table will be removed on submission.")
+  shiny::helpText("NB - Duplicate observations in the above table will be removed on submission.")
 )
 
 ## Submit data to database
@@ -353,7 +353,7 @@ interaction_inputs <- list(
 interaction_card <- display_section(
   header = "Flock Interactions",
   shiny::tableOutput("interactions"),
-  shiny::helpText("When you have added all interactions submit your data. NB - Duplicate observations in the above table will be removed on submission.")
+  shiny::helpText("NB - Duplicate observations in the above table will be removed on submission.")
 )
 
 ## Download card
