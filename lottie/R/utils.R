@@ -494,4 +494,100 @@ db_table_debug <- function(conn, table) {
     print(RSQLite::dbGetQuery(conn, query))
 }
 
+#' Setup empty dataframes for the different components
+create_empty_dataframes <- function() {
+    empty_df <- list()
+    empty_df$conditions <- data.frame(
+        user = character(),
+        date = character(),
+        start_time = character(),
+        end_time = character(),
+        sunny = character(),
+        partly_cloudy = character(),
+        cloudy_grey = character(),
+        foggy = character(),
+        windy = character(),
+        light_rain = character(),
+        really_rain = character(),
+        visibility = character(),
+        stringsAsFactors = FALSE
+    )
+    empty_df$composition_data <- data.frame(
+        date = character(),
+        time = character(),
+        flock_number = integer(),
+        ringed = character(),
+        colour_ring = character(),
+        certain = character(),
+        left_top = character(),
+        left_top_certain = character(),
+        left_bottom = character(),
+        left_bottom_certain = character(),
+        right_top = character(),
+        right_top_certain = character(),
+        right_bottom = character(),
+        right_bottom_certain = character(),
+        bto_ring_position = character(),
+        notes = character(),
+        stringsAsFactors = FALSE
+    )
+    empty_df$description_data <- data.frame(
+        date = character(),
+        start_time = character(),
+        end_time = character(),
+        flock_type = character(),
+        flock_number = integer(),
+        whole_flock = character(),
+        n_flock = integer(),
+        n_ringed = integer(),
+        section = character(),
+        mist_net = character(),
+        notes = character(),
+        blue_tit = logical(),
+        chiff_chaff = logical(),
+        chaffinch = logical(),
+        coal_tit = logical(),
+        dunnock = logical(),
+        goldcrest = logical(),
+        great_tit = logical(),
+        nuthatch = logical(),
+        robin = logical(),
+        siskin = logical(),
+        tree_creeper = logical(),
+        unknown_tit = logical(),
+        woodpecker = logical(),
+        wren = logical(),
+        willow_warbler = logical(),
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+    )
+    empty_df$interactions_data <- data.frame(
+        date = character(),
+        time = character(),
+        flock_a = integer(),
+        flock_b = integer(),
+        foraging_together = logical(),
+        a_chasing_b = logical(),
+        b_chasing_a = logical(),
+        close_but_not_interacting = logical(),
+        other = logical(),
+        notes = character(),
+        stringsAsFactors = FALSE)
+    empty_df$gps_data <- data.frame(
+        Filename = character(),
+        Points = integer(),
+        Start=character(),
+        Finish = character())
+}
+
+#' Render a dataframe table as a Shiny.
+#'
+#' @param df Dataframe for rendering as table.
+#' @param striped bool Whether the table should be striped or not (default `TRUE`).
+render_table <- function(df, striped = TRUE) {
+        shiny::renderTable(
+            {df},
+            striped = striped
+        )}
+
 ## End of file
