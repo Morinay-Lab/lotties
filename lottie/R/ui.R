@@ -260,7 +260,7 @@ flock_inputs <- list(
     shiny::numericInput(
       "description_n_flock",
       label = "Flock Size : ",
-      min = 0,
+      min = 1,
       max = 60,
       value = 12,
       step = 1
@@ -268,7 +268,7 @@ flock_inputs <- list(
     shiny::numericInput(
       "description_n_ringed",
       label = "Number of Ringed Birds : ",
-      min = 0,
+      min = 1,
       max = 60,
       value = 12,
       step = 1

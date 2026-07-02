@@ -279,7 +279,7 @@ server <- function(input, output, session) {
         update_certainty(ring_certainty, tag = "right_top", session)
         update_certainty(ring_certainty, tag = "right_bottom", session)
     })
-    ## Build a data frame of birds within a flock when the "Submit bird description" button is clicked
+    ## Build the dataframe/table of birds within a flock when the "Submit bird description" button is clicked
     composition_data <- shiny::reactiveVal(empty_dataframes$composition_data)
     shiny::observeEvent(input$add_composition, {
         composition_to_add <- rbind(composition_data(), data.frame(
@@ -324,6 +324,25 @@ server <- function(input, output, session) {
     #################################################################################
     ## Build a data frame of flock description when the "Submit flock description" button is clicked
     description_data <- shiny::reactiveVal(empty_dataframes$description_data)
+    ## Update flock size based on flock_type being `Pair` (2) or `Individual` (1)
+    flock_type <- shiny::reactive({
+        print("input$description_flock_type")
+        print(input$description_flock_type)
+        input$description_flock_type
+    })
+    shiny::observe({
+        if (flock_type() == "pair") {
+            shiny::updateNumericInput(session, "description_n_flock", value = 2)
+            shiny::updateNumericInput(session, "description_n_ringed", value = 2)
+        } else if (flock_type() == "individual") {
+          shiny::updateNumericInput(session, "description_n_flock", value = 1)
+          shiny::updateNumericInput(session, "description_n_ringed", value = 1)
+        } else {
+          shiny::updateNumericInput(session, "description_n_flock", value = 12)
+          shiny::updateNumericInput(session, "description_n_ringed", value = 12)
+        }
+    })
+    ## Build the dataframe/table of flock descriptions when the "Submit flock description" button is clicked
     shiny::observeEvent(input$add_description, {
         shiny::validate(
                    shiny::need(input$description_n_ringed <= input$description_n_flock,
@@ -370,6 +389,13 @@ server <- function(input, output, session) {
             exclude = c("description_flock_number"))
         lapply(tmp_inputs, shinyjs::reset)
         description_data(description_to_add)
+    })
+    ## Increment Flock numbers
+    flock_number <- shiny::reactive({
+        input$description_flock_number
+    })
+    shiny::observeEvent(input$add_description, {
+        shiny::updateNumericInput(session, "description_flock_number", value = flock_number() + 1)
     })
     ## The description table is returned and rendered on the page
     output$description <- shiny::renderTable(
