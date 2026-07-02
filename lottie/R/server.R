@@ -32,24 +32,27 @@ if (testing) {
     overwrite <- TRUE
     ## People
     RSQLite::dbWriteTable(
-                 conn = con,
-                 name = "Person",
-                 person_df,
-                 overwrite = overwrite)
+        conn = con,
+        name = "Person",
+        person_df,
+        overwrite = overwrite
+    )
 
     ## Other Species
     RSQLite::dbWriteTable(
-                 conn = con,
-                 name = "OtherSpecies",
-                 other_species_df,
-                 overwrite = overwrite)
+        conn = con,
+        name = "OtherSpecies",
+        other_species_df,
+        overwrite = overwrite
+    )
 
     ## Rings
     RSQLite::dbWriteTable(
-                 conn = con,
-                 name = "Rings",
-                 rings_df,
-                 overwrite = overwrite)
+        conn = con,
+        name = "Rings",
+        rings_df,
+        overwrite = overwrite
+    )
 
     ## Section
     RSQLite::dbWriteTable(
@@ -83,19 +86,20 @@ if (testing) {
             check.names = FALSE
         ),
         overwrite = overwrite
-        )
+    )
     ## GPS
     RSQLite::dbWriteTable(
         conn = con,
         name = "GPS",
         data.frame(
-             "time" = character(),
-             "lat" = numeric(),
-             "lon" = numeric(),
-             "ele" = numeric(),
-             "filename" = character(),
-             stringsAsFactors = FALSE,
-             check.names = FALSE),
+            "time" = character(),
+            "lat" = numeric(),
+            "lon" = numeric(),
+            "ele" = numeric(),
+            "filename" = character(),
+            stringsAsFactors = FALSE,
+            check.names = FALSE
+        ),
         overwrite = overwrite
     )
 } else {
@@ -114,25 +118,14 @@ if (testing) {
     sites_df <- RSQLite::dbGetQuery(con, query)
 }
 
+## Setup empty dataframes
+empty_dataframes <- create_empty_dataframes()
+
 server <- function(input, output, session) {
     #################################################################################
     ## Conditions                                                                  ##
     #################################################################################
-    conditions_data <- shiny::reactiveVal(data.frame(
-        user = character(),
-        date = character(),
-        start_time = character(),
-        end_time = character(),
-        sunny = character(),
-        partly_cloudy = character(),
-        cloudy_grey = character(),
-        foggy = character(),
-        windy = character(),
-        light_rain = character(),
-        really_rain = character(),
-        visibility = character(),
-        stringsAsFactors = FALSE
-    ))
+    conditions_data <- shiny::reactiveVal(empty_dataframes$conditions_data)
     shiny::observeEvent(input$submit_conditions, {
         ## ns-rse - Reshape the data to wide as weather column can have multiple values and these expand to long format
         ## data
@@ -287,26 +280,8 @@ server <- function(input, output, session) {
         update_certainty(ring_certainty, tag = "right_bottom", session)
     })
     ## Build a data frame of birds within a flock when the "Submit bird description" button is clicked
-    composition_data <- shiny::reactiveVal(data.frame(
-            date = character(),
-            time = character(),
-            flock_number = integer(),
-            ringed = character(),
-            colour_ring = character(),
-            certain = character(),
-            left_top= character(),
-            left_top_certain = character(),
-            left_bottom= character(),
-            left_bottom_certain = character(),
-            right_top = character(),
-            right_top_certain = character(),
-            right_bottom = character(),
-            right_bottom_certain = character(),
-            bto_ring_position = character(),
-            notes = character(),
-            stringsAsFactors = FALSE
-            ))
-   shiny::observeEvent(input$add_composition, {
+    composition_data <- shiny::reactiveVal(empty_dataframes$composition_data)
+    shiny::observeEvent(input$add_composition, {
         composition_to_add <- rbind(composition_data(), data.frame(
             date = as.character(input$composition_date),
             time = as.character(input$composition_time),
@@ -339,36 +314,7 @@ server <- function(input, output, session) {
     ## Flock Description                                                           ##
     #################################################################################
     ## Build a data frame of flock description when the "Submit flock description" button is clicked
-   description_data <- shiny::reactiveVal(data.frame(
-            date = character(),
-            start_time = character(),
-            end_time = character(),
-            flock_type = character(),
-            flock_number = integer(),
-            whole_flock = character(),
-            n_flock = integer(),
-            n_ringed = integer(),
-            section = character(),
-            mist_net = character(),
-            notes = character(),
-            blue_tit = logical(),
-            chiff_chaff = logical(),
-            chaffinch = logical(),
-            coal_tit = logical(),
-            dunnock = logical(),
-            goldcrest = logical(),
-            great_tit = logical(),
-            nuthatch = logical(),
-            robin = logical(),
-            siskin = logical(),
-            tree_creeper = logical(),
-            unknown_tit = logical(),
-            woodpecker = logical(),
-            wren = logical(),
-            willow_warbler = logical(),
-            stringsAsFactors = FALSE,
-            check.names = FALSE
-    ))
+    description_data <- shiny::reactiveVal(empty_dataframes$description_data)
     shiny::observeEvent(input$add_description, {
         shiny::validate(
                    shiny::need(input$description_n_ringed <= input$description_n_flock,
@@ -418,19 +364,7 @@ server <- function(input, output, session) {
     ## Interactions                                                                ##
     #################################################################################
     ## Build a data frame of interactions when the "Submit interaction" button is clocked
-    interactions_data <- shiny::reactiveVal(data.frame(
-            date = character(),
-            time = character(),
-            flock_a = integer(),
-            flock_b = integer(),
-            ## type = character(),
-            foraging_together = logical(),
-            a_chasing_b = logical(),
-            b_chasing_a = logical(),
-            close_but_not_interacting = logical(),
-            other = logical(),
-            notes = character(),
-            stringsAsFactors = FALSE))
+    interactions_data <- shiny::reactiveVal(empty_dataframes$interactions_data)
     shiny::observeEvent(input$add_interactions, {
         ## ns-rse - Reshape the data to wide as type column can have multiple
         ## values and are captured in long format
@@ -456,6 +390,14 @@ server <- function(input, output, session) {
         striped = TRUE)
 
     #################################################################################
+    ## Extract a list of all input id's                                            ##
+    #################################################################################
+    all_inputs <- shiny::reactive({
+        x <- shiny::reactiveValuesToList(input)
+        names(x)
+    })
+
+    #################################################################################
     ## Database submission                                                         ##
     #################################################################################
     ## Add data to SQLite database when the "Submit all data" button is pressed
@@ -473,11 +415,12 @@ server <- function(input, output, session) {
         db_table_debug(conn = con, table = "Conditions")
         ## Composition
         RSQLite::dbWriteTable(
-                     conn = con,
-                     name = "Composition",
-                     composition_data(),
-                     overwrite = FALSE,
-                     append = TRUE)
+            conn = con,
+            name = "Composition",
+            composition_data(),
+            overwrite = FALSE,
+            append = TRUE
+        )
         ## @ns-rse 2026-06-02 Debugging...
         db_table_debug(conn = con, table = "Composition")
         ## Description
@@ -486,7 +429,8 @@ server <- function(input, output, session) {
             name = "Description",
             unique(description_data()),
             overwrite = FALSE,
-            append = TRUE)
+            append = TRUE
+        )
         ## @ns-rse 2026-06-02 Debugging...
         db_table_debug(conn = con, table = "Description")
         ## Interactions
@@ -499,7 +443,13 @@ server <- function(input, output, session) {
         )
         ## @ns-rse 2026-06-02 Debugging...
         db_table_debug(conn = con, table = "Interactions")
+        ## Reset the input and tables using shinyjs, we get the list of all ids that are to be reset from the reactive
+        ## function all_inputs()
+        lapply(all_inputs(), shinyjs::reset)
     })
+
+
+
     ## Download Raw Data
     output$download_raw_data <- shiny::downloadHandler(
         filename = function() {
