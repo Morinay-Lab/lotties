@@ -326,8 +326,6 @@ server <- function(input, output, session) {
     description_data <- shiny::reactiveVal(empty_dataframes$description_data)
     ## Update flock size based on flock_type being `Pair` (2) or `Individual` (1)
     flock_type <- shiny::reactive({
-        print("input$description_flock_type")
-        print(input$description_flock_type)
         input$description_flock_type
     })
     shiny::observe({
@@ -379,6 +377,11 @@ server <- function(input, output, session) {
         to_add <- tidy_columns(df = to_add, expected_cols = as.list(other_species_df$code))
         description_to_add <- rbind(description_data(),
                                     to_add)
+        ## Update available flocks based on added descriptions (used in composition and interactions)
+        flocks <- as.vector(description_to_add$flock_number)
+        shiny::updateSelectInput(session, "composition_flock_number", choices = flocks)
+        shiny::updateSelectInput(session, "interactions_flock_a", choices = flocks)
+        shiny::updateSelectInput(session, "interactions_flock_b", choices = flocks)
         ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
         ## function all_inputs(), this requires filtering all_inputs for those that start with description_
         ## then removing those we do not want to update (in this case description_flock_number since we want to
