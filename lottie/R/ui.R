@@ -164,7 +164,7 @@ individual_inputs <- list(
         "composition_ringed",
         label = "Ringed : ",
         selected = "Yes",
-        choices = c("Yes" = "yes", "No" = "no")
+        choices = c("Yes" = TRUE, "No" = FALSE)
       ),
       shiny::selectInput(
         "composition_bto_ring_position",
