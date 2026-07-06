@@ -253,16 +253,17 @@ server <- function(input, output, session) {
     ## Flock Composition                                                           ##
     #################################################################################
     ringed <- shiny::reactive({input$composition_ringed})
+    colour_ring <- shiny::reactive({input$composition_colour_ring})
     shiny::observe({
-        if (ringed() == FALSE) {
+        if (ringed() == FALSE || colour_ring() == "None" ) {
             update_rings_when_not_ringed(session)
         }
     })
-    colour_ring <- shiny::reactive({input$composition_colour_ring})
     shiny::observe({
         if (colour_ring() != "None") {
-            shiny::updateSelectInput(session,"composition_ringed", selected = TRUE)
-        }
+            shiny::updateSelectInput(session, "composition_ringed", selected = TRUE)
+        } else {
+           shiny::updateSelectInput(session, "composition_bto_ring_position", selected="None")}
     })
     ## Extract ring colours from selection so they can be used to populate the `selectInput(..., choices=)` of the
     ## `colour_ring_inputs()` function

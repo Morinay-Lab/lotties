@@ -206,8 +206,10 @@ extract_rings <- function(code, valid_codes, known_rings) {
     ## BTO ring is always on the other leg to coloured rings...
     if (rings$leg == "L") {
         rings$bto <- "R"
-    } else {
+    } else if (rings$leg == "R") {
         rings$bto <- "L"
+    } else {
+        rings$bto <- "None"
     }
     ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
     ## the indicated leg.
