@@ -590,4 +590,23 @@ render_table <- function(df, striped = TRUE) {
             striped = striped
         )}
 
+#' Filter a list of inputs for a subset and remove those that are to be excluded.
+#'
+#' We wish to reset input fields, to do so we need a list of labels used for ``input`` objects. This is provided by the
+#' ``all_inputs()`` function which returns _all_ inputs for a given session. We have three areas we wish to subset
+#' ``composition``, ``description``, and ``interactions`` but there are a small number of each that we do _not_ want to
+#' reset because they are either automatically incremented or take their values from other areas that have been input
+#' (e.g. when entering in ``composition_`` fields we wish to retain the ``flock_number`` that has been entered from the
+#' ``flock`` description; for interactions we wish the list of possible flocks under ``flock_a`` and ``flock_b`` to be
+#' based on the flocks that have been entered already.
+#'
+#' @param inputs list A list of strings which are to be filtered.
+#' @param filter str The string on which to filter, should be one of ``^composition_``, ``^description_``, and
+#' ``^interactions_``.
+#' @param exclude list A list of inputs to exclude.
+filter_inputs <- function(inputs, filter, exclude) {
+    tmp_inputs <- inputs[stringr::str_detect(inputs, filter)]
+    tmp_inputs[!(tmp_inputs %in% exclude)]
+}
+
 ## End of file

@@ -301,6 +301,15 @@ server <- function(input, output, session) {
             notes = input$composition_notes,
             stringsAsFactors = FALSE
         ))
+        ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
+        ## function all_inputs(), this requires filtering all_inputs for those that start with composition_
+        ## then removing those we do not want to update (in this case composition_flock_number since we want to
+        ## increment that automatically)
+        tmp_inputs <- filter_inputs(
+            input=all_inputs(),
+            filter = "^composition_",
+            exclude = c("composition_flock_number"))
+        lapply(tmp_inputs, shinyjs::reset)
         composition_data(composition_to_add)
     })
     ## The composition table is returned and rendered on the page
@@ -351,6 +360,15 @@ server <- function(input, output, session) {
         to_add <- tidy_columns(df = to_add, expected_cols = as.list(other_species_df$code))
         description_to_add <- rbind(description_data(),
                                     to_add)
+        ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
+        ## function all_inputs(), this requires filtering all_inputs for those that start with description_
+        ## then removing those we do not want to update (in this case description_flock_number since we want to
+        ## increment that automatically)
+        tmp_inputs <- filter_inputs(
+            input=all_inputs(),
+            filter = "^description_",
+            exclude = c("description_flock_number"))
+        lapply(tmp_inputs, shinyjs::reset)
         description_data(description_to_add)
     })
     ## The description table is returned and rendered on the page
@@ -380,6 +398,14 @@ server <- function(input, output, session) {
             tidyr::pivot_wider(names_from = type, values_from = present, values_fill = FALSE)
         to_add <- tidy_columns(df = to_add, expected_cols = as.list(interactions_df$code))
         interactions_to_add <- rbind(interactions_data(), to_add)
+        ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
+        ## function all_inputs(), this requires filtering all_inputs for those that start with description_
+        ## then removing those we do not want to update (in this case interactions_flock_number since we want to
+        ## increment that automatically)
+        tmp_inputs <- filter_inputs(
+            input=all_inputs(),
+            filter = "^interactions_",
+            exclude = c("interactions_flock_a", "interactions_flock_b"))
         interactions_data(interactions_to_add)
     })
     ## The interaction table is returned and rendered on the page
@@ -443,7 +469,7 @@ server <- function(input, output, session) {
         )
         ## @ns-rse 2026-06-02 Debugging...
         db_table_debug(conn = con, table = "Interactions")
-        ## Reset the input and tables using shinyjs, we get the list of all ids that are to be reset from the reactive
+        ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
         ## function all_inputs()
         lapply(all_inputs(), shinyjs::reset)
     })
