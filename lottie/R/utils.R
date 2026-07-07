@@ -330,14 +330,14 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
                 ## ns-rse 2026-06-23 - Debugging
                 ## print("PIT first")
                 update_ring(session, tag = "left_top", selected = rings$first)
-                update_ring(session, tag = "left_bottom", selected = "")
+                update_ring(session, tag = "left_bottom", selected = "None")
                 update_ring(session, tag = "right_top", selected = "BTO")
                 update_ring(session, tag = "right_bottom", selected = rings$second)
             } else {
                 ## ns-rse 2026-06-23 - Debugging
                 ## print("PIT second")
                 update_ring(session, tag = "left_top", selected = rings$second)
-                update_ring(session, tag = "left_bottom", selected = "")
+                update_ring(session, tag = "left_bottom", selected = "None")
                 update_ring(session, tag = "right_top", selected = rings$first)
                 update_ring(session, tag = "right_bottom", selected = "BTO")
             }
@@ -351,14 +351,14 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
                 update_ring(session, tag = "left_top", selected = "BTO")
                 update_ring(session, tag = "left_bottom", selected = rings$second)
                 update_ring(session, tag = "right_top", selected = rings$first)
-                update_ring(session, tag = "right_bottom", selected = "")
+                update_ring(session, tag = "right_bottom", selected = "None")
             } else {
                 ## ns-rse 2026-06-23 - Debugging
                 ## print("PIT second")
                 update_ring(session, tag = "left_top", selected = rings$first)
                 update_ring(session, tag = "left_bottom", selected = "BTO")
                 update_ring(session, tag = "right_top", selected = rings$second)
-                update_ring(session, tag = "right_bottom", selected = "")
+                update_ring(session, tag = "right_bottom", selected = "None")
             }
         }
     }
@@ -370,15 +370,15 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
             ## ns-rse 2026-06-23 - Debugging
             ## print("LEFT")
             update_ring(session, tag = "left_top", selected = "BTO")
-            update_ring(session, tag = "right_top", selected = "")
+            update_ring(session, tag = "right_top", selected = "None")
         } else {
             ## ns-rse 2026-06-23 - Debugging
             ## print("RIGHT")
-            update_ring(session, tag = "left_top", selected = "")
+            update_ring(session, tag = "left_top", selected = "None")
             update_ring(session, tag = "right_top", selected = "BTO")
         }
-        update_ring(session, tag = "left_bottom", selected = "")
-        update_ring(session, tag = "right_bottom", selected = "")
+        update_ring(session, tag = "left_bottom", selected = "None")
+        update_ring(session, tag = "right_bottom", selected = "None")
     }
     ## Finally set rings for birds with just colour (no PIT but BTO on opposite leg)
     else if (rings$leg == "L") {
@@ -388,22 +388,22 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
         update_ring(session, tag = "left_top", selected = rings$first)
         update_ring(session, tag = "left_bottom", selected = rings$second)
         update_ring(session, tag = "right_top", selected = "BTO")
-        update_ring(session, tag = "right_bottom", selected = "")
+        update_ring(session, tag = "right_bottom", selected = "None")
     } else if (rings$leg == "R") {
         ## ns-rse 2026-06-23 - Debugging
         ## print("NO PIT, JUST COLOUR")
         ## print("RIGHT")
         update_ring(session, tag = "left_top", selected = "BTO")
-        update_ring(session, tag = "left_bottom", selected = "")
+        update_ring(session, tag = "left_bottom", selected = "None")
         update_ring(session, tag = "right_top", selected = rings$first)
         update_ring(session, tag = "right_bottom", selected = rings$second)
     } else if(rings$code == "None"){
         ## ns-rse 2026-06-23 - Debugging
         ## print("NO RINGS")
-        update_ring(session, tag = "left_top", selected = "")
-        update_ring(session, tag = "left_bottom", selected = "")
-        update_ring(session, tag = "right_top", selected = "")
-        update_ring(session, tag = "right_bottom", selected = "")
+        update_ring(session, tag = "left_top", selected = "None")
+        update_ring(session, tag = "left_bottom", selected = "None")
+        update_ring(session, tag = "right_top", selected = "None")
+        update_ring(session, tag = "right_bottom", selected = "None")
     }
     update_ring(session, tag = "bto_ring_position", selected = rings$bto)
 }
