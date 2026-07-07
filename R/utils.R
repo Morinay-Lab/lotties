@@ -15,6 +15,7 @@ library(readr)
 #' @param drop_two bool Whether to drop the first two rows of GPS data points. Default is TRUE.
 #'
 #' @returns Dataframe of GPS positions loaded from '.csv' file.
+#'
 #' @export
 clean_gps <- function(
                       file,
@@ -56,30 +57,6 @@ clean_gps <- function(
 #'
 #' @returns Dataframe of flock description with columns renamed.
 #' @export
-## Need the following columns
-##
-## "date"
-## "day_of_year"
-## "IDD"
-## "flock_id"
-## "person"
-## "section"
-## "time_seen"
-## "time_lost"
-## "in_flock"
-## "whole_flock_id"
-## "min_nb"
-## "min_nb_unindent"
-## "BT"
-## "GT"
-## "CT"
-## "GC"
-## "RB"
-## "NH"
-## "TC"
-## "WP"
-## "no_other_species"
-## "notes"
 clean_flock_description <- function(df, person) {
     df <- df |>
         dplyr::mutate(
@@ -133,22 +110,6 @@ clean_flock_description <- function(df, person) {
         )
 }
 
-
-
-#' Clean Flock Interactions data.
-#'
-#' Mostly this is just a case of renaming variables. THe data points as captured are cleaner.
-#'
-#' @param df data.frame Data frame to be cleaned.
-#' @param person str Person data petains to, should be one of 'LN', 'MJ', 'ND', 'SB'.
-#' @export
-#'
-#'
-## Need the following columns
-## clean_flock_interactions <- function(df, person) {
-##     df <- df |> dplyr::mutate(date = composition_date,)
-## }
-
 #' Tidy other bird species columns.
 #'
 #' Ensures there is a boolean column for each possible "Other species" that might be observed. This is required because
@@ -166,6 +127,7 @@ clean_flock_description <- function(df, person) {
 #' @param expected_cols list[str] List of columns that the data frame should hold.
 #'
 #' @returns Dataframe with missing columns added and `none` column removed.
+#'
 #' @export
 tidy_columns <- function(df, expected_cols) {
     for (missing_col in expected_cols) {
@@ -212,6 +174,7 @@ remove_none_column <- function(df) {
 #'  |`bto`     | str     | The leg the BTO ring is on (inferred).                   |
 #'  |`first`   | str     | The first ring from the full ring code.                  |
 #'  |`second`  | str     | The second ring from the full ring code.                 |
+#'
 #' @export
 extract_rings <- function(code, valid_codes, known_rings) {
     ## Validate that the supplied code is valid
@@ -317,6 +280,7 @@ extract_rings <- function(code, valid_codes, known_rings) {
 #' @param selected str The value to update the given tag with.
 #'
 #' @returns Nothing, updates a ring field input for given session.
+#'
 #' @export
 update_ring <- function(session, tag, selected) {
     ## ns-rse 2026-06-23 - debugging
@@ -343,6 +307,7 @@ update_ring <- function(session, tag, selected) {
 #' @param session A shiny session which is to be updated.
 #'
 #' @returns List of ring attributes. `pit` (boolean) `pit_pos` (str), `leg` (str), `code` (str), `bto` (str).
+#'
 #' @export
 update_all_rings <- function(rings, session) {        ## We again deal with PIT ring logic separately
     if (rings$pit == TRUE) {
@@ -446,6 +411,7 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
 #' @param session The Shiny session to update.
 #'
 #' @returns Nothing, updates ring_certainty fields input for given tag and session.
+#'
 #' @export
 update_certainty <- function(ring_certainty, tag, session) {
     shiny::updateCheckboxInput(
@@ -461,6 +427,7 @@ update_certainty <- function(ring_certainty, tag, session) {
 #' @param session Shiny session to update from.
 #'
 #' @returns Nothing, updates date input for given session.
+#'
 #' @export
 update_date <- function(date, tag, session) {
     shiny::updateDateInput(session=session, tag, value=date)
@@ -473,6 +440,7 @@ update_date <- function(date, tag, session) {
 #' @param session Shiny session to update from.
 #'
 #' @returns Nothing, updates time input for given session.
+#'
 #' @export
 update_time <- function(date, tag, session) {
     shinyTime::updateTimeInput(session=session, tag, value=date)
@@ -490,6 +458,7 @@ update_time <- function(date, tag, session) {
 #' @param append bool Whether to append the data.
 #'
 #' @returns Nothing returned.
+#'
 #' @export
 save_data <- function(data, db_path = db_path, table, append = TRUE, overwrite = FALSE) {
     conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
@@ -507,6 +476,7 @@ save_data <- function(data, db_path = db_path, table, append = TRUE, overwrite =
 #' @param input List of tables to extract
 #'
 #' @returns Returns nothing, exports database tables to CSV and compresses them.
+#'
 #' @export
 extract_and_compress_data <- function(zip_file, conn, input) {
     ## Loop over selected tables
@@ -536,6 +506,7 @@ extract_and_compress_data <- function(zip_file, conn, input) {
 #' @param table str Name of table to query.
 #'
 #' @returns Prints the table.
+#'
 #' @export
 db_table_debug <- function(conn, table) {
     print(paste0("Checking table : "))
@@ -546,6 +517,7 @@ db_table_debug <- function(conn, table) {
 #' Setup empty dataframes for the different components.
 #'
 #' @returns List of empty dataframes used in the Shiny application.
+#'
 #' @export
 create_empty_dataframes <- function() {
     empty_df <- list()
@@ -638,6 +610,7 @@ create_empty_dataframes <- function() {
 #' @param striped bool Whether the table should be striped or not (default `TRUE`).
 #'
 #' @returns Shiny rendered table.
+#'
 #' @export
 render_table <- function(df, striped = TRUE) {
         shiny::renderTable(
@@ -661,6 +634,7 @@ render_table <- function(df, striped = TRUE) {
 #' @param exclude list A list of inputs to exclude.
 #'
 #' @returns List of input fields filtered for the subset specified but with some fields excluded.
+#'
 #' @export
 filter_inputs <- function(inputs, filter, exclude) {
     tmp_inputs <- inputs[stringr::str_detect(inputs, filter)]
@@ -675,6 +649,7 @@ filter_inputs <- function(inputs, filter, exclude) {
 #' @param df dataframe Dataframe for de-duplicating.
 #'
 #' @returns Dataframe with ringed birds deduplicated.
+#'
 #' @export
 deduplicate_flock <- function(df) {
     rbind(
