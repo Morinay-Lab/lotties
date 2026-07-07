@@ -136,14 +136,20 @@ individual_inputs <- list(
       )
     )
   ),
-  shiny::numericInput(
-    "composition_flock_number",
-    label = "Flock Number : ",
-    min = 1,
-    max = 60,
-    value = 1,
-    step = 1
+  shiny::selectInput(
+     "composition_flock_number",
+     label = "Flock Number : ",
+     selected = NULL,
+     choices = seq(1, 20)
   ),
+  ## shiny::numericInput(
+  ##   "composition_flock_number",
+  ##   label = "Flock Number : ",
+  ##   min = 1,
+  ##   max = 60,
+  ##   value = 1,
+  ##   step = 1
+  ## ),
   bslib::card_title("Rings"),
   shiny::helpText(
       "For details on reading rings see the document",
@@ -260,7 +266,7 @@ flock_inputs <- list(
     shiny::numericInput(
       "description_n_flock",
       label = "Flock Size : ",
-      min = 0,
+      min = 1,
       max = 60,
       value = 12,
       step = 1
@@ -268,7 +274,7 @@ flock_inputs <- list(
     shiny::numericInput(
       "description_n_ringed",
       label = "Number of Ringed Birds : ",
-      min = 0,
+      min = 1,
       max = 60,
       value = 12,
       step = 1
@@ -322,22 +328,34 @@ interaction_inputs <- list(
     )
   ),
   bslib::layout_column_wrap(
-    shiny::numericInput(
+    shiny::selectInput(
       "interactions_flock_a",
       label = "Flock A (numeric ID) : ",
-      min = 0,
-      max = 300,
-      value = 0,
-      step = 1
+       selected = NULL,
+       choices = seq(1, 20)
     ),
-    shiny::numericInput(
+    shiny::selectInput(
       "interactions_flock_b",
       label = "Flock B (numeric ID) : ",
-      min = 0,
-      max = 300,
-      value = 0,
-      step = 1
-    )
+       selected = NULL,
+       choices = seq(1, 20)
+    ),
+    ## shiny::numericInput(
+    ##   "interactions_flock_a",
+    ##   label = "Flock A (numeric ID) : ",
+    ##   min = 0,
+    ##   max = 300,
+    ##   value = 0,
+    ##   step = 1
+    ## ),
+    ## shiny::numericInput(
+    ##   "interactions_flock_b",
+    ##   label = "Flock B (numeric ID) : ",
+    ##   min = 0,
+    ##   max = 300,
+    ##   value = 0,
+    ##   step = 1
+    ## )
   ),
   shiny::checkboxGroupInput("interactions_type",
                      label = "Type of Interaction : ",
