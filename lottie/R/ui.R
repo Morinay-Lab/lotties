@@ -98,7 +98,7 @@ gps_inputs <- list(
   shiny::br(),
   shiny::fileInput(
     "gpx",
-    "Choose GPX File",
+    label = "Choose GPX File",
     multiple = FALSE,
     accept = c(".gpx")
   ),
@@ -130,7 +130,7 @@ individual_inputs <- list(
       class = "shiny-input-container bslib-gap-spacing",
       shinyTime::timeInput(
         "composition_time",
-        "Time : ",
+        label = "Time : ",
         seconds = FALSE,
         value = Sys.time()
       )
@@ -341,6 +341,7 @@ interaction_inputs <- list(
   ),
   shiny::checkboxGroupInput("interactions_type",
                      label = "Type of Interaction : ",
+                     selected = "a_chasing_b",
                      choices = split(interactions_df$code,
                                      interactions_df$description)),
   shiny::textInput("interactions_notes",
@@ -486,6 +487,8 @@ sidebar_orig <- bslib::sidebar(
 ui <- bslib::page_sidebar(
     title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
     sidebar = sidebar_accordion,
+    ## This allows use of shinyjs::reset() to reset fields on submission
+    shinyjs::useShinyjs(),
     bslib::navset_card_underline(
       bslib::nav_panel(
         "Observations",
