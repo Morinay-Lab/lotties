@@ -7,7 +7,7 @@ library(xml2)
 
 ## ns-rse 2026-06-15 - hack to load the extract_ring() function, need to work out how to get package installed in renv
 ## so we can use `lottie::extract_ring()`
-source("utils.R")
+## source("utils.R")
 
 ## When developing set to TRUE, otherwise set to FALSE
 testing <- TRUE
@@ -28,7 +28,7 @@ con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
 ## Load lookup dataframes and populate database if testing
 if (testing) {
     ## Load lookup dataframes and populate database if testing
-    source("lookups.R")
+    ## source("lookups.R")
     overwrite <- TRUE
     ## People
     RSQLite::dbWriteTable(
@@ -119,7 +119,7 @@ if (testing) {
 }
 
 ## Setup empty dataframes
-empty_dataframes <- create_empty_dataframes()
+empty_dataframes <- lottie::create_empty_dataframes()
 
 server <- function(input, output, session) {
     #################################################################################
@@ -289,7 +289,7 @@ server <- function(input, output, session) {
     colour_ring <- shiny::reactive({input$composition_colour_ring})
     shiny::observe({
         if (ringed() == FALSE || colour_ring() == "None" ) {
-            update_rings_when_not_ringed(session)
+            lottie::update_rings_when_not_ringed(session)
         }
     })
     shiny::observe({
@@ -302,7 +302,7 @@ server <- function(input, output, session) {
     ## `colour_ring_inputs()` function
     selected_rings <- shiny::reactive({
         ## We split the returned code using lottie::extract_rings(), this returns rings$leg, rings$top and rings$bottom
-        rings <- extract_rings(
+        rings <- lottie::extract_rings(
             code = input$composition_colour_ring,
             valid_codes = rings_df$code,
             known_rings = colour_ring_df$code)
@@ -312,7 +312,7 @@ server <- function(input, output, session) {
     ## UI
     shiny::observe({
         rings <- selected_rings()
-        update_all_rings(rings, session)
+        lottie::update_all_rings(rings, session)
     })
     ## Update certainty boxes
     ring_composition_certain <- shiny::reactive({
@@ -320,10 +320,10 @@ server <- function(input, output, session) {
     })
     shiny::observe({
         ring_certainty <- ring_composition_certain()
-        update_certainty(ring_certainty, tag = "left_top", session)
-        update_certainty(ring_certainty, tag = "left_bottom", session)
-        update_certainty(ring_certainty, tag = "right_top", session)
-        update_certainty(ring_certainty, tag = "right_bottom", session)
+        lottie::update_certainty(ring_certainty, tag = "left_top", session)
+        lottie::update_certainty(ring_certainty, tag = "left_bottom", session)
+        lottie::update_certainty(ring_certainty, tag = "right_top", session)
+        lottie::update_certainty(ring_certainty, tag = "right_bottom", session)
     })
     ## Uncheck certainty if any of the individual ring certains are change to FALSE
     left_top_certain <- shiny::reactive({input$composition_left_top_certain})
@@ -364,7 +364,7 @@ server <- function(input, output, session) {
         ## function all_inputs(), this requires filtering all_inputs for those that start with composition_
         ## then removing those we do not want to update (in this case composition_flock_number since we want to
         ## increment that automatically)
-        tmp_inputs <- filter_inputs(
+        tmp_inputs <- lottie::filter_inputs(
             input=all_inputs(),
             filter = "^composition_",
             exclude = c("composition_flock_number"))
@@ -433,7 +433,7 @@ server <- function(input, output, session) {
                 values_from = present,
                 values_fill = FALSE)
         ## Add potentially missing columns
-        to_add <- tidy_columns(df = to_add, expected_cols = as.list(other_species_df$code))
+        to_add <- lottie::tidy_columns(df = to_add, expected_cols = as.list(other_species_df$code))
         description_to_add <- rbind(description_data(),
                                     to_add)
         ## Update available flocks based on added descriptions (used in composition and interactions)
@@ -445,7 +445,7 @@ server <- function(input, output, session) {
         ## function all_inputs(), this requires filtering all_inputs for those that start with description_
         ## then removing those we do not want to update (in this case description_flock_number since we want to
         ## increment that automatically)
-        tmp_inputs <- filter_inputs(
+        tmp_inputs <- lottie::filter_inputs(
             input=all_inputs(),
             filter = "^description_",
             exclude = c("description_flock_number"))
@@ -484,13 +484,13 @@ server <- function(input, output, session) {
             stringsAsFactors = FALSE) |>
             dplyr::mutate(present = TRUE) |>
             tidyr::pivot_wider(names_from = type, values_from = present, values_fill = FALSE)
-        to_add <- tidy_columns(df = to_add, expected_cols = as.list(interactions_df$code))
+        to_add <- lottie::tidy_columns(df = to_add, expected_cols = as.list(interactions_df$code))
         interactions_to_add <- rbind(interactions_data(), to_add)
         ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
         ## function all_inputs(), this requires filtering all_inputs for those that start with description_
         ## then removing those we do not want to update (in this case interactions_flock_number since we want to
         ## increment that automatically)
-        tmp_inputs <- filter_inputs(
+        tmp_inputs <- lottie::filter_inputs(
             input=all_inputs(),
             filter = "^interactions_",
             exclude = c("interactions_flock_a", "interactions_flock_b"))
@@ -529,7 +529,7 @@ server <- function(input, output, session) {
         db_table_debug(conn = con, table = "Conditions")
         ## Composition - we deduplicate ringed birds first (via deduplicate_flock())
         composition_all <- composition_data()
-        composition_data_dedup <- deduplicate_flock(df = composition_all)
+        composition_data_dedup <- lottie::deduplicate_flock(df = composition_all)
         RSQLite::dbWriteTable(
             conn = con,
             name = "Composition",

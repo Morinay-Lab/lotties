@@ -25,10 +25,10 @@ clean_gps <- function(
     gps_clean <- dplyr::read_csv(file, id = "name", col_names = TRUE, skip = skip) |>
         dplyr::mutate(
             person = case_when(
-                str_detect(name, pattern = "LN") == TRUE ~ "LN",
-                str_detect(name, pattern = "MJ") == TRUE ~ "MJ",
-                str_detect(name, pattern = "ND") == TRUE ~ "ND",
-                str_detect(name, pattern = "SB|SJB") == TRUE ~ "SB",
+                stringr::str_detect(name, pattern = "LN") == TRUE ~ "LN",
+                stringr::str_detect(name, pattern = "MJ") == TRUE ~ "MJ",
+                stringr::str_detect(name, pattern = "ND") == TRUE ~ "ND",
+                stringr::str_detect(name, pattern = "SB|SJB") == TRUE ~ "SB",
                 TRUE ~ NA
             ),
             date_time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s"),
