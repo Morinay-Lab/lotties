@@ -18,7 +18,7 @@ if (testing) {
     ## source("clean.R")
 } else {
     ## ...otherwise we have a database on disc and load it.
-    db_path <- "../data/sqlite/lottie.sql"
+    db_path <- "inst/sqlite/lottie.sql"
 }
 ## Setup connection to database
 con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
