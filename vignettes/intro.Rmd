@@ -1,0 +1,101 @@
+---
+title: "intro"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{intro}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(lottie)
+```
+
+[`{lottie}`][lottie] is a R package with a [Shiny][shiny] app for capturing data from a long-running field study of Long
+Tailed Tits in the Rivelin Valley on the edge of the city of Sheffield, UK.
+
+## Installation
+
+You can install the package directly from GitHub using [`{pak}`][pak], if you don't have `{pak}` installed install it first).
+
+```shell
+install.packages("pak")
+pak::pkg_install("Morinay-lab/lotties")
+```
+
+## Launching
+
+To launch the Shiny App locally you can run the following...
+
+```R
+shiny::runApp(system.file("shiny", package = "lotties"))
+```
+
+This should launch a browser pointing to a locally running instance of the application. The database will be in memory
+and is _not_ permanent.
+
+### Persistence
+
+By default the App is set to run in memory and so no historical data nor data entered persists. When the application is
+killed all entered data will be lost. Included in the package under `inst/xls` are various historical data files which
+have been cleaned and added to a [SQLite][sqlite3] which resides under `inst/sqlite`. By modifying `testing <- FALSE` in
+the `inst/shiny/server.R` file then the database with the historical data in the `inst/sqlite/` directory will be
+loaded.
+
+### Data Entry
+
+There are a number of sections for data to be entered. It is expected that they will be completed in the order in which
+they appear on the "accordian" on the left, i.e. _GPS > Observation Metadata > Flock Data > Individual Data >
+Interactions Data_. Doing so means that the `Flock ID` entered under the _Flock Data_ will then be used to populate the
+pull-down menus in subsequent sections (_Individual Data_ and _Interactions Data_).
+
+## Deployment
+
+To make the Shiny App available more widely the Morinay Lab have comissioned a Virtual Machine (VM) from University of
+Sheffield IT Services.
+
+This is a GNU/Linux machine running Ubuntu Linux and users can connect to the Shiny App that is running from any
+computer on the University network or whilst connected to the Universities Virtual Private Network (VPN).
+
+**TODO** Deploy the Shiny App on the server and work out the address to point to (https://lotties.shef.ac.uk/)
+
+
+## Virtual Machine Administration
+
+To connect to the virtual machine `lotties.shef.ac.uk` you will need to have an account created for you. For security
+it has been configured to only allow connections using SSH authentication.
+
+### Key Generation
+
+#### GNU/Linux and OSX
+If you are using GNU/Linux or OSX then you
+can create SSH keys using the following commands (**NB** - It is recommend to use [Ed25519 Twisted Edward curve keys][ed25519])
+
+```shell
+ssh-keygen -o -a 100 -t ed25519
+```
+
+By default you should be prompted for a secure password.
+
+#### Windows
+
+Windows users should follow the instructions on [Using PuTTYgen on Windows to generate SSH key pairs][puttySSH] an
+
+### Uploading Keys
+
+Share your `id_25519.pub` (the public part of your key) with the administrator who will setup your account and place the
+public key under your `/home/<username>/.ssh/id_ed25519.pub`
+
+[ed25519]: https://blog.g3rt.nl/upgrade-your-ssh-keys.html
+[pak]: https://pak.r-lib.org/
+[lottie]: https://github.com/Morinay-lab/lotties
+[puttySSH]: https://www.ssh.com/academy/ssh/putty/windows/puttygen
+[shiny]: https://shiny.posit.co/r/getstarted/
+[sqlite]: https://sqlite.org/index.html
