@@ -207,6 +207,18 @@ server <- function(input, output, session) {
         update_date(date = start_date_time, tag = "interactions_date", session)
         update_time(date = start_date_time, tag = "interactions_time", session)
 
+        ## Update the user field based on the GPS filename
+        user <- NULL
+        for (code in c("SJB", person_df$code)) {
+            if (grepl(pattern = code, filename)) {
+                user <- ifelse(code == "SJB", "SB", code)
+            }
+        }
+        shiny::updateSelectInput(
+            session = session,
+            inputId = "user",
+            selected = user)
+
         ## Add to database
         RSQLite::dbWriteTable(
             conn = con,
