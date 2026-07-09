@@ -141,6 +141,7 @@ rings_df <- data.frame(
 
 person_df <- data.frame(
     code = c("SB", "LN", "MJ", "ND"),
+    synonyms = c("SJB", "", "", "NDR"),  ## Comma-separated list of synonyms used in GPS filenames
     forename = c("Sarah (SB)", "Luke (LN)", "Micko (MJ)", "Nina (ND)") ##,
     ## surname = character("", "", "", "")
 )
