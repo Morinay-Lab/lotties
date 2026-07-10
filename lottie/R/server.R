@@ -132,8 +132,8 @@ server <- function(input, output, session) {
         to_add <- data.frame(
             user = input$user,
             date = as.character(input$conditions_date),
-            start_time = as.character(input$conditions_start_time),
-            end_time = as.character(input$conditions_end_time),
+            start_time = as.character(format(input$conditions_start_time, "%H:%M")),
+            end_time = as.character(format(input$conditions_end_time, "%H:%M")),
             weather = input$conditions_weather,
             visibility = input$conditions_visibility,
             stringsAsFactors = FALSE) |>
@@ -302,7 +302,7 @@ server <- function(input, output, session) {
     shiny::observeEvent(input$add_composition, {
         composition_to_add <- rbind(composition_data(), data.frame(
             date = as.character(input$composition_date),
-            time = as.character(input$composition_time),
+            time = as.character(format(input$composition_time, "%H:%M")),
             flock_number = input$composition_flock_number,
             ringed = input$composition_ringed,
             colour_ring = input$composition_colour_ring,
@@ -374,8 +374,8 @@ server <- function(input, output, session) {
         ## values and are captured in long format
         to_add <-data.frame(
             date = as.character(input$description_date),
-            start_time = as.character(input$description_start_time),
-            end_time = as.character(input$description_end_time),
+            start_time = as.character(format(input$description_start_time, "%H:%M")),
+            end_time = as.character(format(input$description_end_time, "%H:%M")),
             flock_type = input$description_flock_type,
             flock_number = input$description_flock_number,
             whole_flock = input$description_whole_flock,
@@ -435,7 +435,7 @@ server <- function(input, output, session) {
         ## values and are captured in long format
         to_add <- data.frame(
             date = as.character(input$interactions_date),
-            time = as.character(input$interactions_time),
+            time = as.character(format(input$interactions_time, "%H:%M")),
             flock_a = input$interactions_flock_a,
             flock_b = input$interactions_flock_b,
             type = input$interactions_type,
