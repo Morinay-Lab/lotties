@@ -207,6 +207,24 @@ server <- function(input, output, session) {
         update_date(date = start_date_time, tag = "interactions_date", session)
         update_time(date = start_date_time, tag = "interactions_time", session)
 
+        ## Update the user field based on the uploaded filename (which may be different from the internal filename
+        ## extracted above)
+        uploaded_filename <- dplyr::select(input$gpx, name)
+        user <- NULL
+        for (i in seq_len(nrow(person_df))) {
+            row <- person_df[i, ]
+            to_match <- unlist(c(row$code, strsplit(row$synonyms, split = ",")))
+            if (grepl(pattern = paste(to_match, collapse = "|"), uploaded_filename)) {
+                user <- row$code
+                ## print(paste("Matched user:", user))
+                break
+            }
+        }
+        shiny::updateSelectInput(
+            session = session,
+            inputId = "user",
+            selected = user)
+
         ## Add to database
         RSQLite::dbWriteTable(
             conn = con,
