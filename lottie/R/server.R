@@ -270,6 +270,19 @@ server <- function(input, output, session) {
     #################################################################################
     ## Flock Composition                                                           ##
     #################################################################################
+    ringed <- shiny::reactive({input$composition_ringed})
+    colour_ring <- shiny::reactive({input$composition_colour_ring})
+    shiny::observe({
+        if (ringed() == FALSE || colour_ring() == "None" ) {
+            update_rings_when_not_ringed(session)
+        }
+    })
+    shiny::observe({
+        if (colour_ring() != "None") {
+            shiny::updateSelectInput(session, "composition_ringed", selected = TRUE)
+        } else {
+           shiny::updateSelectInput(session, "composition_bto_ring_position", selected="None")}
+    })
     ## Extract ring colours from selection so they can be used to populate the `selectInput(..., choices=)` of the
     ## `colour_ring_inputs()` function
     selected_rings <- shiny::reactive({
@@ -296,6 +309,19 @@ server <- function(input, output, session) {
         update_certainty(ring_certainty, tag = "left_bottom", session)
         update_certainty(ring_certainty, tag = "right_top", session)
         update_certainty(ring_certainty, tag = "right_bottom", session)
+    })
+    ## Uncheck certainty if any of the individual ring certains are change to FALSE
+    left_top_certain <- shiny::reactive({input$composition_left_top_certain})
+    left_bottom_certain <- shiny::reactive({input$composition_left_bottom_certain})
+    right_top_certain <- shiny::reactive({input$composition_right_top_certain})
+    right_bottom_certain <- shiny::reactive({input$composition_right_bottom_certain})
+    shiny::observe({
+        if (left_top_certain() == FALSE |
+            left_bottom_certain() == FALSE |
+            right_top_certain() == FALSE |
+            right_bottom_certain() == FALSE ) {
+            shiny::updateCheckboxInput(session, "composition_certain", value = FALSE)
+        }
     })
     ## Build the dataframe/table of birds within a flock when the "Submit bird description" button is clicked
     composition_data <- shiny::reactiveVal(empty_dataframes$composition_data)
@@ -486,11 +512,13 @@ server <- function(input, output, session) {
         )
         ## @ns-rse 2026-06-08 Debugging...
         db_table_debug(conn = con, table = "Conditions")
-        ## Composition
+        ## Composition - we deduplicate ringed birds first (via deduplicate_flock())
+        composition_all <- composition_data()
+        composition_data_dedup <- deduplicate_flock(df = composition_all)
         RSQLite::dbWriteTable(
             conn = con,
             name = "Composition",
-            composition_data(),
+            composition_data_dedup,
             overwrite = FALSE,
             append = TRUE
         )

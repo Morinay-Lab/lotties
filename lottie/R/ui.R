@@ -164,7 +164,7 @@ individual_inputs <- list(
         "composition_ringed",
         label = "Ringed : ",
         selected = "Yes",
-        choices = c("Yes" = "yes", "No" = "no")
+        choices = c("Yes" = TRUE, "No" = FALSE)
       ),
       shiny::selectInput(
         "composition_bto_ring_position",
@@ -189,12 +189,12 @@ individual_inputs <- list(
   ),
   bslib::layout_column_wrap(
     simple_card("Left Leg...",
-                colour_ring_inputs(position = "lt", selected = ""),
-                colour_ring_inputs(position = "lb", selected = "")
+                colour_ring_inputs(position = "lt", selected = "None"),
+                colour_ring_inputs(position = "lb", selected = "None")
                 ),
     simple_card("Right Leg...",
-                colour_ring_inputs(position = "rt", selected = ""),
-                colour_ring_inputs(position = "rb", selected = "")
+                colour_ring_inputs(position = "rt", selected = "None"),
+                colour_ring_inputs(position = "rb", selected = "None")
                 ),
     fill = FALSE
   ),

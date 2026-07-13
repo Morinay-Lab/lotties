@@ -206,8 +206,10 @@ extract_rings <- function(code, valid_codes, known_rings) {
     ## BTO ring is always on the other leg to coloured rings...
     if (rings$leg == "L") {
         rings$bto <- "R"
-    } else {
+    } else if (rings$leg == "R") {
         rings$bto <- "L"
+    } else {
+        rings$bto <- "None"
     }
     ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
     ## the indicated leg.
@@ -328,14 +330,14 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
                 ## ns-rse 2026-06-23 - Debugging
                 ## print("PIT first")
                 update_ring(session, tag = "left_top", selected = rings$first)
-                update_ring(session, tag = "left_bottom", selected = "")
+                update_ring(session, tag = "left_bottom", selected = "None")
                 update_ring(session, tag = "right_top", selected = "BTO")
                 update_ring(session, tag = "right_bottom", selected = rings$second)
             } else {
                 ## ns-rse 2026-06-23 - Debugging
                 ## print("PIT second")
                 update_ring(session, tag = "left_top", selected = rings$second)
-                update_ring(session, tag = "left_bottom", selected = "")
+                update_ring(session, tag = "left_bottom", selected = "None")
                 update_ring(session, tag = "right_top", selected = rings$first)
                 update_ring(session, tag = "right_bottom", selected = "BTO")
             }
@@ -349,14 +351,14 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
                 update_ring(session, tag = "left_top", selected = "BTO")
                 update_ring(session, tag = "left_bottom", selected = rings$second)
                 update_ring(session, tag = "right_top", selected = rings$first)
-                update_ring(session, tag = "right_bottom", selected = "")
+                update_ring(session, tag = "right_bottom", selected = "None")
             } else {
                 ## ns-rse 2026-06-23 - Debugging
                 ## print("PIT second")
                 update_ring(session, tag = "left_top", selected = rings$first)
                 update_ring(session, tag = "left_bottom", selected = "BTO")
                 update_ring(session, tag = "right_top", selected = rings$second)
-                update_ring(session, tag = "right_bottom", selected = "")
+                update_ring(session, tag = "right_bottom", selected = "None")
             }
         }
     }
@@ -368,15 +370,15 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
             ## ns-rse 2026-06-23 - Debugging
             ## print("LEFT")
             update_ring(session, tag = "left_top", selected = "BTO")
-            update_ring(session, tag = "right_top", selected = "")
+            update_ring(session, tag = "right_top", selected = "None")
         } else {
             ## ns-rse 2026-06-23 - Debugging
             ## print("RIGHT")
-            update_ring(session, tag = "left_top", selected = "")
+            update_ring(session, tag = "left_top", selected = "None")
             update_ring(session, tag = "right_top", selected = "BTO")
         }
-        update_ring(session, tag = "left_bottom", selected = "")
-        update_ring(session, tag = "right_bottom", selected = "")
+        update_ring(session, tag = "left_bottom", selected = "None")
+        update_ring(session, tag = "right_bottom", selected = "None")
     }
     ## Finally set rings for birds with just colour (no PIT but BTO on opposite leg)
     else if (rings$leg == "L") {
@@ -386,22 +388,22 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
         update_ring(session, tag = "left_top", selected = rings$first)
         update_ring(session, tag = "left_bottom", selected = rings$second)
         update_ring(session, tag = "right_top", selected = "BTO")
-        update_ring(session, tag = "right_bottom", selected = "")
+        update_ring(session, tag = "right_bottom", selected = "None")
     } else if (rings$leg == "R") {
         ## ns-rse 2026-06-23 - Debugging
         ## print("NO PIT, JUST COLOUR")
         ## print("RIGHT")
         update_ring(session, tag = "left_top", selected = "BTO")
-        update_ring(session, tag = "left_bottom", selected = "")
+        update_ring(session, tag = "left_bottom", selected = "None")
         update_ring(session, tag = "right_top", selected = rings$first)
         update_ring(session, tag = "right_bottom", selected = rings$second)
     } else if(rings$code == "None"){
         ## ns-rse 2026-06-23 - Debugging
         ## print("NO RINGS")
-        update_ring(session, tag = "left_top", selected = "")
-        update_ring(session, tag = "left_bottom", selected = "")
-        update_ring(session, tag = "right_top", selected = "")
-        update_ring(session, tag = "right_bottom", selected = "")
+        update_ring(session, tag = "left_top", selected = "None")
+        update_ring(session, tag = "left_bottom", selected = "None")
+        update_ring(session, tag = "right_top", selected = "None")
+        update_ring(session, tag = "right_bottom", selected = "None")
     }
     update_ring(session, tag = "bto_ring_position", selected = rings$bto)
 }
@@ -582,7 +584,7 @@ create_empty_dataframes <- function() {
 
 #' Render a dataframe table as a Shiny.
 #'
-#' @param df Dataframe for rendering as table.
+#' @param df dataframe Dataframe for rendering as table.
 #' @param striped bool Whether the table should be striped or not (default `TRUE`).
 render_table <- function(df, striped = TRUE) {
         shiny::renderTable(
@@ -608,5 +610,35 @@ filter_inputs <- function(inputs, filter, exclude) {
     tmp_inputs <- inputs[stringr::str_detect(inputs, filter)]
     tmp_inputs[!(tmp_inputs %in% exclude)]
 }
+
+#' De-duplicate ringed entries from flock description.
+#'
+#' When entering data there should be no duplicated individuals in the flock with rings. Un-ringed birds are
+#' permissible, by virtue of sharing the characteristic of not having rings.
+#'
+#' @param df dataframe Dataframe for de-duplicating.
+deduplicate_flock <- function(df) {
+    rbind(
+        df |> dplyr::filter(ringed == FALSE),
+        df |> dplyr::filter(ringed == TRUE) |> unique()
+    )
+}
+
+#' Update ring component fields.
+#'
+#' This function is called when the `composition_ringed` field is changed to "No" (`FALSE`) and clears all ring fields
+#' so that no erroneous data is submitted.
+#'
+#' @param session The session to be updated.
+update_rings_when_not_ringed <- function(session) {
+    shiny::updateSelectInput(session, "composition_colour_ring", selected="None")
+    shiny::updateCheckboxInput(session, "composition_certain", value = FALSE)
+    for (tag in c("left_top", "left_bottom", "right_top", "right_bottom")) {
+        shiny::updateSelectInput(session, paste0("composition_", tag), selected = "None")
+        shiny::updateCheckboxInput(session, paste0("composition_", tag, "certain"), value = FALSE)
+    }
+    shiny::updateSelectInput(session, "composition_bto_ring_position", selected="None")
+}
+
 
 ## End of file

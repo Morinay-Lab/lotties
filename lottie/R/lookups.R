@@ -89,7 +89,7 @@ rings_df <- data.frame(
         "W*",
         "Y*"),
     description = c(
-        NA,
+        "None",
         "BTO",
         "Light blue (B)",
         "Dark blue (D)",
