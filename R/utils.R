@@ -1,4 +1,6 @@
+library(dplyr)
 library(readr)
+library(stringr)
 
 #' Clean a GPS file.
 #'
@@ -62,7 +64,6 @@ clean_flock_description <- function(df, person) {
         dplyr::mutate(
             ## Date  & Times in good format
             date = lubridate::ymd(description_date),
-            # day_of_year = ,
             IDD = paste0(person, "_", flock_id),
             flock_id = description_flock_id,
             person = person,
@@ -70,23 +71,12 @@ clean_flock_description <- function(df, person) {
             time_seen = lubridate::ymd_hm(description_start_time),
             time_lost = lubridate::ymd_hm(description_end_time),
             in_flock = description_flock_type,
-            # whole_flock_id =
             min_nb = description_n_flock,
             min_nb_unident = description_n_flock - description_n_ringed,
-            # BT =  ,
-            # GT =  ,
-            # CT =  ,
-            # GC =  ,
-            # RB =  ,
-            # NH =  ,
-            # TC =  ,
-            # WP =  ,
-            # no_other_species =  ,
             notes = description_notes
         ) |>
         dplyr::select(
             date,
-            # day_of_year,
             IDD,
             flock_id,
             person,
@@ -94,18 +84,8 @@ clean_flock_description <- function(df, person) {
             time_seen,
             time_lost,
             in_flock,
-            # whole_flock_id,
             min_nb,
             min_nb_unident,
-            # BT,
-            # GT,
-            # CT,
-            # GC,
-            # RB,
-            # NH,
-            # TC,
-            # WP,
-            # no_other_species,
             notes
         )
 }
@@ -181,9 +161,18 @@ extract_rings <- function(code, valid_codes, known_rings) {
     if (!(code %in% known_rings)) {
         print(print0("WARNING!!! The provided combination (", code, ") is not in known_rings."))
     }
-    code_length <- stringr::str_length(code)
     rings <- list()
     rings$code <- code
+    ## Code is unlisted, return empty values, users should add their own
+    if ((code == "Unlisted")) {
+        rings$leg <- ""
+        rings$pit <- NA
+        rings$bto <- ""
+        rings$first <- ""
+        rings$second <- ""
+        return(rings)
+    }
+    code_length <- stringr::str_length(code)
     rings$leg <- stringr::str_sub(code, start = -1)
     rings$pit <- FALSE
     ## BTO ring is always on the other leg to coloured rings...
@@ -193,6 +182,7 @@ extract_rings <- function(code, valid_codes, known_rings) {
         rings$bto <- "L"
     } else {
         rings$bto <- "None"
+        rings$pit <- NA
     }
     ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
     ## the indicated leg.
