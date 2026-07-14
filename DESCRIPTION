@@ -14,6 +14,7 @@ Imports:
     bslib,
     dplyr,
     ggplot2,
+    patrick,
     RSQLite,
     shiny,
     shinyjs,
@@ -22,7 +23,7 @@ Imports:
     tidyr,
     watcher,
     xml2
-Suggests: 
+Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
