@@ -123,7 +123,7 @@ empty_dataframes <- create_empty_dataframes()
 
 server <- function(input, output, session) {
     #################################################################################
-    ## Conditions                                                                  ##
+    ## Conditions (aka observation metadata)                                       ##
     #################################################################################
     conditions_data <- shiny::reactiveVal(empty_dataframes$conditions_data)
     shiny::observeEvent(input$submit_conditions, {
@@ -143,15 +143,30 @@ server <- function(input, output, session) {
                 values_from = present,
                 values_fill = FALSE)
         to_add <- tidy_columns(df = to_add, expected_cols = as.list(conditions_df$code))
-        conditions_to_add <- rbind(conditions_data(),  to_add)
+        conditions_to_add <- to_add # Single set of observation metadata
         conditions_data(conditions_to_add)
     })
-    output$conditions <- shiny::renderTable(
-        {
-            conditions_data()
-        },
-        striped = TRUE
-    )
+
+    ## Format observation metadata for display
+    obs_metadata <- eventReactive(input$submit_conditions, {
+        list(
+            user = input$user,
+            date = lubridate::format_ISO8601(input$conditions_date),
+            start_time = format(input$conditions_start_time, "%H:%M"),
+            end_time = format(input$conditions_end_time, "%H:%M"),
+            weather = paste(
+                conditions_df$description[grepl(paste(input$conditions_weather, collapse = "|"), conditions_df$code)],
+                collapse = ", "
+            ),
+            visibility = visibility_df$description[grepl(input$conditions_visibility, visibility_df$code)]
+        )
+    }, ignoreNULL = TRUE)
+    output$observation_user <- shiny::renderText({obs_metadata()$user})
+    output$observation_date <- shiny::renderText({obs_metadata()$date})
+    output$observation_start_time <- shiny::renderText({obs_metadata()$start_time})
+    output$observation_end_time <- shiny::renderText({obs_metadata()$end_time})
+    output$observation_weather <- shiny::renderText({obs_metadata()$weather})
+    output$observation_visibility <- shiny::renderText({obs_metadata()$visibility})
 
     #################################################################################
     ## GPS                                                                         ##

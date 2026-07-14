@@ -113,11 +113,55 @@ gps_card <- display_section(
   shiny::tableOutput("gps_file_table")
 )
 
+# Observation metadata
+obs_metadata <- list(
+  bslib::value_box(
+    title = "User",
+    value = shiny::textOutput("observation_user"),
+    showcase = bsicons::bs_icon("person-circle"),
+    theme = "purple"
+  ),
+  bslib::value_box(
+    title = "Date",
+    value = shiny::textOutput("observation_date"),
+    showcase = bsicons::bs_icon("calendar"),
+    theme = "teal"
+  ),
+  bslib::value_box(
+    title = "Start Time",
+    value = shiny::textOutput("observation_start_time"),
+    showcase = bsicons::bs_icon("clock"),
+    theme = "pink"
+  ),
+  bslib::value_box(
+    title = "End Time",
+    value = shiny::textOutput("observation_end_time"),
+    showcase = bsicons::bs_icon("clock-fill"),
+    theme = "blue"
+  ),
+  bslib::value_box(
+    title = "Weather",
+    value = shiny::textOutput("observation_weather"),
+    showcase = bsicons::bs_icon("cloud-sun"),
+    theme = "orange"
+  ),
+  bslib::value_box(
+    title = "Visibility",
+    value = shiny::textOutput("observation_visibility"),
+    showcase = bsicons::bs_icon("eye"),
+    theme = "yellow"
+  )
+)
+
 ## Observation metadata card
 conditions_card <- display_section(
     header = "Observation Metadata",
-    shiny::tableOutput("conditions")
+    bslib::layout_column_wrap(
+      width = 1/2,
+      !!!obs_metadata
+    )
 )
+
 ## Individual flock member card
 individual_inputs <- list(
   bslib::layout_column_wrap(
