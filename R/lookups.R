@@ -228,4 +228,4 @@ colour_ring_df <- data.frame(
     "gnFR", "gnGL", "gnGR", "gnML", "gnMR", "gnNR", "gnOL", "gnOR", "gnP*R", "gnPL", "gnPR", "gnRL", "gnRR", "gnUL",
     "gnUR", "gnWL", "gnWR", "gnYR", "mbB*L", "mbG*L", "mbN*L", "mbP*R", "ngBL", "ngBR", "ngDL", "ngDR", "ngFL", "ngFR",
     "ngGL", "ngGR", "ngML", "ngMR", "ngNL", "ngNR", "ngOL", "ngOR", "ngPL", "ngPR", "ngRL", "ngRR", "ngUR", "ngWR",
-    "noR*R", "ryBR", "ryDR", "ryFR", "ryGR"))
+    "noR*R", "ryBR", "ryDR", "ryFR", "ryGR", "Unlisted"))
