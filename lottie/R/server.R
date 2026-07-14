@@ -123,7 +123,7 @@ empty_dataframes <- create_empty_dataframes()
 
 server <- function(input, output, session) {
     #################################################################################
-    ## Conditions                                                                  ##
+    ## Conditions (aka observation metadata)                                       ##
     #################################################################################
     conditions_data <- shiny::reactiveVal(empty_dataframes$conditions_data)
     shiny::observeEvent(input$submit_conditions, {
@@ -143,7 +143,7 @@ server <- function(input, output, session) {
                 values_from = present,
                 values_fill = FALSE)
         to_add <- tidy_columns(df = to_add, expected_cols = as.list(conditions_df$code))
-        conditions_to_add <- rbind(conditions_data(),  to_add)
+        conditions_to_add <- to_add # Single set of observation metadata
         conditions_data(conditions_to_add)
     })
     output$conditions <- shiny::renderTable(
