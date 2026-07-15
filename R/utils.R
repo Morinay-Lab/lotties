@@ -159,7 +159,7 @@ remove_none_column <- function(df) {
 extract_rings <- function(code, valid_codes, known_rings) {
     ## Validate that the supplied code is valid
     if (!(code %in% known_rings)) {
-        print(print0("WARNING!!! The provided combination (", code, ") is not in known_rings."))
+        print(paste0("WARNING!!! The provided combination (", code, ") is not in known_rings."))
     }
     rings <- list()
     rings$code <- code
