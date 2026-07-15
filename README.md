@@ -23,7 +23,7 @@ git clone https://github.com/Morinay-Lab/lotties.git
 git clone git@github.com:Morinay-Lab/lotties.git
 ```
 
-Or if you use a Git client such as Git Kraken you can use that to clone the repository.
+Or if you use a Git client such as [GitKraken][gitkraken] you can use that to clone the repository.
 
 ## Usage
 
@@ -33,19 +33,23 @@ reside under `data/gpx/`.
 
 ### Shiny
 
-You can test the Shiny package locally by navigating to the `lottie/R/` directory within the cloned repository from within [R][r] and running
-`shiny::runApp()`.
+You can test the Shiny package locally by navigating to the root of the cloned repository from within [R][r] running...
+
+1. `devtools::load_all()` - this loads all of the functions defined in the files within the `R/` directory.
+2. `shiny::runApp(appDir = "inst/shiny/")` - this runs the Shiny application, the UI (`inst/shiny/ui.R`) and
+   (`inst/shiny/server.R`) are used.
 
 ``` r
-setwd("~/path/to/cloned/repository/lotties/lottie/R")
-shiny::runApp()
+setwd("~/path/to/cloned/repository/lotties/R")
+devtools::load_all()  # This loads all functions defined in R/*.R
+shiny::runApp(appDir = "inst/shiny/")
 ```
 
 A new tab should open in your default browser showing the Shiny User Interface.
 
 By default `testing <- TRUE` and so no data is required. SQLite databases are created on the fly in memory for testing
-functionality. If you wish to deploy the application you should edit `lottie/R/server.R` and modify line 9 to set this
-to `FALSE` and if necessary update the `db_path` location, by default it is `../data/sqlite/lottie.sql` (see below).
+functionality. If you wish to deploy the application you should edit `R/app.R` and modify line 9 to set this
+to `FALSE` and if necessary update the `db_path` location, by default it is `data/sqlite/lottie.sql` (see below).
 
 ``` r
 ## testing <- TRUE
@@ -56,7 +60,7 @@ if (testing) {
     ## source("clean.R")
 } else {
     ## ...otherwise we have a database on disc and load it.
-    db_path <- "../data/sqlite/lottie.sql"
+    db_path <- "data/sqlite/lottie.sql"
 }
 ```
 
@@ -87,6 +91,7 @@ Useful resources for R packages and Shiny development.
 
 [devtools]: https://devtools.r-lib.org/index.html
 [gh_ssh]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+[gitkraken]: https://www.gitkraken.com/
 [masteringshiny]: https://mastering-shiny.org/
 [r]: https://www.r-project.org/
 [rpackages]: https://r-pkgs.org/
