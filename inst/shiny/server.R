@@ -1,13 +1,7 @@
-## Filename : server.R
-## Description : Shiny server
 library(DBI)
 library(RSQLite)
 library(shiny)
 library(xml2)
-
-## ns-rse 2026-06-15 - hack to load the extract_ring() function, need to work out how to get package installed in renv
-## so we can use `lottie::extract_ring()`
-## source("utils.R")
 
 ## When developing set to TRUE, otherwise set to FALSE
 testing <- TRUE
@@ -15,7 +9,6 @@ testing <- TRUE
 ## If testing we load the database in memory with this data.
 if (testing) {
     db_path <- ":memory:"
-    ## source("clean.R")
 } else {
     ## ...otherwise we have a database on disc and load it.
     db_path <- "inst/sqlite/lottie.sql"
@@ -181,8 +174,7 @@ server <- function(input, output, session) {
         ## Extract the lat/lon from trkpts and convert to numeric
         lat <- xml2::xml_attr(trkpts, "lat") |> as.numeric()
         lon <- xml2::xml_attr(trkpts, "lon") |> as.numeric()
-        ## ns-rse 2026-06-18 - Extract to a function in utils.R
-        ## Extract the ele, handling missing
+        ## Extract the elevation whilst handling missing
         ele <- vapply(trkpts, function(n) {
             x <- xml2::xml_find_first(n, "d1:ele", gpx_namespace)
             if (is.na(x)) NA_character_ else xml2::xml_text(x)
