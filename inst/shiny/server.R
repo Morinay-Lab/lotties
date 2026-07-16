@@ -285,19 +285,6 @@ server <- function(input, output, session) {
     #################################################################################
     ## Flock Composition                                                           ##
     #################################################################################
-    ringed <- shiny::reactive({input$composition_ringed})
-    colour_ring <- shiny::reactive({input$composition_colour_ring})
-    shiny::observe({
-        if (ringed() == FALSE || colour_ring() == "None" ) {
-            lottie::update_rings_when_not_ringed(session)
-        }
-    })
-    shiny::observe({
-        if (colour_ring() != "None") {
-            shiny::updateSelectInput(session, "composition_ringed", selected = TRUE)
-        } else {
-           shiny::updateSelectInput(session, "composition_bto_ring_position", selected="None")}
-    })
     ## Extract ring colours from selection so they can be used to populate the `selectInput(..., choices=)` of the
     ## `colour_ring_inputs()` function
     selected_rings <- shiny::reactive({
@@ -313,6 +300,77 @@ server <- function(input, output, session) {
     shiny::observe({
         rings <- selected_rings()
         lottie::update_all_rings(rings, session)
+    })
+    ringed <- shiny::reactive({input$composition_ringed})
+    colour_ring <- shiny::reactive({input$composition_colour_ring})
+    bto_ring <- shiny::reactive({input$composition_bto_ring_position})
+    left_top <- shiny::reactive({input$composition_left_top})
+    left_bottom <- shiny::reactive({input$composition_left_bottom})
+    right_top <- shiny::reactive({input$composition_right_top})
+    right_bottom <- shiny::reactive({input$composition_right_bottom})
+    ## Update when not ringed
+    shiny::observe({
+        if (ringed() == FALSE || colour_ring() == "None") {
+            lottie::update_rings_when_not_ringed(session)
+        }
+    })
+    ## Update ringed on BTO ring being selected
+    ## shiny::observe({
+    ##   if (!is.na(bto_ring())) {
+    ##     shiny::updateSelectInput(session, "composition_ringed", selected = TRUE)
+    ##   } else {
+    ##     shiny::updateSelectInput(session, "composition_ringed", selected = FALSE)
+    ##   }
+    ## })
+    ## Update BTO ring position if/when individual ring positions are updated (occurs when colour_ring is "Unlisted")
+    shiny::observe({
+      if (left_top() == "BTO" | left_bottom() == "BTO") {
+          print("Attempt 1 Left")
+          print(left_top())
+          print(left_bottom())
+          print(session$input$composition_bto_ring_position)
+          shiny::updateSelectInput(session, "composition_bto_ring_position", selected = "Left")
+          print(session$input$composition_bto_ring_position)
+      }
+    })
+    shiny::observe({
+      if (right_top() == "BTO" | right_bottom() == "BTO") {
+          print("Attempt 1 Right")
+          print(right_top())
+          print(right_bottom())
+          print(session$input$composition_bto_ring_position)
+        shiny::updateSelectInput(session, "composition_bto_ring_position", selected = "Right")
+          print(session$input$composition_bto_ring_position)
+      }
+    })
+    ## Update on colour rings being selected
+    shiny::observe({
+      if (colour_ring() != "None") {
+        shiny::updateSelectInput(session, "composition_ringed", selected = TRUE)
+        if (left_top() == "BTO" | left_bottom() == "BTO") {
+          print("Attempt 2 Left")
+          print(left_top())
+          print(left_bottom())
+          print(session$input$composition_bto_ring_position)
+          shiny::updateSelectInput(session, "composition_bto_ring_position", selected = "Left")
+          print(session$input$composition_bto_ring_position)
+        }
+        if (right_top() == "BTO" | right_bottom() == "BTO") {
+          print("Attempt 2 Right")
+          print(right_top())
+          print(right_bottom())
+          print(session$input$composition_bto_ring_position)
+        shiny::updateSelectInput(session, "composition_bto_ring_position", selected = "Right")
+          print(session$input$composition_bto_ring_position)
+          }
+      if (left_top() == "BTO" | left_bottom() == "BTO") {
+          shiny::updateSelectInput(session, "composition_bto_ring_position", selected = "Left")
+          print(session$input$composition_bto_ring_position)
+      }
+      } else {
+        shiny::updateSelectInput(session, "composition_ringed", selected = FALSE)
+        ## shiny::updateSelectInput(session, "composition_bto_ring_position", selected="None")
+      }
     })
     ## Update certainty boxes
     ring_composition_certain <- shiny::reactive({

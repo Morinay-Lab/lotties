@@ -163,10 +163,10 @@ extract_rings <- function(code, valid_codes, known_rings) {
     }
     rings <- list()
     rings$code <- code
+    rings$pit <- FALSE
     ## Code is unlisted, return empty values, users should add their own
     if ((code == "Unlisted")) {
         rings$leg <- ""
-        rings$pit <- NA
         rings$bto <- ""
         rings$first <- ""
         rings$second <- ""
@@ -177,12 +177,12 @@ extract_rings <- function(code, valid_codes, known_rings) {
     rings$pit <- FALSE
     ## BTO ring is always on the other leg to coloured rings...
     if (rings$leg == "L") {
-        rings$bto <- "R"
+        rings$bto <- "Right"
     } else if (rings$leg == "R") {
-        rings$bto <- "L"
+        rings$bto <- "Left"
     } else {
         rings$bto <- "None"
-        rings$pit <- NA
+        rings$pit <- FALSE
     }
     ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
     ## the indicated leg.
@@ -250,6 +250,9 @@ extract_rings <- function(code, valid_codes, known_rings) {
         }
     }
     ## Check
+    if (!(rings$pit %in% c(TRUE, FALSE))) {
+        print(paste0("WARNING!!! Ring PIT is neither TRUE nor FALSE : ", rings$pit))
+    }
     if (!(rings$leg %in% c("L", "R"))) {
         print(paste0("WARNING!!! Ring is neither L nor R : ", rings$leg))
     }
@@ -299,7 +302,7 @@ update_ring <- function(session, tag, selected) {
 #' @returns List of ring attributes. `pit` (boolean) `pit_pos` (str), `leg` (str), `code` (str), `bto` (str).
 #'
 #' @export
-update_all_rings <- function(rings, session) {        ## We again deal with PIT ring logic separately
+update_all_rings <- function(rings, session) { ## We again deal with PIT ring logic separately
     if (rings$pit == TRUE) {
         ## ns-rse 2026-06-23 - Debugging
         ## print("PIT RING!")
@@ -346,10 +349,10 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
         }
     }
     ## Now set rings for birds with just BTO
-    else if( stringr::str_sub(rings$code, 1, 3) == "BTO") {
+    else if (stringr::str_sub(rings$code, 1, 3) == "BTO") {
         ## ns-rse 2026-06-23 - Debugging
         ## print("JUST BTO")
-        if (rings$bto == "L") {
+        if (rings$bto == "Left") {
             ## ns-rse 2026-06-23 - Debugging
             ## print("LEFT")
             update_ring(session, tag = "left_top", selected = "BTO")
@@ -380,15 +383,16 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
         update_ring(session, tag = "left_bottom", selected = "None")
         update_ring(session, tag = "right_top", selected = rings$first)
         update_ring(session, tag = "right_bottom", selected = rings$second)
-    } else if(rings$code == "None"){
+    } else if (rings$code == "None") {
         ## ns-rse 2026-06-23 - Debugging
         ## print("NO RINGS")
         update_ring(session, tag = "left_top", selected = "None")
         update_ring(session, tag = "left_bottom", selected = "None")
         update_ring(session, tag = "right_top", selected = "None")
         update_ring(session, tag = "right_bottom", selected = "None")
+        shiny::updateSelectInput(session, "composition_ringed", selected = FALSE)
     }
-    update_ring(session, tag = "bto_ring_position", selected = rings$bto)
+    ## We do not update composition_bto_ring_position here as it can be influenced by other changes
 }
 
 #' Update individual ring certainty based on overall certainty
@@ -658,6 +662,7 @@ deduplicate_flock <- function(df) {
 #' @returns Updates input fields for rings in the supplied session.
 #' @export
 update_rings_when_not_ringed <- function(session) {
+    shiny::updateSelectInput(session, "composition_ringed", selected=FALSE)
     shiny::updateSelectInput(session, "composition_colour_ring", selected="None")
     shiny::updateCheckboxInput(session, "composition_certain", value = FALSE)
     for (tag in c("left_top", "left_bottom", "right_top", "right_bottom")) {

@@ -21,13 +21,6 @@ options(shiny.autoreload = TRUE, shiny.trace = TRUE)
 ## | flock description  | Flock Description   | description_        |
 ## | flock interactions | Flock Interactions  | interactions_       |
 
-## ns-rse ToDo
-##
-## 1. Ensure all inputs are unique, particularly dates/times across files
-## 2. Can we reuse sections or partially submit some input?
-
-## Load lookups
-source("lookups.R")
 
 #' Simple card
 #'
@@ -186,14 +179,6 @@ individual_inputs <- list(
      selected = NULL,
      choices = seq(1, 20)
   ),
-  ## shiny::numericInput(
-  ##   "composition_flock_number",
-  ##   label = "Flock Number : ",
-  ##   min = 1,
-  ##   max = 60,
-  ##   value = 1,
-  ##   step = 1
-  ## ),
   bslib::card_title("Rings"),
   shiny::helpText(
       "For details on reading rings see the document",
@@ -207,14 +192,14 @@ individual_inputs <- list(
       shiny::selectInput(
         "composition_ringed",
         label = "Ringed : ",
-        selected = "Yes",
+        selected = "No",
         choices = c("Yes" = TRUE, "No" = FALSE)
       ),
       shiny::selectInput(
         "composition_bto_ring_position",
         label = "BTO Ring Position : ",
         selected = "None",
-        choices = c("None" = NA, "Left" = "L", "Right" = "R")
+        choices = c("None" = "None", "Left" = "Left", "Right" = "Rright")
       )
     ),
     list(
@@ -384,22 +369,6 @@ interaction_inputs <- list(
        selected = NULL,
        choices = seq(1, 20)
     ),
-    ## shiny::numericInput(
-    ##   "interactions_flock_a",
-    ##   label = "Flock A (numeric ID) : ",
-    ##   min = 0,
-    ##   max = 300,
-    ##   value = 0,
-    ##   step = 1
-    ## ),
-    ## shiny::numericInput(
-    ##   "interactions_flock_b",
-    ##   label = "Flock B (numeric ID) : ",
-    ##   min = 0,
-    ##   max = 300,
-    ##   value = 0,
-    ##   step = 1
-    ## )
   ),
   shiny::checkboxGroupInput("interactions_type",
                      label = "Type of Interaction : ",
@@ -505,11 +474,6 @@ conditions_inputs <- list(
     )
   ),
   shiny::actionButton("submit_conditions", label = "Submit metadata")
-  ## Record user
-  ## shiny::selectInput("user",
-  ##                    label = "User",
-  ##                    choices = split(person_df$code,
-  ##                                    person_df$forename)),
 )
 
 sidebar_accordion <- bslib::sidebar(
