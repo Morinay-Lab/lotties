@@ -147,7 +147,7 @@ RSQLite::dbWriteTable(
              rings_df,
              overwrite = overwrite)
 
-## Sites
+## Sections
 RSQLite::dbWriteTable(
              conn = con,
              name = "Section",
