@@ -40,7 +40,7 @@ You can test the Shiny package locally by navigating to the root of the cloned r
    (`inst/shiny/server.R`) are used which call functions defined in the package namespace under `R/`.
 
 ``` r
-setwd("~/path/to/cloned/repository/lotties/R")
+setwd("~/path/to/cloned/repository/lotties")
 devtools::load_all()
 shiny::runApp(appDir = "inst/shiny/")
 ```
