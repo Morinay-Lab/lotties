@@ -56,7 +56,7 @@ testing <- TRUE
 if (testing) {
     db_path = ":memory:"
 } else {
-    db_path = "data/sqlite/lottie.sql"
+    db_path = "inst/sqlite/lottie.sql"
 }
 ## Set whether to overwrite existing data
 overwrite <- TRUE
@@ -147,11 +147,11 @@ RSQLite::dbWriteTable(
              rings_df,
              overwrite = overwrite)
 
-## Sites
+## Sections
 RSQLite::dbWriteTable(
              conn = con,
-             name = "Site",
-             site_df,
+             name = "Section",
+             section_df,
              overwrite = overwrite)
 
 ## Extract information from the database (mainly as a reference for @ns-rse)!
