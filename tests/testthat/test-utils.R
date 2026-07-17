@@ -2,11 +2,11 @@ library(lottie)
 library(patrick)
 library(testthat)
 
-known_rings <- c(
+valid_rings <- c(
         "None", "BTO", "B", "D", "F", "G", "M", "N", "O", "P", "R", "U", "W", "Y", "Sd", "Sg", "Sn", "So", "Sp", "Sr",
         "Sw", "Sy", "bm", "dg", "do", "dr", "dy", "gd", "gn", "mb", "ng", "no", "nr", "od", "on", "rd", "rn", "ry",
         "yd", "yr", "B*", "G*", "N*", "P*", "R*", "W*", "Y*")
-valid_codes <- c(
+valid_ring_combinations <- c(
     "BDL", "BDR", ## Length 3
     "SgNL", "ryOR", ## Length 4, first ring is two characters
     "WY*L", "PonR", ## Length 4, first ring is one character
@@ -15,25 +15,25 @@ valid_codes <- c(
     "Unlisted"
 )
 
-patrick::with_parameters_test_that("Splitting of all codes is correct:",
+patrick::with_parameters_test_that("Splitting of known codes is correct:",
   {
     testthat::expect_identical(extracted_rings, expected_rings)
   },
   extracted_rings = c(
-    lottie::extract_rings(code = "bmrdR", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings(code = "SdnrL", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings(code = "PonR", valid_codes = valid_codes, known_rings = known_rings ),
-    lottie::extract_rings(code = "WY*L", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings(code = "WY*L", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings(code = "ryOR", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings( code = "SgNL", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings( code = "BDR", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings( code = "BDL", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings( code = "gnBL", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings( code = "ngDL", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings( code = "ryFR", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings( code = "Unlisted", valid_codes = valid_codes, known_rings = known_rings),
-    lottie::extract_rings( code = "None", valid_codes = valid_codes, known_rings = known_rings)
+    lottie::extract_rings(code = "bmrdR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "SdnrL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "PonR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings ),
+    lottie::extract_rings(code = "WY*L", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "Y*WL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "ryOR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "SgNL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "BDR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "BDL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "gnBL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "ngDL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "ryFR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "Unlisted", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "None", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings)
   ),
   expected_rings = c(
     list("code" = "bmrdR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "bm", "second" = "rd"),
@@ -41,7 +41,7 @@ patrick::with_parameters_test_that("Splitting of all codes is correct:",
     list("code" = "PonR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "P", "second" = "on"),
     list("code" = "WY*L", "leg" = "L", "pit" = TRUE, "bto" = "R", "first" = "W", "second" = "Y*",
          "pit_pos" = "second"),
-    list(" code" = "WY*L"," leg" = "L"," pit" = TRUE," bto" = "R"," first" = "W"," second" = "Y*"," pit_pos" = "second"),
+    list(" code" = "Y*WL"," leg" = "L"," pit" = TRUE," bto" = "R"," first" = "Y*"," second" = "W"," pit_pos" = "first"),
     list("code" = "ryOR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "ry", "second" = "O"),
     list("code" = "SgNL", "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "Sg", "second" = "N" ),
     list("code" = "BDR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "B", "second" = "D"),
@@ -83,11 +83,6 @@ testthat::test_that("Test 'none' column is removed.", {
     testthat::expect_false("none" %in% tidy_columns)
 })
 
-
-testthat::test_that("Deduplication of ringed birds only", {
-    deduplicated <- lottie::deduplicate_flock(df = data.frame(flock_id = c(1, 1, 1, 1), ringed = c(FALSE, FALSE, TRUE, TRUE)))
-    testthat::expect_equal(deduplicated, data.frame(flock_id = c(1, 1, 1), ringed = c(FALSE, FALSE, TRUE)))
-})
 
 patrick::with_parameters_test_that("Deduplication of ringed birds only:",
   {

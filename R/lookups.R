@@ -39,7 +39,7 @@ other_species_df <- data.frame(
     )
 )
 
-rings_df <- data.frame(
+valid_rings_df <- data.frame(
     code = c(
         "None",
         "BTO",
@@ -176,7 +176,7 @@ interactions_df <- data.frame(
 )
 
 ## Ring Combinations
-colour_ring_df <- data.frame(
+valid_ring_combinations_df <- data.frame(
     code = c("None", "BTO L", "BTO R", "B*BL","B*BR","B*DL","B*DR","B*GL","B*GR","B*ML","B*NL","B*NR","B*OL","B*OR","B*PL",
              "B*RL","B*SdL","B*SdR","B*SgL","B*SgR","B*SnL","B*SnR","B*SpL","B*SpR","B*SrR",
              "B*SyL","B*SyR", "B*UL", "B*WR", "B*YL", "B*gdR", "B*ngL", "B*ngR", "BBR", "BMR", "BOL", "BR*R", "BRR",

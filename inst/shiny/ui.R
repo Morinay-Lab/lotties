@@ -55,7 +55,7 @@ colour_ring_inputs <- function(position, selected, ...) {
       paste("composition", pos_vars$tag, sep = "_"),
       label = paste(pos_vars$title, ":"),
       selected = selected,
-      choices = split(rings_df$code, rings_df$description)
+      choices = split(valid_rings_df$code, valid_rings_df$description)
     ),
     shiny::checkboxInput(
       paste("composition", pos_vars$tag, "certain", sep = "_"),
@@ -215,7 +215,7 @@ individual_inputs <- list(
         "composition_colour_ring",
         label = "Colour Ring : ",
         selected = "None",
-        choices = colour_ring_df$code
+        choices = valid_ring_combinations_df$code
       ),
       shiny::checkboxInput(
         "composition_certain",

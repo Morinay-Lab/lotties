@@ -140,8 +140,11 @@ remove_none_column <- function(df) {
 #' Rings} for further details on the rules used in the coding system.
 #'
 #' @param code str The code from which rings and leg are to be extracted.
-#' @param valid_codes list List of valid codes, if `code` is not in `valid_codes` it is not extracted.
-#' @param known_rings list List of rings used.
+#' @param valid_ring_combinations list A list of valid ring combinations of the form "[ring1][ring2][leg]", e.g. `Y*WL`, `SdnrL`,
+#' `ryFR`, `BDL`. These will typically be taken from the ``
+#' @param valid_rings list List of individual rings used in ringing birds, combinations thereof form `code` and are
+#' typically in `valid_ring_combinations`, however because of uncertainty when capturing data in the field it is
+#' possible that a `code` formed from `valid_rings` may not exist in `valid_ring_combinations`.
 #'
 #' @returns List of ring properties.
 #'
@@ -156,10 +159,10 @@ remove_none_column <- function(df) {
 #'  |`second`  | str     | The second ring from the full ring code.                 |
 #'
 #' @export
-extract_rings <- function(code, valid_codes, known_rings) {
+extract_rings <- function(code, valid_ring_combinations, valid_rings) {
     ## Validate that the supplied code is valid
-    if (!(code %in% known_rings)) {
-        print(paste0("WARNING!!! The provided combination (", code, ") is not in known_rings."))
+    if (!(code %in% valid_ring_combinations)) {
+        print(paste0("WARNING!!! The provided combination (", code, ") is not in valid_ring_combinations."))
     }
     rings <- list()
     rings$code <- code
@@ -182,7 +185,7 @@ extract_rings <- function(code, valid_codes, known_rings) {
         rings$bto <- "L"
     } else {
         rings$bto <- "None"
-        rings$pit <- NA
+        rings$pit <- FALSE
     }
     ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
     ## the indicated leg.
@@ -235,12 +238,12 @@ extract_rings <- function(code, valid_codes, known_rings) {
     } else if (code_length == 4) {
         ## We check to see if the first two characters are in the subset of rings that are two characters in length, if so we
         ## use the first two characters as the top and the third is the bottom
-        known_rings2 <- known_rings[stringr::str_length(known_rings) == 2]
+        valid_rings2 <- valid_rings[stringr::str_length(valid_rings) == 2]
         if (code == "None") {
             rings$leg <- ""
             rings$first <- ""
             rings$second <- ""
-        } else if (stringr::str_sub(code, 1, 2) %in% known_rings2) {
+        } else if (stringr::str_sub(code, 1, 2) %in% valid_rings2) {
             rings$first <- stringr::str_sub(code, 1, 2)
             rings$second <- stringr::str_sub(code, 3, 3)
         ## If not then the first character is the top and the second and third are the bottom.
@@ -253,10 +256,10 @@ extract_rings <- function(code, valid_codes, known_rings) {
     if (!(rings$leg %in% c("L", "R"))) {
         print(paste0("WARNING!!! Ring is neither L nor R : ", rings$leg))
     }
-    if (!(rings$first %in% valid_codes)) {
+    if (!(rings$first %in% valid_rings)) {
         print(paste0("WARNING!!! Top ring is unknown : ", rings$first))
     }
-    if (!(rings$second %in% valid_codes)) {
+    if (!(rings$second %in% valid_rings)) {
         print(paste0("WARNING!!! Bottom ring is unknown : ", rings$second))
     }
     rings
