@@ -151,15 +151,16 @@ remove_none_column <- function(df) {
 #'
 #' @returns List of ring properties.
 #'
-#'  | Name     | Type    | Description                                              |
-#'  |:---------|:--------|:---------------------------------------------------------|
-#'  |`code`    | str     | The original full ring code.                             |
-#'  |`leg`     | str     | The leg denoted by the full rung code (the last letter). |
-#'  |`pit`     | boolean | Whether a "pit" ring is indicated.                       |
-#'  |`pit_pos` | str     | The position of the "pit" ring.                          |
-#'  |`bto`     | str     | The leg the BTO ring is on (inferred).                   |
-#'  |`first`   | str     | The first ring from the full ring code.                  |
-#'  |`second`  | str     | The second ring from the full ring code.                 |
+#'  | Name     | Type    | Description                                                                     |
+#'  |:---------|:--------|:--------------------------------------------------------------------------------|
+#'  |`code`    | str     | The original full ring code.                                                    |
+#'  |`ringed`  | boolean | Whether a bird is ringed or not (`FALSE` if `code == "None"`, otherwise `TRUE`) |
+#'  |`leg`     | str     | The leg denoted by the full ring code (the last letter).                        |
+#'  |`pit`     | boolean | Whether a "pit" ring is indicated.                                              |
+#'  |`pit_pos` | str     | The position of the "pit" ring.                                                 |
+#'  |`bto`     | str     | The leg the BTO ring is on (inferred).                                          |
+#'  |`first`   | str     | The first ring from the full ring code.                                         |
+#'  |`second`  | str     | The second ring from the full ring code.                                        |
 #'
 #' @export
 extract_rings <- function(code, valid_ring_combinations, valid_rings) {
@@ -169,6 +170,17 @@ extract_rings <- function(code, valid_ring_combinations, valid_rings) {
     }
     rings <- list()
     rings$code <- code
+    if (code == "None") {
+        rings$ringed <- FALSE
+        rings$leg <- ""
+        rings$pit <- FALSE
+        rings$bto <- "None"
+        rings$first <- ""
+        rings$second <- ""
+        return(rings)
+    } else {
+        rings$ringed <- TRUE
+    }
     ## Code is unlisted, return empty values, users should add their own
     if ((code == "Unlisted")) {
         rings$leg <- ""
