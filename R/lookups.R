@@ -39,7 +39,7 @@ other_species_df <- data.frame(
     )
 )
 
-rings_df <- data.frame(
+valid_rings_df <- data.frame(
     code = c(
         "None",
         "BTO",
@@ -176,7 +176,7 @@ interactions_df <- data.frame(
 )
 
 ## Ring Combinations
-colour_ring_df <- data.frame(
+valid_ring_combinations_df <- data.frame(
     code = c("None", "BTO L", "BTO R", "B*BL","B*BR","B*DL","B*DR","B*GL","B*GR","B*ML","B*NL","B*NR","B*OL","B*OR","B*PL",
              "B*RL","B*SdL","B*SdR","B*SgL","B*SgR","B*SnL","B*SnR","B*SpL","B*SpR","B*SrR",
              "B*SyL","B*SyR", "B*UL", "B*WR", "B*YL", "B*gdR", "B*ngL", "B*ngR", "BBR", "BMR", "BOL", "BR*R", "BRR",
@@ -214,7 +214,7 @@ colour_ring_df <- data.frame(
     "SpP*R", "SpPL", "SpR*R", "SpRL", "SpRR", "SpSnL", "SpUL", "SpUR", "SpW*R", "SpWR", "SpY*L", "SpY*R", "SpYR",
     "SrB*L", "SrB*R", "SrG*L", "SrG*R", "SrN*L", "SrN*R", "SrP*L", "SrP*R", "SrR*L", "SrR*R", "SrW*L", "SrW*R", "SrY*L",
     "SrY*R", "SyB*L", "SyB*R", "SyG*L", "SyN*L", "SyP*L", "SyP*R", "SyR*L", "SyR*R", "SyW*L", "SyW*R", "SyY*L", "SyY*R",
-    "TRL", "UB*L", "UB*R", "UDL", "UDR", "UFL", "UFR", "UG*L", "UG*R", "UL", "UML", "UMR", "UN*R", "UNL", "UOL",
+    "TRL", "UB*L", "UB*R", "UDL", "UDR", "UFL", "UFR", "UG*L", "UG*R", "UUL", "UML", "UMR", "UN*R", "UNL", "UOL",
     "UOR", "UP*L", "UP*R", "UPR", "UR*L", "UR*R", "USdL", "USdR", "USnL", "USnR", "USpL", "USpR", "UUL", "UUR", "UW*R",
     "UWL", "UY*L", "UYL", "UYR", "UbmL", "UbmR", "UgdL", "UgdR", "UgnR", "UmbL", "UmbR", "UngL", "UngR", "W*BL", "W*FL",
     "W*FR", "W*GR", "W*MR", "W*NL", "W*OR", "W*PL", "W*PR", "W*RR", "W*SdL", "W*SdR", "W*SgL", "W*SnL", "W*SnR",
@@ -228,4 +228,4 @@ colour_ring_df <- data.frame(
     "gnFR", "gnGL", "gnGR", "gnML", "gnMR", "gnNR", "gnOL", "gnOR", "gnP*R", "gnPL", "gnPR", "gnRL", "gnRR", "gnUL",
     "gnUR", "gnWL", "gnWR", "gnYR", "mbB*L", "mbG*L", "mbN*L", "mbP*R", "ngBL", "ngBR", "ngDL", "ngDR", "ngFL", "ngFR",
     "ngGL", "ngGR", "ngML", "ngMR", "ngNL", "ngNR", "ngOL", "ngOR", "ngPL", "ngPR", "ngRL", "ngRR", "ngUR", "ngWR",
-    "noR*R", "ryBR", "ryDR", "ryFR", "ryGR"))
+    "noR*R", "ryBR", "ryDR", "ryFR", "ryGR", "Unlisted"))

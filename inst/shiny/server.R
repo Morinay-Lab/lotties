@@ -43,7 +43,7 @@ if (testing) {
     RSQLite::dbWriteTable(
         conn = con,
         name = "Rings",
-        rings_df,
+        valid_rings_df,
         overwrite = overwrite
     )
 
@@ -105,7 +105,7 @@ if (testing) {
     other_species_df <- RSQLite::dbGetQuery(con, query)
     ## Rings
     query <- "SELECT * FROM Rings"
-    rings_df <- RSQLite::dbGetQuery(con, query)
+    valid_rings_df <- RSQLite::dbGetQuery(con, query)
     ## Sites
     query <- "SELECT * FROM Sites"
     sites_df <- RSQLite::dbGetQuery(con, query)
@@ -296,8 +296,8 @@ server <- function(input, output, session) {
         ## We split the returned code using lottie::extract_rings(), this returns rings$leg, rings$top and rings$bottom
         rings <- lottie::extract_rings(
             code = input$composition_colour_ring,
-            valid_codes = rings_df$code,
-            known_rings = colour_ring_df$code)
+            valid_ring_combinations = valid_ring_combinations_df$code,
+            valid_rings = valid_rings_df$code)
         rings
     })
     ## Having split the rings we can now use the leg and and assign the top/bottom to be selected automagically in the

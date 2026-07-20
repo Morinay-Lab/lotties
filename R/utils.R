@@ -1,4 +1,6 @@
+library(dplyr)
 library(readr)
+library(stringr)
 
 #' Clean a GPS file.
 #'
@@ -62,7 +64,6 @@ clean_flock_description <- function(df, person) {
         dplyr::mutate(
             ## Date  & Times in good format
             date = lubridate::ymd(description_date),
-            # day_of_year = ,
             IDD = paste0(person, "_", flock_id),
             flock_id = description_flock_id,
             person = person,
@@ -70,23 +71,12 @@ clean_flock_description <- function(df, person) {
             time_seen = lubridate::ymd_hm(description_start_time),
             time_lost = lubridate::ymd_hm(description_end_time),
             in_flock = description_flock_type,
-            # whole_flock_id =
             min_nb = description_n_flock,
             min_nb_unident = description_n_flock - description_n_ringed,
-            # BT =  ,
-            # GT =  ,
-            # CT =  ,
-            # GC =  ,
-            # RB =  ,
-            # NH =  ,
-            # TC =  ,
-            # WP =  ,
-            # no_other_species =  ,
             notes = description_notes
         ) |>
         dplyr::select(
             date,
-            # day_of_year,
             IDD,
             flock_id,
             person,
@@ -94,18 +84,8 @@ clean_flock_description <- function(df, person) {
             time_seen,
             time_lost,
             in_flock,
-            # whole_flock_id,
             min_nb,
             min_nb_unident,
-            # BT,
-            # GT,
-            # CT,
-            # GC,
-            # RB,
-            # NH,
-            # TC,
-            # WP,
-            # no_other_species,
             notes
         )
 }
@@ -160,8 +140,14 @@ remove_none_column <- function(df) {
 #' Rings} for further details on the rules used in the coding system.
 #'
 #' @param code str The code from which rings and leg are to be extracted.
-#' @param valid_codes list List of valid codes, if `code` is not in `valid_codes` it is not extracted.
-#' @param known_rings list List of rings used.
+#' @param valid_ring_combinations list A list of valid ring combinations of the form "[ring1][ring2][leg]", e.g. `Y*WL`, `SdnrL`,
+#' `ryFR`, `BDL`. These will typically be taken from the `R/lookups.R` file which hard codes the available rings based
+#' on an extract from an external database. New codes should be added and/or the list updated from a database extract
+#' but users should be aware of possible errors (one identified and corrected is the presence of `UL` which should be
+#' `UUL` and has been manually corrected).
+#' @param valid_rings list List of individual rings used in ringing birds, combinations thereof form `code` and are
+#' typically in `valid_ring_combinations`, however because of uncertainty when capturing data in the field it is
+#' possible that a `code` formed from `valid_rings` may not exist in `valid_ring_combinations`.
 #'
 #' @returns List of ring properties.
 #'
@@ -176,14 +162,23 @@ remove_none_column <- function(df) {
 #'  |`second`  | str     | The second ring from the full ring code.                 |
 #'
 #' @export
-extract_rings <- function(code, valid_codes, known_rings) {
+extract_rings <- function(code, valid_ring_combinations, valid_rings) {
     ## Validate that the supplied code is valid
-    if (!(code %in% known_rings)) {
-        print(print0("WARNING!!! The provided combination (", code, ") is not in known_rings."))
+    if (!(code %in% valid_ring_combinations)) {
+        print(paste0("WARNING!!! The provided combination (", code, ") is not in valid_ring_combinations."))
     }
-    code_length <- stringr::str_length(code)
     rings <- list()
     rings$code <- code
+    ## Code is unlisted, return empty values, users should add their own
+    if ((code == "Unlisted")) {
+        rings$leg <- ""
+        rings$pit <- FALSE
+        rings$bto <- ""
+        rings$first <- ""
+        rings$second <- ""
+        return(rings)
+    }
+    code_length <- stringr::str_length(code)
     rings$leg <- stringr::str_sub(code, start = -1)
     rings$pit <- FALSE
     ## BTO ring is always on the other leg to coloured rings...
@@ -193,6 +188,7 @@ extract_rings <- function(code, valid_codes, known_rings) {
         rings$bto <- "L"
     } else {
         rings$bto <- "None"
+        rings$pit <- FALSE
     }
     ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
     ## the indicated leg.
@@ -245,12 +241,12 @@ extract_rings <- function(code, valid_codes, known_rings) {
     } else if (code_length == 4) {
         ## We check to see if the first two characters are in the subset of rings that are two characters in length, if so we
         ## use the first two characters as the top and the third is the bottom
-        known_rings2 <- known_rings[stringr::str_length(known_rings) == 2]
+        valid_rings2 <- valid_rings[stringr::str_length(valid_rings) == 2]
         if (code == "None") {
             rings$leg <- ""
             rings$first <- ""
             rings$second <- ""
-        } else if (stringr::str_sub(code, 1, 2) %in% known_rings2) {
+        } else if (stringr::str_sub(code, 1, 2) %in% valid_rings2) {
             rings$first <- stringr::str_sub(code, 1, 2)
             rings$second <- stringr::str_sub(code, 3, 3)
         ## If not then the first character is the top and the second and third are the bottom.
@@ -263,10 +259,10 @@ extract_rings <- function(code, valid_codes, known_rings) {
     if (!(rings$leg %in% c("L", "R"))) {
         print(paste0("WARNING!!! Ring is neither L nor R : ", rings$leg))
     }
-    if (!(rings$first %in% valid_codes)) {
+    if (!(rings$first %in% valid_rings)) {
         print(paste0("WARNING!!! Top ring is unknown : ", rings$first))
     }
-    if (!(rings$second %in% valid_codes)) {
+    if (!(rings$second %in% valid_rings)) {
         print(paste0("WARNING!!! Bottom ring is unknown : ", rings$second))
     }
     rings
