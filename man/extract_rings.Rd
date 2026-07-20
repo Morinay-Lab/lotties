@@ -4,14 +4,20 @@
 \alias{extract_rings}
 \title{Extract rings}
 \usage{
-extract_rings(code, valid_codes, known_rings)
+extract_rings(code, valid_ring_combinations, valid_rings)
 }
 \arguments{
 \item{code}{str The code from which rings and leg are to be extracted.}
 
-\item{valid_codes}{list List of valid codes, if \code{code} is not in \code{valid_codes} it is not extracted.}
+\item{valid_ring_combinations}{list A list of valid ring combinations of the form "[ring1][ring2][leg]", e.g. \code{Y*WL}, \code{SdnrL},
+\code{ryFR}, \code{BDL}. These will typically be taken from the \code{R/lookups.R} file which hard codes the available rings based
+on an extract from an external database. New codes should be added and/or the list updated from a database extract
+but users should be aware of possible errors (one identified and corrected is the presence of \code{UL} which should be
+\code{UUL} and has been manually corrected).}
 
-\item{known_rings}{list List of rings used.}
+\item{valid_rings}{list List of individual rings used in ringing birds, combinations thereof form \code{code} and are
+typically in \code{valid_ring_combinations}, however because of uncertainty when capturing data in the field it is
+possible that a \code{code} formed from \code{valid_rings} may not exist in \code{valid_ring_combinations}.}
 }
 \value{
 List of ring properties.\tabular{lll}{

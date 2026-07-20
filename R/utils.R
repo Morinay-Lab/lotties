@@ -141,7 +141,10 @@ remove_none_column <- function(df) {
 #'
 #' @param code str The code from which rings and leg are to be extracted.
 #' @param valid_ring_combinations list A list of valid ring combinations of the form "[ring1][ring2][leg]", e.g. `Y*WL`, `SdnrL`,
-#' `ryFR`, `BDL`. These will typically be taken from the ``
+#' `ryFR`, `BDL`. These will typically be taken from the `R/lookups.R` file which hard codes the available rings based
+#' on an extract from an external database. New codes should be added and/or the list updated from a database extract
+#' but users should be aware of possible errors (one identified and corrected is the presence of `UL` which should be
+#' `UUL` and has been manually corrected).
 #' @param valid_rings list List of individual rings used in ringing birds, combinations thereof form `code` and are
 #' typically in `valid_ring_combinations`, however because of uncertainty when capturing data in the field it is
 #' possible that a `code` formed from `valid_rings` may not exist in `valid_ring_combinations`.
@@ -169,7 +172,7 @@ extract_rings <- function(code, valid_ring_combinations, valid_rings) {
     ## Code is unlisted, return empty values, users should add their own
     if ((code == "Unlisted")) {
         rings$leg <- ""
-        rings$pit <- NA
+        rings$pit <- FALSE
         rings$bto <- ""
         rings$first <- ""
         rings$second <- ""
