@@ -166,19 +166,25 @@ extract_rings <- function(code, valid_codes, known_rings) {
     rings$pit <- FALSE
     ## Code is unlisted, return empty values, users should add their own
     if ((code == "Unlisted")) {
-        rings$leg <- ""
-        rings$bto <- ""
+        rings$leg <- "None"
+        rings$bto <- "None"
         rings$first <- ""
         rings$second <- ""
         return(rings)
     }
     code_length <- stringr::str_length(code)
-    rings$leg <- stringr::str_sub(code, start = -1)
+    if (stringr::str_sub(code, start = -1) == "L") {
+      rings$leg <- "Left"
+    } else if (stringr::str_sub(code, start = -1) == "R") {
+      rings$leg <- "Right"
+    } else {
+      rings$leg <- "None"
+    }
     rings$pit <- FALSE
     ## BTO ring is always on the other leg to coloured rings...
-    if (rings$leg == "L") {
+    if (rings$leg == "Left") {
         rings$bto <- "Right"
-    } else if (rings$leg == "R") {
+    } else if (rings$leg == "Right") {
         rings$bto <- "Left"
     } else {
         rings$bto <- "None"
@@ -187,8 +193,13 @@ extract_rings <- function(code, valid_codes, known_rings) {
     ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
     ## the indicated leg.
     if (stringr::str_sub(code, start = 1, end = 3) == "BTO") {
-        rings$bto <- stringr::str_sub(code, start = -1)
-        rings$leg <- stringr::str_sub(code, start = -1)
+        if (stringr::str_sub(code, start = -1) == "L") {
+           rings$bto <- "Left"
+           rings$leg <- "None"
+        } else {
+           rings$bto <- "Right"
+           rings$leg <- "None"
+        }
         return(rings)
     }
     ## @ns-rse 2026-06-16 : Handle PIT rings first, felt it was simpler to follow the logic if done this way
@@ -237,7 +248,9 @@ extract_rings <- function(code, valid_codes, known_rings) {
         ## use the first two characters as the top and the third is the bottom
         known_rings2 <- known_rings[stringr::str_length(known_rings) == 2]
         if (code == "None") {
-            rings$leg <- ""
+            rings$leg <- "None"
+            rings$bto <- "None"
+            rings$pit <- "None"
             rings$first <- ""
             rings$second <- ""
         } else if (stringr::str_sub(code, 1, 2) %in% known_rings2) {
@@ -253,7 +266,7 @@ extract_rings <- function(code, valid_codes, known_rings) {
     if (!(rings$pit %in% c(TRUE, FALSE))) {
         print(paste0("WARNING!!! Ring PIT is neither TRUE nor FALSE : ", rings$pit))
     }
-    if (!(rings$leg %in% c("L", "R"))) {
+    if (!(rings$leg %in% c("Left", "Right"))) {
         print(paste0("WARNING!!! Ring is neither L nor R : ", rings$leg))
     }
     if (!(rings$first %in% valid_codes)) {
@@ -307,7 +320,7 @@ update_all_rings <- function(rings, session) { ## We again deal with PIT ring lo
         ## ns-rse 2026-06-23 - Debugging
         ## print("PIT RING!")
         ## Coloured ring is on Left leg...
-        if (rings$leg == "L") {
+        if (rings$leg == "Left") {
             ## ns-rse 2026-06-23 - Debugging
             ## print("LEFT")
             ## But we need to pull the ring from the correct top/bottom which is conditional on whether the PIT ring
@@ -367,7 +380,7 @@ update_all_rings <- function(rings, session) { ## We again deal with PIT ring lo
         update_ring(session, tag = "right_bottom", selected = "None")
     }
     ## Finally set rings for birds with just colour (no PIT but BTO on opposite leg)
-    else if (rings$leg == "L") {
+    else if (rings$leg == "Left") {
         ## ns-rse 2026-06-23 - Debugging
         ## print("NO PIT, JUST COLOUR")
         ## print("LEFT")
@@ -375,7 +388,7 @@ update_all_rings <- function(rings, session) { ## We again deal with PIT ring lo
         update_ring(session, tag = "left_bottom", selected = rings$second)
         update_ring(session, tag = "right_top", selected = "BTO")
         update_ring(session, tag = "right_bottom", selected = "None")
-    } else if (rings$leg == "R") {
+    } else if (rings$leg == "Right") {
         ## ns-rse 2026-06-23 - Debugging
         ## print("NO PIT, JUST COLOUR")
         ## print("RIGHT")
@@ -391,6 +404,14 @@ update_all_rings <- function(rings, session) { ## We again deal with PIT ring lo
         update_ring(session, tag = "right_top", selected = "None")
         update_ring(session, tag = "right_bottom", selected = "None")
         shiny::updateSelectInput(session, "composition_ringed", selected = FALSE)
+    } else if (rings$code == "Unlisted") {
+        ## ns-rse 2026-06-23 - Debugging
+        ## print("NO RINGS")
+        update_ring(session, tag = "left_top", selected = "None")
+        update_ring(session, tag = "left_bottom", selected = "None")
+        update_ring(session, tag = "right_top", selected = "None")
+        update_ring(session, tag = "right_bottom", selected = "None")
+        shiny::updateSelectInput(session, "composition_ringed", selected = TRUE)
     }
     ## We do not update composition_bto_ring_position here as it can be influenced by other changes
 }
@@ -652,10 +673,10 @@ deduplicate_flock <- function(df) {
     )
 }
 
-#' Update ring component fields.
+#' Update ring component fields when not ringed.
 #'
-#' This function is called when the `composition_ringed` field is changed to "No" (`FALSE`) and clears all ring fields
-#' so that no erroneous data is submitted.
+#' This function is called when the `composition_ringed` field is changed to "No" (`FALSE`) or `composition_colour_ring`
+#' is change to `None` and clears all ring fields so that no erroneous data is submitted.
 #'
 #' @param session The session to be updated.
 #'
@@ -672,5 +693,24 @@ update_rings_when_not_ringed <- function(session) {
     shiny::updateSelectInput(session, "composition_bto_ring_position", selected="None")
 }
 
+#' Update ring component fields when not unlisted.
+#'
+#' This function is called when the `composition_colour_ring` field is changed to `Unlisted` and clears all ring fields
+#' so that no erroneous data is submitted.
+#'
+#' @param session The session to be updated.
+#'
+#' @returns Updates input fields for rings in the supplied session.
+#' @export
+update_rings_when_unlisted <- function(session) {
+    shiny::updateSelectInput(session, "composition_ringed", selected=TRUE)
+    # shiny::updateSelectInput(session, "composition_colour_ring", selected="None")
+    shiny::updateCheckboxInput(session, "composition_certain", value = FALSE)
+    for (tag in c("left_top", "left_bottom", "right_top", "right_bottom")) {
+        shiny::updateSelectInput(session, paste0("composition_", tag), selected = "None")
+        shiny::updateCheckboxInput(session, paste0("composition_", tag, "certain"), value = FALSE)
+    }
+    shiny::updateSelectInput(session, "composition_bto_ring_position", selected="None")
+}
 
 ## End of file
