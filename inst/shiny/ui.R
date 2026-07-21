@@ -1,5 +1,6 @@
 library(bsicons)
 library(bslib)
+library(DT)
 library(shiny)
 library(shinyTime)
 
@@ -314,6 +315,7 @@ flock_inputs <- list(
 flock_card <- display_section(
   header = "Flocks",
   shiny::tableOutput("description"),
+  DT::DTOutput("dt_description"),
   shiny::helpText("NB - Duplicate observations in the above table will be removed on submission.")
 )
 

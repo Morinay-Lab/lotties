@@ -472,6 +472,38 @@ server <- function(input, output, session) {
         },
         striped = TRUE)
 
+    ## Render flock description data as a simple DataTable with editable cells
+    dt_options <- list(
+        paging = FALSE,
+        searching = FALSE,
+        ordering = FALSE
+    )
+    ## Identify columns which should not be editable (zero indexed for JS). We exclude logical columns
+    ## because DT::editData() doesn't seem to be able to handle these updates.
+    exclude_cols <- unname(which(sapply(empty_dataframes$description_data, is.logical))) - 1
+    ## Render DataTable, enabling cell editing except where columns are marked to be excluded
+    output$dt_description <- DT::renderDT(
+        {
+            description_data()
+        },
+        editable = list(
+          target = "cell",
+          disable = list(columns = exclude_cols)
+        ),
+        options = dt_options,
+        rownames = FALSE
+    )
+    ## Observe edit events in data table and update flock description data
+    shiny::observeEvent(input$dt_description_cell_edit, {
+        cell <- input$dt_description_cell_clicked
+        # Don't try to update disabled entries
+        if (!cell$col %in% exclude_cols) {
+            info <- input$dt_description_cell_edit
+            description_to_update <- DT::editData({description_data()}, info, rownames = FALSE)
+            description_data(description_to_update)
+        }
+    })
+
     #################################################################################
     ## Interactions                                                                ##
     #################################################################################

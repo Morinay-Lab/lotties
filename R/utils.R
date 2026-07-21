@@ -569,11 +569,11 @@ create_empty_dataframes <- function() {
         end_time = character(),
         flock_type = character(),
         flock_number = integer(),
-        whole_flock = character(),
+        whole_flock = logical(),
         n_flock = integer(),
         n_ringed = integer(),
         section = character(),
-        mist_net = character(),
+        mist_net = logical(),
         notes = character(),
         blue_tit = logical(),
         chiff_chaff = logical(),
@@ -610,6 +610,7 @@ create_empty_dataframes <- function() {
         Points = integer(),
         Start=character(),
         Finish = character())
+    empty_df
 }
 
 #' Render a dataframe table as a Shiny.
