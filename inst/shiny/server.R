@@ -277,10 +277,14 @@ server <- function(input, output, session) {
     #################################################################################
     ## Flock Composition                                                           ##
     #################################################################################
-    ringed <- shiny::reactive({input$composition_ringed})
+    ## We need to be able to see the values in the following and react conditional on their values
     colour_ring <- shiny::reactive({input$composition_colour_ring})
+    left_top <- shiny::reactive({input$composition_left_top})
+    left_bottom <- shiny::reactive({input$composition_left_bottom})
+    right_top <- shiny::reactive({input$composition_right_top})
+    right_bottom <- shiny::reactive({input$composition_right_bottom})
     shiny::observe({
-        if (ringed() == FALSE || colour_ring() == "None" ) {
+        if (colour_ring() == "None" ) {
             lottie::update_rings_when_not_ringed(session)
         }
     })
@@ -293,14 +297,13 @@ server <- function(input, output, session) {
     ## Extract ring colours from selection so they can be used to populate the `selectInput(..., choices=)` of the
     ## `colour_ring_inputs()` function
     selected_rings <- shiny::reactive({
-        ## We split the returned code using lottie::extract_rings(), this returns rings$leg, rings$top and rings$bottom
         rings <- lottie::extract_rings(
             code = input$composition_colour_ring,
             valid_ring_combinations = valid_ring_combinations_df$code,
             valid_rings = valid_rings_df$code)
         rings
     })
-    ## Having split the rings we can now use the leg and and assign the top/bottom to be selected automagically in the
+    ## Having split the rings we can now use the leg and assign the top/bottom to be selected automagically in the
     ## UI
     shiny::observe({
         rings <- selected_rings()
@@ -330,14 +333,20 @@ server <- function(input, output, session) {
             shiny::updateCheckboxInput(session, "composition_certain", value = FALSE)
         }
     })
+
     ## Build the dataframe/table of birds within a flock when the "Submit bird description" button is clicked
+    ## The 'ringed' and 'bto_ring_position' have been determined by lottie::extract_rings() and are stored in the
+    ## reactive object 'selected_rings()' which is a named list. This is done as it is easier programatically than
+    ## having reactive 'input$composition_ringed' and 'input$composition_bto_ring_position' and it simplifies the input
+    ## process for users who do not have to fill out fields for which it is possible to infer values.
     composition_data <- shiny::reactiveVal(empty_dataframes$composition_data)
     shiny::observeEvent(input$add_composition, {
-        composition_to_add <- rbind(composition_data(), data.frame(
+        ## We now set the `ringed` and `bto_ring_position` conditional on the selected rings
+        to_add <- data.frame(
             date = as.character(input$composition_date),
             time = as.character(format(input$composition_time, "%H:%M")),
             flock_number = input$composition_flock_number,
-            ringed = input$composition_ringed,
+            ringed = selected_rings()$ringed,
             colour_ring = input$composition_colour_ring,
             certain = input$composition_certain,
             left_top = input$composition_left_top,
@@ -348,10 +357,15 @@ server <- function(input, output, session) {
             right_top_certain = input$composition_right_top_certain,
             right_bottom = input$composition_right_bottom,
             right_bottom_certain = input$composition_right_bottom_certain,
-            bto_ring_position = input$composition_bto_ring_position,
             notes = input$composition_notes,
-            stringsAsFactors = FALSE
-        ))
+            stringsAsFactors = FALSE) |>
+            ## Add in the bto_ring_position conditional on the values of individual rings
+            dplyr::mutate(bto_ring_position = dplyr::case_when(left_top() == "BTO" ~ "L",
+                                                               left_bottom() == "BTO" ~ "L",
+                                                               right_top() == "BTO" ~ "R",
+                                                               right_bottom() == "BTO" ~ "R",
+                                                               .default = "None"))
+        composition_to_add <- rbind(composition_data(), to_add)
         ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
         ## function all_inputs(), this requires filtering all_inputs for those that start with composition_
         ## then removing those we do not want to update (in this case composition_flock_number since we want to

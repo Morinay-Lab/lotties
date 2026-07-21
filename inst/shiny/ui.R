@@ -179,14 +179,6 @@ individual_inputs <- list(
      selected = NULL,
      choices = seq(1, 20)
   ),
-  ## shiny::numericInput(
-  ##   "composition_flock_number",
-  ##   label = "Flock Number : ",
-  ##   min = 1,
-  ##   max = 60,
-  ##   value = 1,
-  ##   step = 1
-  ## ),
   bslib::card_title("Rings"),
   shiny::helpText(
       "For details on reading rings see the document",
@@ -196,20 +188,6 @@ individual_inputs <- list(
       "."),
   shiny::br(),
   bslib::layout_column_wrap(
-    list(
-      shiny::selectInput(
-        "composition_ringed",
-        label = "Ringed : ",
-        selected = "Yes",
-        choices = c("Yes" = TRUE, "No" = FALSE)
-      ),
-      shiny::selectInput(
-        "composition_bto_ring_position",
-        label = "BTO Ring Position : ",
-        selected = "None",
-        choices = c("None" = NA, "Left" = "L", "Right" = "R")
-      )
-    ),
     list(
       shiny::selectInput(
         "composition_colour_ring",

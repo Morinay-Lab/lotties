@@ -23,6 +23,7 @@ possible that a \code{code} formed from \code{valid_rings} may not exist in \cod
 List of ring properties.\tabular{lll}{
    Name \tab Type \tab Description \cr
    \code{code} \tab str \tab The original full ring code. \cr
+   \code{ringed} \tab boolean \tab Whether a bird is ringed or not (\code{FALSE} if \code{code == "None"}, otherwise \code{TRUE} \cr
    \code{leg} \tab str \tab The leg denoted by the full rung code (the last letter). \cr
    \code{pit} \tab boolean \tab Whether a "pit" ring is indicated. \cr
    \code{pit_pos} \tab str \tab The position of the "pit" ring. \cr

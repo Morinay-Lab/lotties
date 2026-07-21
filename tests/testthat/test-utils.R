@@ -32,26 +32,27 @@ patrick::with_parameters_test_that("Splitting of known codes is correct:",
     lottie::extract_rings(code = "gnBL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
     lottie::extract_rings(code = "ngDL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
     lottie::extract_rings(code = "ryFR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
-    lottie::extract_rings(code = "Unlisted", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
+    lottie::extract_rings(code = "Unlisted", valid_ring_combinations = valid_ring_combinations, valid_rings =  valid_rings),
     lottie::extract_rings(code = "None", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings)
   ),
   expected_rings = c(
-    list("code" = "bmrdR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "bm", "second" = "rd"),
-    list("code" = "SdnrL", "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "Sd", "second" = "nr"),
-    list("code" = "PonR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "P", "second" = "on"),
-    list("code" = "WY*L", "leg" = "L", "pit" = TRUE, "bto" = "R", "first" = "W", "second" = "Y*",
+    list("code" = "bmrdR", "ringed" = TRUE, "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "bm", "second" = "rd"),
+    list("code" = "SdnrL", "ringed" = TRUE, "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "Sd", "second" = "nr"),
+    list("code" = "PonR", "ringed" = TRUE, "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "P", "second" = "on"),
+    list("code" = "WY*L", "ringed" = TRUE, "leg" = "L", "pit" = TRUE, "bto" = "R", "first" = "W", "second" = "Y*",
          "pit_pos" = "second"),
-    list("code" = "Y*WL", "leg" = "L", "pit" = TRUE, "bto" = "R", "first" = "Y*", "second" = "W",
+    list("code" = "Y*WL", "ringed" = TRUE, "leg" = "L", "pit" = TRUE, "bto" = "R", "first" = "Y*", "second" = "W",
          "pit_pos" = "first"),
-    list("code" = "ryOR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "ry", "second" = "O"),
-    list("code" = "SgNL", "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "Sg", "second" = "N" ),
-    list("code" = "BDR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "B", "second" = "D"),
-    list( "code" = "BDL", "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "B", "second" = "D"),
-    list( "code" = "gnBL", "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "gn", "second" = "B"),
-    list( "code" = "ngDL", "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "ng", "second" = "D"),
-    list( "code" = "ryFR", "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "ry", "second" = "F"),
-    list( "code" = "Unlisted", "leg" = "", "pit" = FALSE, "bto" = "", "first" = "", "second" = ""),
-    list( "code" = "None", "leg" = "", "pit" = FALSE, "bto" = "None", "first" = "", "second" = "")
+    list("code" = "ryOR", "ringed" = TRUE, "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "ry", "second" = "O"),
+    list("code" = "SgNL", "ringed" = TRUE, "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "Sg", "second" = "N" ),
+    list("code" = "BDR", "ringed" = TRUE, "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "B", "second" = "D"),
+    list("code" = "BDL", "ringed" = TRUE, "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "B", "second" = "D"),
+    list("code" = "gnBL", "ringed" = TRUE, "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "gn", "second" = "B"),
+    list("code" = "ngDL", "ringed" = TRUE, "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "ng", "second" = "D"),
+    list("code" = "ryFR", "ringed" = TRUE, "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "ry", "second" = "F"),
+    ## When Unlisted users enter values as we can not extract anything
+    list("code" = "Unlisted", "ringed" = TRUE, "leg" = "", "pit" = FALSE, "bto" = "", "first" = "", "second" = "") ,
+    list("code" = "None", "ringed" = FALSE, "leg" = "", "pit" = FALSE, "bto" = "None", "first" = "", "second" = "")
   ),
   .test_name = c(
       "5-character right leg",
@@ -67,7 +68,7 @@ patrick::with_parameters_test_that("Splitting of known codes is correct:",
       "Split ring check (ngDL), was originally incorrectly split",
       "Split ring check (ryFR), was originally incorrectly split",
       "Unlisted returns missing/NA",
-      "None returns missing/NA"
+      "None returns FALSE/''/NA"
   )
 )
 
