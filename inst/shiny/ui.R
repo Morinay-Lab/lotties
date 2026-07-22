@@ -1,6 +1,5 @@
 library(bsicons)
 library(bslib)
-library(DT)
 library(shiny)
 library(shinyTime)
 
