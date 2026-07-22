@@ -627,6 +627,40 @@ render_table <- function(df, striped = TRUE) {
             striped = striped
         )}
 
+
+#' Render a reactive dataframe as an editable DataTable.
+#'
+#' @param reactiveData function Data for rendering as table, expected to be a reactive function.
+#' @param editable str|list Controls table elements to be editable (`cell|row|column|all` or `list()`, default `cell`).
+#' @param exclude_cols int Vector of zero-indexed column indices for which editing should be disabled (default `NULL`).
+#' @param server bool Whether to run server side or not (default `TRUE`).
+#' @param rownames bool Whether to display row names (default = `FALSE`).
+#' @param options list List of DataTable options (default = `list()`).
+#' @param ... Other parameters to be passed on to `DT::renderDT()`.
+#'
+#' @returns Rendered DataTable.
+#'
+#' @export
+render_dt <- function(reactiveData, editable = "cell", exclude_cols = NULL, server = TRUE, rownames = FALSE, options = list(), ...) {
+    if (!is.null(exclude_cols)) {
+        if (!is.list(editable)) {
+            editable <- list(target = editable)
+        }
+        editable$disable = list(columns = exclude_cols)
+    }
+    DT::renderDT(
+    {
+        reactiveData()
+    },
+    server = server,
+    editable = editable,
+    rownames = rownames,
+    options = options,
+    ...
+    )
+}
+
+
 #' Filter a list of inputs for a subset and remove those that are to be excluded.
 #'
 #' We wish to reset input fields, to do so we need a list of labels used for `input` objects. This is provided by the

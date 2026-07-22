@@ -482,17 +482,9 @@ server <- function(input, output, session) {
     ## because DT::editData() doesn't seem to be able to handle these updates.
     exclude_cols <- unname(which(sapply(empty_dataframes$description_data, is.logical))) - 1
     ## Render DataTable, enabling cell editing except where columns are marked to be excluded
-    output$dt_description <- DT::renderDT(
-        {
-            description_data()
-        },
-        editable = list(
-          target = "cell",
-          disable = list(columns = exclude_cols)
-        ),
-        options = dt_options,
-        rownames = FALSE
-    )
+    output$dt_description <- lottie::render_dt(description_data,
+                                               exclude_cols = exclude_cols,
+                                               options = dt_options)
     ## Observe edit events in data table and update flock description data
     shiny::observeEvent(input$dt_description_cell_edit, {
         cell <- input$dt_description_cell_clicked
