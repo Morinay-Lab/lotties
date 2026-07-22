@@ -3,6 +3,8 @@
 export(clean_flock_description)
 export(clean_gps)
 export(create_empty_dataframes)
+export(dataTableServer)
+export(dataTableUI)
 export(db_table_debug)
 export(deduplicate_flock)
 export(extract_and_compress_data)

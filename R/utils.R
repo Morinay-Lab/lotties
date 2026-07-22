@@ -1,4 +1,5 @@
 library(dplyr)
+library(DT)
 library(readr)
 library(stringr)
 
@@ -598,12 +599,12 @@ create_empty_dataframes <- function() {
         time = character(),
         flock_a = integer(),
         flock_b = integer(),
+        notes = character(),
         foraging_together = logical(),
         a_chasing_b = logical(),
         b_chasing_a = logical(),
         close_but_not_interacting = logical(),
         other = logical(),
-        notes = character(),
         stringsAsFactors = FALSE)
     empty_df$gps_data <- data.frame(
         Filename = character(),
@@ -630,7 +631,7 @@ render_table <- function(df, striped = TRUE) {
 
 #' Render a reactive dataframe as an editable DataTable.
 #'
-#' @param reactiveData function Data for rendering as table, expected to be a reactive function.
+#' @param reactive_data function Data for rendering as table, expected to be a reactive function.
 #' @param editable str|list Controls table elements to be editable (`cell|row|column|all` or `list()`, default `cell`).
 #' @param exclude_cols int Vector of zero-indexed column indices for which editing should be disabled (default `NULL`).
 #' @param server bool Whether to run server side or not (default `TRUE`).
@@ -641,7 +642,7 @@ render_table <- function(df, striped = TRUE) {
 #' @returns Rendered DataTable.
 #'
 #' @export
-render_dt <- function(reactiveData, editable = "cell", exclude_cols = NULL, server = TRUE, rownames = FALSE, options = list(), ...) {
+render_dt <- function(reactive_data, editable = "cell", exclude_cols = NULL, server = TRUE, rownames = FALSE, options = list(), ...) {
     if (!is.null(exclude_cols)) {
         if (!is.list(editable)) {
             editable <- list(target = editable)
@@ -650,13 +651,67 @@ render_dt <- function(reactiveData, editable = "cell", exclude_cols = NULL, serv
     }
     DT::renderDT(
     {
-        reactiveData()
+        reactive_data()
     },
     server = server,
     editable = editable,
     rownames = rownames,
     options = options,
     ...
+    )
+}
+
+
+#' DataTable module UI function
+#'
+#' @param id str ID for namespace within which UI element(s) will live.
+#'
+#' @returns DataTable UI output.
+#'
+#' @export
+dataTableUI <- function(id) {
+    ns <- shiny::NS(id)
+    DT::DTOutput(ns("dt"))
+}
+
+
+#' DataTable module server function
+#'
+#' @param id str ID for namespace within which UI element(s) live.
+#' @param reactive_data function Data for rendering as DataTable, expected to be a reactive function.
+#' @param empty_df dataframe Empty dataframe indicating data types.
+#'
+#' @returns `NULL`
+#'
+#' @export
+dataTableServer <- function(id, reactive_data, empty_df) {
+    shiny::moduleServer(id,
+                        function(input, output, session) {
+                            ## Identify columns which should not be editable (zero indexed for JS). We exclude logical columns
+                            ## because DT::editData() doesn't seem to be able to handle these updates.
+                            exclude_cols <- unname(which(sapply(empty_df, is.logical))) - 1
+                            ## Render DataTable, enabling cell editing except where columns are marked to be excluded
+                            output$dt <- lottie::render_dt(reactive_data,
+                                                           exclude_cols = exclude_cols,
+                                                           rownames = FALSE,
+                                                           options = list(
+                                                               paging = FALSE,
+                                                               searching = FALSE,
+                                                               ordering = FALSE,
+                                                               info = FALSE  # Suppress "Showing _ to _ of _ entries" info
+                                                           ))
+                            ## Observe edit events in data table and update flock description data
+                            shiny::observeEvent(input$dt_cell_edit, {
+                                cell <- input$dt_cell_clicked
+                                # Don't try to update disabled entries
+                                if (!cell$col %in% exclude_cols) {
+                                    info <- input$dt_cell_edit
+                                    to_update <- DT::editData({reactive_data()}, info, rownames = FALSE)
+                                    reactive_data(to_update)
+                                }
+                            })
+                            return()
+                        }
     )
 }
 

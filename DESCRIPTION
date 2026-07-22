@@ -13,6 +13,7 @@ Imports:
     bsicons,
     bslib,
     dplyr,
+    DT,
     ggplot2,
     patrick,
     RSQLite,

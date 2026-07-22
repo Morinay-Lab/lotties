@@ -5,7 +5,7 @@
 \title{Render a reactive dataframe as an editable DataTable.}
 \usage{
 render_dt(
-  reactiveData,
+  reactive_data,
   editable = "cell",
   exclude_cols = NULL,
   server = TRUE,
@@ -15,7 +15,7 @@ render_dt(
 )
 }
 \arguments{
-\item{reactiveData}{function Data for rendering as table, expected to be a reactive function.}
+\item{reactive_data}{function Data for rendering as table, expected to be a reactive function.}
 
 \item{editable}{str|list Controls table elements to be editable (\code{cell|row|column|all} or \code{list()}, default \code{cell}).}
 
