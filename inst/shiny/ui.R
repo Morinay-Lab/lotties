@@ -464,6 +464,7 @@ conditions_inputs <- list(
 
 sidebar_accordion <- bslib::sidebar(
   width = "33%",
+  shiny::img(src = "flock_COL_ringed_full.png", width = "200px", style = "margin: 0 auto;"),
   shiny::helpText("Enter your flock observation data here. Data will be displayed in the Observations tab as you add it.",
                   "When you have finished adding all of your data you can submit your observations to the database."),
   bslib::accordion(
