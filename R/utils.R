@@ -601,7 +601,7 @@ create_empty_dataframes <- function() {
 #'
 #' @export
 render_table <- function(df, striped = TRUE) {
-  shiny::renderTable({df},striped = striped)
+  shiny::renderTable({df}, striped = striped)
 }
 
 #' Filter a list of inputs for a subset and remove those that are to be excluded.
