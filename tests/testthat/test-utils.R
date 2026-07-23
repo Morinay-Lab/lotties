@@ -3,16 +3,16 @@ library(patrick)
 library(testthat)
 
 valid_rings <- c(
-        "None", "BTO", "B", "D", "F", "G", "M", "N", "O", "P", "R", "U", "W", "Y", "Sd", "Sg", "Sn", "So", "Sp", "Sr",
-        "Sw", "Sy", "bm", "dg", "do", "dr", "dy", "gd", "gn", "mb", "ng", "no", "nr", "od", "on", "rd", "rn", "ry",
-        "yd", "yr", "B*", "G*", "N*", "P*", "R*", "W*", "Y*")
+  "None", "BTO", "B", "D", "F", "G", "M", "N", "O", "P", "R", "U", "W", "Y", "Sd", "Sg", "Sn", "So", "Sp", "Sr",
+  "Sw", "Sy", "bm", "dg", "do", "dr", "dy", "gd", "gn", "mb", "ng", "no", "nr", "od", "on", "rd", "rn", "ry",
+  "yd", "yr", "B*", "G*", "N*", "P*", "R*", "W*", "Y*")
 valid_ring_combinations <- c(
-    "BDL", "BDR", ## Length 3
-    "SgNL", "ryOR", ## Length 4, first ring is two characters
-    "WY*L", "PonR", ## Length 4, first ring is one character
-    "SdnrL", "bmrdR", ## Length 5
-    "gnBL", "ngDL", "ryFR", ## Split rings
-    "Unlisted"
+  "BDL", "BDR", ## Length 3
+  "SgNL", "ryOR", ## Length 4, first ring is two characters
+  "WY*L", "PonR", ## Length 4, first ring is one character
+  "SdnrL", "bmrdR", ## Length 5
+  "gnBL", "ngDL", "ryFR", ## Split rings
+  "Unlisted"
 )
 
 patrick::with_parameters_test_that("Splitting of known codes is correct:",
@@ -22,7 +22,7 @@ patrick::with_parameters_test_that("Splitting of known codes is correct:",
   extracted_rings = c(
     lottie::extract_rings(code = "bmrdR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
     lottie::extract_rings(code = "SdnrL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
-    lottie::extract_rings(code = "PonR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings ),
+    lottie::extract_rings(code = "PonR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
     lottie::extract_rings(code = "WY*L", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
     lottie::extract_rings(code = "Y*WL", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
     lottie::extract_rings(code = "ryOR", valid_ring_combinations = valid_ring_combinations, valid_rings = valid_rings),
@@ -51,38 +51,38 @@ patrick::with_parameters_test_that("Splitting of known codes is correct:",
     list("code" = "ngDL", "ringed" = TRUE, "leg" = "L", "pit" = FALSE, "bto" = "R", "first" = "ng", "second" = "D"),
     list("code" = "ryFR", "ringed" = TRUE, "leg" = "R", "pit" = FALSE, "bto" = "L", "first" = "ry", "second" = "F"),
     ## When Unlisted users enter values as we can not extract anything
-    list("code" = "Unlisted", "ringed" = TRUE, "leg" = "", "pit" = FALSE, "bto" = "", "first" = "", "second" = "") ,
+    list("code" = "Unlisted", "ringed" = TRUE, "leg" = "", "pit" = FALSE, "bto" = "", "first" = "", "second" = ""),
     list("code" = "None", "ringed" = FALSE, "leg" = "", "pit" = FALSE, "bto" = "None", "first" = "", "second" = "")
   ),
   .test_name = c(
-      "5-character right leg",
-      "5-character left leg",
-      "4-character (top is first character)",
-      "4-character PIT ring (top is first character)",
-      "4-character (top is first character)",
-      "4-character (top is first two characters)",
-      "4-character (top is first two characters)",
-      "3-character (right leg)",
-      "3-character (left leg)",
-      "Split ring check (gnBL), was originally incorrectly split",
-      "Split ring check (ngDL), was originally incorrectly split",
-      "Split ring check (ryFR), was originally incorrectly split",
-      "Unlisted returns missing/NA",
-      "None returns FALSE/''/NA"
+    "5-character right leg",
+    "5-character left leg",
+    "4-character (top is first character)",
+    "4-character PIT ring (top is first character)",
+    "4-character (top is first character)",
+    "4-character (top is first two characters)",
+    "4-character (top is first two characters)",
+    "3-character (right leg)",
+    "3-character (left leg)",
+    "Split ring check (gnBL), was originally incorrectly split",
+    "Split ring check (ngDL), was originally incorrectly split",
+    "Split ring check (ryFR), was originally incorrectly split",
+    "Unlisted returns missing/NA",
+    "None returns FALSE/''/NA"
   )
 )
 
 testthat::test_that("Test missing column is added correctly.", {
-    tidy_columns <- lottie::tidy_columns(df = data.frame(a = 1, b = 2, c = 3),
-                                    expected_cols= c("a", "b", "c", "d")) |> colnames()
-    testthat::expect_equal(tidy_columns, c("a", "b", "c", "d"))
+  tidy_columns <- lottie::tidy_columns(df = data.frame(a = 1, b = 2, c = 3),
+    expected_cols= c("a", "b", "c", "d")) |> colnames()
+  testthat::expect_equal(tidy_columns, c("a", "b", "c", "d"))
 })
 
 
 testthat::test_that("Test 'none' column is removed.", {
-    tidy_columns <- lottie::remove_none_column(df = data.frame(a = 1, b = 2, none = 3)) |> colnames()
-    testthat::expect_equal(tidy_columns, c("a", "b"))
-    testthat::expect_false("none" %in% tidy_columns)
+  tidy_columns <- lottie::remove_none_column(df = data.frame(a = 1, b = 2, none = 3)) |> colnames()
+  testthat::expect_equal(tidy_columns, c("a", "b"))
+  testthat::expect_false("none" %in% tidy_columns)
 })
 
 
