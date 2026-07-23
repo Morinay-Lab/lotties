@@ -277,13 +277,13 @@ server <- function(input, output, session) {
   left_top <- shiny::reactive({
     input$composition_left_top
   })
-  if (colour_ring() == "None") {
-    lottie::update_rings_when_not_ringed(session)
-  }
+  left_bottom <- shiny::reactive({
+    input$composition_left_bottom
+  })
   right_top <- shiny::reactive({
     input$composition_right_top
   })
-    right_bottom <- shiny::reactive({
+  right_bottom <- shiny::reactive({
     input$composition_right_bottom
   })
   shiny::observe({
