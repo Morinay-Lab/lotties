@@ -462,28 +462,29 @@ conditions_inputs <- list(
 
 sidebar_accordion <- bslib::sidebar(
   width = "33%",
+  shiny::img(src = "flock_COL_ringed_full.png", width = "200px", style = "margin: 0 auto;"),
   shiny::helpText("Enter your flock observation data here. Data will be displayed in the Observations tab as you add it.",
                   "When you have finished adding all of your data you can submit your observations to the database."),
   bslib::accordion(
     multiple = FALSE,
     bslib::accordion_panel(
-      "GPS data", icon = bsicons::bs_icon("geo-alt"),
+      "GPS data", icon = bsicons::bs_icon("geo-alt", size = "20px", margin = "0 2px"),
       !!!gps_inputs
     ),
     bslib::accordion_panel(
-      "Observation metadata", icon = bsicons::bs_icon("sun"),
+      "Observation metadata", icon = bsicons::bs_icon("sun", size = "20px", margin = "0 2px"),
       !!!conditions_inputs
     ),
     bslib::accordion_panel(
-      "Flock data", icon = bsicons::bs_icon("sliders"),
+      "Flock data", icon = shiny::img(src = "flock_COL_ringed_full.png", width = "24px"),
       !!!flock_inputs
     ),
     bslib::accordion_panel(
-      "Individual data", icon = bsicons::bs_icon("sliders"),
+      "Individual data", icon = shiny::img(src = "1Lotti_full.png", width = "24px"),
       !!!individual_inputs
     ),
     bslib::accordion_panel(
-      "Interaction data", icon = bsicons::bs_icon("sliders"),
+      "Interaction data", icon = shiny::img(src = "flock_COL_Rainbow_ringed_full.png", width = "24px"),
       !!!interaction_inputs
     )
   )
