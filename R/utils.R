@@ -21,32 +21,30 @@ library(stringr)
 #'
 #' @export
 clean_gps <- function(
-                      file,
-                      format = "csv",
-                      skip = 42,
-                      col_select = c("name", "lat", "lon", "ele", "time"),
-                      drop_two = TRUE) {
+  file,
+  format = "csv",
+  skip = 42,
+  col_select = c("name", "lat", "lon", "ele", "time"),
+  drop_two = TRUE) {
     gps_clean <- dplyr::read_csv(file, id = "name", col_names = TRUE, skip = skip) |>
-        dplyr::mutate(
-            person = case_when(
-                stringr::str_detect(name, pattern = "LN") == TRUE ~ "LN",
-                stringr::str_detect(name, pattern = "MJ") == TRUE ~ "MJ",
-                stringr::str_detect(name, pattern = "ND") == TRUE ~ "ND",
-                stringr::str_detect(name, pattern = "SB|SJB") == TRUE ~ "SB",
-                TRUE ~ NA
-            ),
-            date_time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s"),
-            time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s") |>
-                format(format = "%H:%M:%S"),
-            date = as.Date(date_time),
-            day_of_year = lubridate::yday(date),
-            track = gsub(".*/", "", name)
-        ) |>
+      dplyr::mutate(
+        person = case_when(
+          stringr::str_detect(name, pattern = "LN") == TRUE ~ "LN",
+          stringr::str_detect(name, pattern = "MJ") == TRUE ~ "MJ",
+          stringr::str_detect(name, pattern = "ND") == TRUE ~ "ND",
+          stringr::str_detect(name, pattern = "SB|SJB") == TRUE ~ "SB",
+          TRUE ~ NA
+        ),
+        date_time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s"),
+        time = as.POSIXct(time, format = "%Y-%M-%d %h:%m:%s") |> format(format = "%H:%M:%S"),
+          date = as.Date(date_time),
+          day_of_year = lubridate::yday(date),
+          track = gsub(".*/", "", name)) |>
         dplyr::select(-name)
     if (drop_two) {
-        gps_clean <- gps_clean |>
-            dplyr::group_by(track) |>
-            dplyr::slice(3:n())
+      gps_clean <- gps_clean |>
+        dplyr::group_by(track) |>
+        dplyr::slice(3:n())
     }
     gps_clean
 }
@@ -61,34 +59,29 @@ clean_gps <- function(
 #' @returns Dataframe of flock description with columns renamed.
 #' @export
 clean_flock_description <- function(df, person) {
-    df <- df |>
-        dplyr::mutate(
-            ## Date  & Times in good format
-            date = lubridate::ymd(description_date),
-            IDD = paste0(person, "_", flock_id),
-            flock_id = description_flock_id,
-            person = person,
-            section = description_section,
-            time_seen = lubridate::ymd_hm(description_start_time),
-            time_lost = lubridate::ymd_hm(description_end_time),
-            in_flock = description_flock_type,
-            min_nb = description_n_flock,
-            min_nb_unident = description_n_flock - description_n_ringed,
-            notes = description_notes
-        ) |>
-        dplyr::select(
-            date,
-            IDD,
-            flock_id,
-            person,
-            section,
-            time_seen,
-            time_lost,
-            in_flock,
-            min_nb,
-            min_nb_unident,
-            notes
-        )
+  df <- df |>
+    dplyr::mutate(date = lubridate::ymd(description_date),
+                  IDD = paste0(person, "_", flock_id),
+                  flock_id = description_flock_id,
+                  person = person,
+                  section = description_section,
+                  time_seen = lubridate::ymd_hm(description_start_time),
+                  time_lost = lubridate::ymd_hm(description_end_time),
+                  in_flock = description_flock_type,
+                  min_nb = description_n_flock,
+                  min_nb_unident = description_n_flock - description_n_ringed,
+                  notes = description_notes) |>
+      dplyr::select(date,
+                    IDD,
+                    flock_id,
+                    person,
+                    section,
+                    time_seen,
+                    time_lost,
+                    in_flock,
+                    min_nb,
+                    min_nb_unident,
+                    notes)
 }
 
 #' Tidy other bird species columns.
@@ -111,13 +104,13 @@ clean_flock_description <- function(df, person) {
 #'
 #' @export
 tidy_columns <- function(df, expected_cols) {
-    for (missing_col in expected_cols) {
-        if (!(missing_col %in% colnames(df))) {
-            df[[missing_col]] <- FALSE
-        }
+  for (missing_col in expected_cols) {
+    if (!(missing_col %in% colnames(df))) {
+      df[[missing_col]] <- FALSE
     }
-    df <- remove_none_column(df)
-    df
+  }
+  df <- remove_none_column(df)
+  df
 }
 
 #' Remove 'none' column from a dataframe if it exists.
@@ -127,10 +120,10 @@ tidy_columns <- function(df, expected_cols) {
 #' @returns Dataframe with column called `none` removed.
 #' @export
 remove_none_column <- function(df) {
-    if ("none" %in% colnames(df)) {
-        df <- df |> dplyr::select(-none)
-    }
-    df
+  if ("none" %in% colnames(df)) {
+    df <- df |> dplyr::select(-none)
+  }
+  df
 }
 
 
@@ -165,120 +158,120 @@ remove_none_column <- function(df) {
 #'
 #' @export
 extract_rings <- function(code, valid_ring_combinations, valid_rings) {
-    ## Validate that the supplied code is valid
-    if (!(code %in% valid_ring_combinations)) {
-        print(paste0("WARNING!!! The provided combination (", code, ") is not in valid_ring_combinations."))
-    }
-    rings <- list()
-    rings$code <- code
-    if (code == "None") {
-        rings$ringed <- FALSE
-        rings$leg <- ""
-        rings$pit <- FALSE
-        rings$bto <- "None"
-        rings$first <- ""
-        rings$second <- ""
-        return(rings)
-    } else {
-        rings$ringed <- TRUE
-    }
-    ## Code is unlisted, return empty values, users should add their own
-    if ((code == "Unlisted")) {
-        rings$leg <- ""
-        rings$pit <- FALSE
-        rings$bto <- ""
-        rings$first <- ""
-        rings$second <- ""
-        return(rings)
-    }
-    code_length <- stringr::str_length(code)
-    rings$leg <- stringr::str_sub(code, start = -1)
+  ## Validate that the supplied code is valid
+  if (!(code %in% valid_ring_combinations)) {
+    print(paste0("WARNING!!! The provided combination (", code, ") is not in valid_ring_combinations."))
+  }
+  rings <- list()
+  rings$code <- code
+  if (code == "None") {
+    rings$ringed <- FALSE
+    rings$leg <- ""
     rings$pit <- FALSE
-    ## BTO ring is always on the other leg to coloured rings...
-    if (rings$leg == "L") {
-        rings$bto <- "R"
-    } else if (rings$leg == "R") {
-        rings$bto <- "L"
-    } else {
-        rings$bto <- "None"
-        rings$pit <- FALSE
-    }
-    ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
-    ## the indicated leg.
-    if (stringr::str_sub(code, start = 1, end = 3) == "BTO") {
-        rings$bto <- stringr::str_sub(code, start = -1)
-        rings$leg <- stringr::str_sub(code, start = -1)
-        return(rings)
-    }
-    ## @ns-rse 2026-06-16 : Handle PIT rings first, felt it was simpler to follow the logic if done this way
-    if (stringr::str_detect(code, "\\*")) {
-        rings$pit <- TRUE
-        ## If length is 3 then it is a PIT ring (first two characters) and a leg
-        if (code_length == 3) {
-            rings$first <- stringr::str_sub(code, 1, 2)
-            rings$second <- ""
-        } else if (code_length == 4) {
-            ## If '*' is at the second position then PIT is first
-            if (stringr::str_locate(code, "\\*")[1] == 2) {
-                rings$first <- stringr::str_sub(code, 1, 2)
-                rings$second <- stringr::str_sub(code, 3, 3)
-                rings$pit_pos <- "first"
-            ## Otherwise PIT is bottom
-            } else {
-                rings$first <- stringr::str_sub(code, 1, 1)
-                rings$second <- stringr::str_sub(code, 2, 3)
-                rings$pit_pos <- "second"
-            }
-        } else if (code_length == 5) {
-            rings$first <- stringr::str_sub(code, 1, 2)
-            rings$second <- stringr::str_sub(code, 3, 4)
-            ## If '*' is at the second position then PIT is top
-            if (stringr::str_locate(code, "\\*")[1] == 2) {
-                rings$pit_pos <- "first"
-            ## Otherwise PIT is bottom
-            } else {
-                rings$pit_pos <- "second"
-            }
-        } else {
-            print(paste0("WARNING : code is > 5 characters : ", code))
-        }
-    } else if (code_length == 3) {
-        ## If length is 3 then all codes are single letters, we can therefore easily split the top and bottom rings out
-        rings$first <- stringr::str_sub(code, 1, 1)
-        rings$second <- stringr::str_sub(code, 2, 2)
-    } else if (code_length == 5) {
-        ## If length is 5 then all codes are two letter and we can easily split top and bottom
-        rings$first <- stringr::str_sub(code, 1, 2)
-        rings$second <- stringr::str_sub(code, 3, 4)
-        ## If length is 4 then it is trickier, we do not know if it is the first or second ring that is 2 characters
+    rings$bto <- "None"
+    rings$first <- ""
+    rings$second <- ""
+    return(rings)
+  } else {
+    rings$ringed <- TRUE
+  }
+  ## Code is unlisted, return empty values, users should add their own
+  if ((code == "Unlisted")) {
+    rings$leg <- ""
+    rings$pit <- FALSE
+    rings$bto <- ""
+    rings$first <- ""
+    rings$second <- ""
+    return(rings)
+  }
+  code_length <- stringr::str_length(code)
+  rings$leg <- stringr::str_sub(code, start = -1)
+  rings$pit <- FALSE
+  ## BTO ring is always on the other leg to coloured rings...
+  if (rings$leg == "L") {
+    rings$bto <- "R"
+  } else if (rings$leg == "R") {
+    rings$bto <- "L"
+  } else {
+    rings$bto <- "None"
+    rings$pit <- FALSE
+  }
+  ## ...unless the recorded ring is "BTO L" or "BTO R" in which case there are no other rings other than the BTO on
+  ## the indicated leg.
+  if (stringr::str_sub(code, start = 1, end = 3) == "BTO") {
+    rings$bto <- stringr::str_sub(code, start = -1)
+    rings$leg <- stringr::str_sub(code, start = -1)
+    return(rings)
+  }
+  ## @ns-rse 2026-06-16 : Handle PIT rings first, felt it was simpler to follow the logic if done this way
+  if (stringr::str_detect(code, "\\*")) {
+    rings$pit <- TRUE
+    ## If length is 3 then it is a PIT ring (first two characters) and a leg
+    if (code_length == 3) {
+      rings$first <- stringr::str_sub(code, 1, 2)
+      rings$second <- ""
     } else if (code_length == 4) {
-        ## We check to see if the first two characters are in the subset of rings that are two characters in length, if so we
-        ## use the first two characters as the top and the third is the bottom
-        valid_rings2 <- valid_rings[stringr::str_length(valid_rings) == 2]
-        if (code == "None") {
-            rings$leg <- ""
-            rings$first <- ""
-            rings$second <- ""
-        } else if (stringr::str_sub(code, 1, 2) %in% valid_rings2) {
-            rings$first <- stringr::str_sub(code, 1, 2)
-            rings$second <- stringr::str_sub(code, 3, 3)
-        ## If not then the first character is the top and the second and third are the bottom.
-        } else {
-            rings$first <- stringr::str_sub(code, 1, 1)
-            rings$second <- stringr::str_sub(code, 2, 3)
-        }
+      ## If '*' is at the second position then PIT is first
+      if (stringr::str_locate(code, "\\*")[1] == 2) {
+        rings$first <- stringr::str_sub(code, 1, 2)
+        rings$second <- stringr::str_sub(code, 3, 3)
+        rings$pit_pos <- "first"
+        ## Otherwise PIT is bottom
+      } else {
+        rings$first <- stringr::str_sub(code, 1, 1)
+        rings$second <- stringr::str_sub(code, 2, 3)
+        rings$pit_pos <- "second"
+      }
+    } else if (code_length == 5) {
+      rings$first <- stringr::str_sub(code, 1, 2)
+      rings$second <- stringr::str_sub(code, 3, 4)
+      ## If '*' is at the second position then PIT is top
+      if (stringr::str_locate(code, "\\*")[1] == 2) {
+        rings$pit_pos <- "first"
+        ## Otherwise PIT is bottom
+      } else {
+        rings$pit_pos <- "second"
+      }
+    } else {
+      print(paste0("WARNING : code is > 5 characters : ", code))
     }
-    ## Check
-    if (!(rings$leg %in% c("L", "R"))) {
-        print(paste0("WARNING!!! Ring is neither L nor R : ", rings$leg))
+  } else if (code_length == 3) {
+    ## If length is 3 then all codes are single letters, we can therefore easily split the top and bottom rings out
+    rings$first <- stringr::str_sub(code, 1, 1)
+    rings$second <- stringr::str_sub(code, 2, 2)
+  } else if (code_length == 5) {
+    ## If length is 5 then all codes are two letter and we can easily split top and bottom
+    rings$first <- stringr::str_sub(code, 1, 2)
+    rings$second <- stringr::str_sub(code, 3, 4)
+    ## If length is 4 then it is trickier, we do not know if it is the first or second ring that is 2 characters
+  } else if (code_length == 4) {
+    ## We check to see if the first two characters are in the subset of rings that are two characters in length, if so we
+    ## use the first two characters as the top and the third is the bottom
+    valid_rings2 <- valid_rings[stringr::str_length(valid_rings) == 2]
+    if (code == "None") {
+      rings$leg <- ""
+      rings$first <- ""
+      rings$second <- ""
+    } else if (stringr::str_sub(code, 1, 2) %in% valid_rings2) {
+      rings$first <- stringr::str_sub(code, 1, 2)
+      rings$second <- stringr::str_sub(code, 3, 3)
+    ## If not then the first character is the top and the second and third are the bottom.
+    } else {
+      rings$first <- stringr::str_sub(code, 1, 1)
+      rings$second <- stringr::str_sub(code, 2, 3)
     }
-    if (!(rings$first %in% valid_rings)) {
-        print(paste0("WARNING!!! Top ring is unknown : ", rings$first))
-    }
-    if (!(rings$second %in% valid_rings)) {
-        print(paste0("WARNING!!! Bottom ring is unknown : ", rings$second))
-    }
-    rings
+  }
+  ## Check
+  if (!(rings$leg %in% c("L", "R"))) {
+    print(paste0("WARNING!!! Ring is neither L nor R : ", rings$leg))
+  }
+  if (!(rings$first %in% valid_rings)) {
+    print(paste0("WARNING!!! Top ring is unknown : ", rings$first))
+  }
+  if (!(rings$second %in% valid_rings)) {
+    print(paste0("WARNING!!! Bottom ring is unknown : ", rings$second))
+  }
+  rings
 }
 
 #' Update the selected value of a specific leg position.
@@ -292,18 +285,16 @@ extract_rings <- function(code, valid_ring_combinations, valid_rings) {
 #'
 #' @export
 update_ring <- function(session, tag, selected) {
-    ## ns-rse 2026-06-23 - debugging
-    ## print(paste0("Setting : ", tag))
-    ## print(paste0("To : ", selected))
-    shiny::updateSelectInput(
-        session,
-        paste("composition",
-            tag,
-            sep = "_"
-        ),
-        selected = selected
-    )
+  ## ns-rse 2026-06-23 - debugging
+  ## print(paste0("Setting : ", tag))
+  ## print(paste0("To : ", selected))
+  shiny::updateSelectInput(session,
+                           paste("composition",
+                                 tag,
+                                 sep = "_"),
+                           selected = selected)
 }
+
 #' Update individual ring options based on global selection.
 #'
 #' Takes the selected rings that have been split using `extract_ring()` and updates the displayed ring for individual
@@ -319,95 +310,93 @@ update_ring <- function(session, tag, selected) {
 #'
 #' @export
 update_all_rings <- function(rings, session) {        ## We again deal with PIT ring logic separately
-    if (rings$pit == TRUE) {
+  if (rings$pit == TRUE) {
+    ## ns-rse 2026-06-23 - Debugging
+    ## print("PIT RING!")
+    ## Coloured ring is on Left leg...
+    if (rings$leg == "L") {
+      ## ns-rse 2026-06-23 - Debugging
+      ## print("LEFT")
+      ## But we need to pull the ring from the correct top/bottom which is conditional on whether the PIT ring
+      ## was listed first, this has been stored in the rings$pit_pos
+      if (rings$pit_pos == "first") {
         ## ns-rse 2026-06-23 - Debugging
-        ## print("PIT RING!")
-        ## Coloured ring is on Left leg...
-        if (rings$leg == "L") {
-            ## ns-rse 2026-06-23 - Debugging
-            ## print("LEFT")
-            ## But we need to pull the ring from the correct top/bottom which is conditional on whether the PIT ring
-            ## was listed first, this has been stored in the rings$pit_pos
-            if (rings$pit_pos == "first") {
-                ## ns-rse 2026-06-23 - Debugging
-                ## print("PIT first")
-                update_ring(session, tag = "left_top", selected = rings$first)
-                update_ring(session, tag = "left_bottom", selected = "None")
-                update_ring(session, tag = "right_top", selected = "BTO")
-                update_ring(session, tag = "right_bottom", selected = rings$second)
-            } else {
-                ## ns-rse 2026-06-23 - Debugging
-                ## print("PIT second")
-                update_ring(session, tag = "left_top", selected = rings$second)
-                update_ring(session, tag = "left_bottom", selected = "None")
-                update_ring(session, tag = "right_top", selected = rings$first)
-                update_ring(session, tag = "right_bottom", selected = "BTO")
-            }
-            ## Coloured ring is on the Right leg...
-        } else {
-            ## ns-rse 2026-06-23 - Debugging
-            ## print("RIGHT")
-            if (rings$pit_pos == "first") {
-                ## ns-rse 2026-06-23 - Debugging
-                ## print("PIT first")
-                update_ring(session, tag = "left_top", selected = "BTO")
-                update_ring(session, tag = "left_bottom", selected = rings$second)
-                update_ring(session, tag = "right_top", selected = rings$first)
-                update_ring(session, tag = "right_bottom", selected = "None")
-            } else {
-                ## ns-rse 2026-06-23 - Debugging
-                ## print("PIT second")
-                update_ring(session, tag = "left_top", selected = rings$first)
-                update_ring(session, tag = "left_bottom", selected = "BTO")
-                update_ring(session, tag = "right_top", selected = rings$second)
-                update_ring(session, tag = "right_bottom", selected = "None")
-            }
-        }
-    }
-    ## Now set rings for birds with just BTO
-    else if( stringr::str_sub(rings$code, 1, 3) == "BTO") {
-        ## ns-rse 2026-06-23 - Debugging
-        ## print("JUST BTO")
-        if (rings$bto == "L") {
-            ## ns-rse 2026-06-23 - Debugging
-            ## print("LEFT")
-            update_ring(session, tag = "left_top", selected = "BTO")
-            update_ring(session, tag = "right_top", selected = "None")
-        } else {
-            ## ns-rse 2026-06-23 - Debugging
-            ## print("RIGHT")
-            update_ring(session, tag = "left_top", selected = "None")
-            update_ring(session, tag = "right_top", selected = "BTO")
-        }
-        update_ring(session, tag = "left_bottom", selected = "None")
-        update_ring(session, tag = "right_bottom", selected = "None")
-    }
-    ## Finally set rings for birds with just colour (no PIT but BTO on opposite leg)
-    else if (rings$leg == "L") {
-        ## ns-rse 2026-06-23 - Debugging
-        ## print("NO PIT, JUST COLOUR")
-        ## print("LEFT")
+        ## print("PIT first")
         update_ring(session, tag = "left_top", selected = rings$first)
-        update_ring(session, tag = "left_bottom", selected = rings$second)
+        update_ring(session, tag = "left_bottom", selected = "None")
         update_ring(session, tag = "right_top", selected = "BTO")
-        update_ring(session, tag = "right_bottom", selected = "None")
-    } else if (rings$leg == "R") {
+        update_ring(session, tag = "right_bottom", selected = rings$second)
+      } else {
         ## ns-rse 2026-06-23 - Debugging
-        ## print("NO PIT, JUST COLOUR")
-        ## print("RIGHT")
-        update_ring(session, tag = "left_top", selected = "BTO")
+        ## print("PIT second")
+        update_ring(session, tag = "left_top", selected = rings$second)
         update_ring(session, tag = "left_bottom", selected = "None")
         update_ring(session, tag = "right_top", selected = rings$first)
-        update_ring(session, tag = "right_bottom", selected = rings$second)
-    } else if(rings$code == "None"){
+        update_ring(session, tag = "right_bottom", selected = "BTO")
+      }
+      ## Coloured ring is on the Right leg...
+      } else {
         ## ns-rse 2026-06-23 - Debugging
-        ## print("NO RINGS")
-        update_ring(session, tag = "left_top", selected = "None")
-        update_ring(session, tag = "left_bottom", selected = "None")
-        update_ring(session, tag = "right_top", selected = "None")
-        update_ring(session, tag = "right_bottom", selected = "None")
+        ## print("RIGHT")
+        if (rings$pit_pos == "first") {
+          ## ns-rse 2026-06-23 - Debugging
+          ## print("PIT first")
+          update_ring(session, tag = "left_top", selected = "BTO")
+          update_ring(session, tag = "left_bottom", selected = rings$second)
+          update_ring(session, tag = "right_top", selected = rings$first)
+          update_ring(session, tag = "right_bottom", selected = "None")
+        } else {
+          ## ns-rse 2026-06-23 - Debugging
+          ## print("PIT second")
+          update_ring(session, tag = "left_top", selected = rings$first)
+          update_ring(session, tag = "left_bottom", selected = "BTO")
+          update_ring(session, tag = "right_top", selected = rings$second)
+          update_ring(session, tag = "right_bottom", selected = "None")
+        }
+      }
+  ## Now set rings for birds with just BTO
+  } else if(stringr::str_sub(rings$code, 1, 3) == "BTO") {
+    ## ns-rse 2026-06-23 - Debugging
+    ## print("JUST BTO")
+    if (rings$bto == "L") {
+      ## ns-rse 2026-06-23 - Debugging
+      ## print("LEFT")
+      update_ring(session, tag = "left_top", selected = "BTO")
+      update_ring(session, tag = "right_top", selected = "None")
+    } else {
+      ## ns-rse 2026-06-23 - Debugging
+      ## print("RIGHT")
+      update_ring(session, tag = "left_top", selected = "None")
+      update_ring(session, tag = "right_top", selected = "BTO")
     }
-    update_ring(session, tag = "bto_ring_position", selected = rings$bto)
+    update_ring(session, tag = "left_bottom", selected = "None")
+    update_ring(session, tag = "right_bottom", selected = "None")
+  ## Finally set rings for birds with just colour (no PIT but BTO on opposite leg)
+  } else if (rings$leg == "L") {
+    ## ns-rse 2026-06-23 - Debugging
+    ## print("NO PIT, JUST COLOUR")
+    ## print("LEFT")
+    update_ring(session, tag = "left_top", selected = rings$first)
+    update_ring(session, tag = "left_bottom", selected = rings$second)
+    update_ring(session, tag = "right_top", selected = "BTO")
+    update_ring(session, tag = "right_bottom", selected = "None")
+  } else if (rings$leg == "R") {
+    ## ns-rse 2026-06-23 - Debugging
+    ## print("NO PIT, JUST COLOUR")
+    ## print("RIGHT")
+    update_ring(session, tag = "left_top", selected = "BTO")
+    update_ring(session, tag = "left_bottom", selected = "None")
+    update_ring(session, tag = "right_top", selected = rings$first)
+    update_ring(session, tag = "right_bottom", selected = rings$second)
+  } else if(rings$code == "None") {
+    ## ns-rse 2026-06-23 - Debugging
+    ## print("NO RINGS")
+    update_ring(session, tag = "left_top", selected = "None")
+    update_ring(session, tag = "left_bottom", selected = "None")
+    update_ring(session, tag = "right_top", selected = "None")
+    update_ring(session, tag = "right_bottom", selected = "None")
+  }
+  update_ring(session, tag = "bto_ring_position", selected = rings$bto)
 }
 
 #' Update individual ring certainty based on overall certainty
@@ -423,10 +412,9 @@ update_all_rings <- function(rings, session) {        ## We again deal with PIT 
 #'
 #' @export
 update_certainty <- function(ring_certainty, tag, session) {
-    shiny::updateCheckboxInput(
-               session,
-               paste("composition", tag, "certain", sep = "_"),
-               value = ring_certainty)
+  shiny::updateCheckboxInput(session,
+                             paste("composition", tag, "certain", sep = "_"),
+                             value = ring_certainty)
 }
 
 #' Update a `shiny::dateInput()` field.
@@ -439,7 +427,7 @@ update_certainty <- function(ring_certainty, tag, session) {
 #'
 #' @export
 update_date <- function(date, tag, session) {
-    shiny::updateDateInput(session=session, tag, value=date)
+  shiny::updateDateInput(session = session, tag, value = date)
 }
 
 #' Update a `shinyTime::timeInput()` field.
@@ -452,7 +440,7 @@ update_date <- function(date, tag, session) {
 #'
 #' @export
 update_time <- function(date, tag, session) {
-    shinyTime::updateTimeInput(session=session, tag, value=date)
+  shinyTime::updateTimeInput(session = session, tag, value = date)
 }
 
 
@@ -470,12 +458,12 @@ update_time <- function(date, tag, session) {
 #'
 #' @export
 save_data <- function(data, db_path = db_path, table, append = TRUE, overwrite = FALSE) {
-    conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
-    ## query <- sprintf("INSERT INTO %s (%s) VALUES ('%s')")
-    ## paste(names(data), collapse = ",")
-    ## paste(data, collapse = "','")
-    RSQLite::dbWriteTable(conn = conn, name = table, value = data, overwrite = overwrite)
-    DBI::dbDisconnect()
+  conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
+  ## query <- sprintf("INSERT INTO %s (%s) VALUES ('%s')")
+  ## paste(names(data), collapse = ",")
+  ## paste(data, collapse = "','")
+  RSQLite::dbWriteTable(conn = conn, name = table, value = data, overwrite = overwrite)
+  DBI::dbDisconnect()
 }
 
 #' Extract and compress data from database to zip file.
@@ -488,25 +476,25 @@ save_data <- function(data, db_path = db_path, table, append = TRUE, overwrite =
 #'
 #' @export
 extract_and_compress_data <- function(zip_file, conn, input) {
-    ## Loop over selected tables
-    csv_files <- list()
-    for (table in input$download_raw_data_selection) {
-        ## Select all from given table
-        query <- paste0("SELECT * FROM ", table)
-        df <- RSQLite::dbGetQuery(conn = conn, query = query)
-        ## Lowercase table name and add .csv
-        file_name <- paste0(tolower(table), ".csv")
-        ## Write CSV file
-        write.csv(df, file_name, row.names = FALSE)
-        ## Add filename to list for zipping
-        csv_files[[tolower(table)]] <- file_name
-    }
-    zip::zip(
-        zipfile = zip_file,
-        files = unlist(csv_files)
-    )
-    ## Remove CSV files from system
-    unlink(csv_files)
+  ## Loop over selected tables
+  csv_files <- list()
+  for (table in input$download_raw_data_selection) {
+    ## Select all from given table
+    query <- paste0("SELECT * FROM ", table)
+    df <- RSQLite::dbGetQuery(conn = conn, query = query)
+    ## Lowercase table name and add .csv
+    file_name <- paste0(tolower(table), ".csv")
+    ## Write CSV file
+    write.csv(df, file_name, row.names = FALSE)
+    ## Add filename to list for zipping
+    csv_files[[tolower(table)]] <- file_name
+  }
+  zip::zip(
+    zipfile = zip_file,
+    files = unlist(csv_files)
+  )
+  ## Remove CSV files from system
+  unlink(csv_files)
 }
 
 #' Query a database table to check contents for debugging.
@@ -518,9 +506,9 @@ extract_and_compress_data <- function(zip_file, conn, input) {
 #'
 #' @export
 db_table_debug <- function(conn, table) {
-    print(paste0("Checking table : "))
-    query <- paste0("SELECT * FROM ", table)
-    print(RSQLite::dbGetQuery(conn, query))
+  print(paste0("Checking table : "))
+  query <- paste0("SELECT * FROM ", table)
+  print(RSQLite::dbGetQuery(conn, query))
 }
 
 #' Setup empty dataframes for the different components.
@@ -529,89 +517,81 @@ db_table_debug <- function(conn, table) {
 #'
 #' @export
 create_empty_dataframes <- function() {
-    empty_df <- list()
-    empty_df$conditions <- data.frame(
-        user = character(),
-        date = character(),
-        start_time = character(),
-        end_time = character(),
-        sunny = character(),
-        partly_cloudy = character(),
-        cloudy_grey = character(),
-        foggy = character(),
-        windy = character(),
-        light_rain = character(),
-        really_rain = character(),
-        visibility = character(),
-        stringsAsFactors = FALSE
-    )
-    empty_df$composition_data <- data.frame(
-        date = character(),
-        time = character(),
-        flock_number = integer(),
-        ringed = logical(),
-        colour_ring = character(),
-        certain = logical(),
-        left_top = character(),
-        left_top_certain = logical(),
-        left_bottom = character(),
-        left_bottom_certain = logical(),
-        right_top = character(),
-        right_top_certain = logical(),
-        right_bottom = character(),
-        right_bottom_certain = logical(),
-        bto_ring_position = character(),
-        notes = character(),
-        stringsAsFactors = FALSE
-    )
-    empty_df$description_data <- data.frame(
-        date = character(),
-        start_time = character(),
-        end_time = character(),
-        flock_type = character(),
-        flock_number = integer(),
-        whole_flock = logical(),
-        n_flock = integer(),
-        n_ringed = integer(),
-        section = character(),
-        mist_net = logical(),
-        notes = character(),
-        blue_tit = logical(),
-        chiff_chaff = logical(),
-        chaffinch = logical(),
-        coal_tit = logical(),
-        dunnock = logical(),
-        goldcrest = logical(),
-        great_tit = logical(),
-        nuthatch = logical(),
-        robin = logical(),
-        siskin = logical(),
-        tree_creeper = logical(),
-        unknown_tit = logical(),
-        woodpecker = logical(),
-        wren = logical(),
-        willow_warbler = logical(),
-        stringsAsFactors = FALSE,
-        check.names = FALSE
-    )
-    empty_df$interactions_data <- data.frame(
-        date = character(),
-        time = character(),
-        flock_a = integer(),
-        flock_b = integer(),
-        notes = character(),
-        foraging_together = logical(),
-        a_chasing_b = logical(),
-        b_chasing_a = logical(),
-        close_but_not_interacting = logical(),
-        other = logical(),
-        stringsAsFactors = FALSE)
-    empty_df$gps_data <- data.frame(
-        Filename = character(),
-        Points = integer(),
-        Start=character(),
-        Finish = character())
-    empty_df
+  empty_df <- list()
+  empty_df$conditions <- data.frame(user = character(),
+                                    date = character(),
+                                    start_time = character(),
+                                    end_time = character(),
+                                    sunny = character(),
+                                    partly_cloudy = character(),
+                                    cloudy_grey = character(),
+                                    foggy = character(),
+                                    windy = character(),
+                                    light_rain = character(),
+                                    really_rain = character(),
+                                    visibility = character(),
+                                    stringsAsFactors = FALSE)
+  empty_df$composition_data <- data.frame(date = character(),
+                                          time = character(),
+                                          flock_number = integer(),
+                                          ringed = logical(),
+                                          colour_ring = character(),
+                                          certain = logical(),
+                                          left_top = character(),
+                                          left_top_certain = logical(),
+                                          left_bottom = character(),
+                                          left_bottom_certain = logical(),
+                                          right_top = character(),
+                                          right_top_certain = logical(),
+                                          right_bottom = character(),
+                                          right_bottom_certain = logical(),
+                                          bto_ring_position = character(),
+                                          notes = character(),
+                                          stringsAsFactors = FALSE)
+  empty_df$description_data <- data.frame(date = character(),
+                                          start_time = character(),
+                                          end_time = character(),
+                                          flock_type = character(),
+                                          flock_number = integer(),
+                                          whole_flock = logical(),
+                                          n_flock = integer(),
+                                          n_ringed = integer(),
+                                          section = character(),
+                                          mist_net = logical(),
+                                          notes = character(),
+                                          blue_tit = logical(),
+                                          chiff_chaff = logical(),
+                                          chaffinch = logical(),
+                                          coal_tit = logical(),
+                                          dunnock = logical(),
+                                          goldcrest = logical(),
+                                          great_tit = logical(),
+                                          nuthatch = logical(),
+                                          robin = logical(),
+                                          siskin = logical(),
+                                          tree_creeper = logical(),
+                                          unknown_tit = logical(),
+                                          woodpecker = logical(),
+                                          wren = logical(),
+                                          willow_warbler = logical(),
+                                          stringsAsFactors = FALSE,
+                                          check.names = FALSE)
+  empty_df$interactions_data <- data.frame(date = character(),
+                                           time = character(),
+                                           flock_a = integer(),
+                                           flock_b = integer(),
+                                           notes = character(),
+                                           foraging_together = logical(),
+                                           a_chasing_b = logical(),
+                                           b_chasing_a = logical(),
+                                           close_but_not_interacting = logical(),
+                                           other = logical(),
+                                           stringsAsFactors = FALSE)
+  empty_df$gps_data <- data.frame(Filename = character(),
+                                  Points = integer(),
+                                  Start = character(),
+                                  Finish = character())
+  empty_df
 }
 
 #' Render a dataframe table as a Shiny.
@@ -623,10 +603,8 @@ create_empty_dataframes <- function() {
 #'
 #' @export
 render_table <- function(df, striped = TRUE) {
-        shiny::renderTable(
-            {df},
-            striped = striped
-        )}
+  shiny::renderTable({df}, striped = striped)
+}
 
 
 #' Render a reactive dataframe as an editable DataTable.
@@ -735,8 +713,8 @@ dataTableServer <- function(id, reactive_data, empty_df) {
 #'
 #' @export
 filter_inputs <- function(inputs, filter, exclude) {
-    tmp_inputs <- inputs[stringr::str_detect(inputs, filter)]
-    tmp_inputs[!(tmp_inputs %in% exclude)]
+  tmp_inputs <- inputs[stringr::str_detect(inputs, filter)]
+  tmp_inputs[!(tmp_inputs %in% exclude)]
 }
 
 #' De-duplicate ringed entries from flock description.
@@ -750,10 +728,10 @@ filter_inputs <- function(inputs, filter, exclude) {
 #'
 #' @export
 deduplicate_flock <- function(df) {
-    rbind(
-        df |> dplyr::filter(ringed == FALSE),
-        df |> dplyr::filter(ringed == TRUE) |> unique()
-    )
+  rbind(
+    df |> dplyr::filter(ringed == FALSE),
+    df |> dplyr::filter(ringed == TRUE) |> unique()
+  )
 }
 
 #' Update ring component fields.
@@ -766,13 +744,13 @@ deduplicate_flock <- function(df) {
 #' @returns Updates input fields for rings in the supplied session.
 #' @export
 update_rings_when_not_ringed <- function(session) {
-    shiny::updateSelectInput(session, "composition_colour_ring", selected="None")
-    shiny::updateCheckboxInput(session, "composition_certain", value = FALSE)
-    for (tag in c("left_top", "left_bottom", "right_top", "right_bottom")) {
-        shiny::updateSelectInput(session, paste0("composition_", tag), selected = "None")
-        shiny::updateCheckboxInput(session, paste0("composition_", tag, "certain"), value = FALSE)
-    }
-    shiny::updateSelectInput(session, "composition_bto_ring_position", selected="None")
+  shiny::updateSelectInput(session, "composition_colour_ring", selected ="None")
+  shiny::updateCheckboxInput(session, "composition_certain", value = FALSE)
+  for (tag in c("left_top", "left_bottom", "right_top", "right_bottom")) {
+     shiny::updateSelectInput(session, paste0("composition_", tag), selected = "None")
+     shiny::updateCheckboxInput(session, paste0("composition_", tag, "certain"), value = FALSE)
+  }
+  shiny::updateSelectInput(session, "composition_bto_ring_position", selected = "None")
 }
 
 

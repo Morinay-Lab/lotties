@@ -42,7 +42,6 @@ simple_card <- function(header, ...) {
 #'
 #' @returns List containing colour ring select and checkbox
 colour_ring_inputs <- function(position, selected, ...) {
-## colour_ring_inputs <- function(position, ...) {
   pos_vars <- switch(
     position,
     lt = list(title = "Top Ring", tag = "left_top"),
@@ -148,11 +147,11 @@ obs_metadata <- list(
 
 ## Observation metadata card
 conditions_card <- display_section(
-    header = "Observation Metadata",
-    bslib::layout_column_wrap(
-      width = 1/2,
-      !!!obs_metadata
-    )
+  header = "Observation Metadata",
+  bslib::layout_column_wrap(
+    width = 1 / 2,
+    !!!obs_metadata
+  )
 )
 
 ## Individual flock member card
@@ -204,13 +203,13 @@ individual_inputs <- list(
   ),
   bslib::layout_column_wrap(
     simple_card("Left Leg...",
-                colour_ring_inputs(position = "lt", selected = "None"),
-                colour_ring_inputs(position = "lb", selected = "None")
-                ),
+      colour_ring_inputs(position = "lt", selected = "None"),
+      colour_ring_inputs(position = "lb", selected = "None")
+    ),
     simple_card("Right Leg...",
-                colour_ring_inputs(position = "rt", selected = "None"),
-                colour_ring_inputs(position = "rb", selected = "None")
-                ),
+      colour_ring_inputs(position = "rt", selected = "None"),
+      colour_ring_inputs(position = "rb", selected = "None")
+    ),
     fill = FALSE
   ),
   shiny::textInput("composition_notes",
@@ -319,9 +318,9 @@ flock_card <- display_section(
 
 ## Submit data to database
 submit_card <- display_section(
-    header = "Submit data",
-    shiny::helpText("When you have entered all data and are ready to submit it to the database click on the button below."),
-    shiny::actionButton("submit_all", label = "Submit all data")
+  header = "Submit data",
+  shiny::helpText("When you have entered all data and are ready to submit it to the database click on the button below."),
+  shiny::actionButton("submit_all", label = "Submit all data")
 )
 
 ## Flock interaction card
@@ -346,8 +345,8 @@ interaction_inputs <- list(
     shiny::selectInput(
       "interactions_flock_a",
       label = "Flock A (numeric ID) : ",
-       selected = NULL,
-       choices = seq(1, 20)
+      selected = NULL,
+      choices = seq(1, 20)
     ),
     shiny::selectInput(
       "interactions_flock_b",
@@ -357,10 +356,10 @@ interaction_inputs <- list(
     ),
   ),
   shiny::checkboxGroupInput("interactions_type",
-                     label = "Type of Interaction : ",
-                     selected = "a_chasing_b",
-                     choices = split(interactions_df$code,
-                                     interactions_df$description)),
+                            label = "Type of Interaction : ",
+                            selected = "a_chasing_b",
+                            choices = split(interactions_df$code,
+                                            interactions_df$description)),
   shiny::textInput("interactions_notes",
                    label = "Notes : ",
                    value = "",
@@ -376,7 +375,7 @@ interaction_card <- display_section(
 
 ## Download card
 download_card <- bslib::layout_column_wrap(
-  width = 1/2,
+  width = 1 / 2,
   bslib::card(
     bslib::card_header("Raw data"),
     bslib::card_body(
@@ -387,12 +386,11 @@ download_card <- bslib::layout_column_wrap(
       shiny::checkboxGroupInput(
         "download_raw_data_selection",
         label = "",
-        choices = c(
-          "Conditions" = "Conditions",
-          "Flock Composition" = "Composition",
-          "Flock Description" = "Description",
-          "Flock Interactions" = "Interactions",
-          "GPS" = "GPS"),
+        choices = c("Conditions" = "Conditions",
+                    "Flock Composition" = "Composition",
+                    "Flock Description" = "Description",
+                    "Flock Interactions" = "Interactions",
+                    "GPS" = "GPS"),
         selected = c("Conditions", "Composition", "Description", "Interactions", "GPS")
       ),
       shiny::downloadButton("download_raw_data", label = "Download raw data"),
@@ -447,7 +445,7 @@ conditions_inputs <- list(
   bslib::layout_column_wrap(
     shiny::checkboxGroupInput(
       "conditions_weather",
-      label="Weather : ",
+      label = "Weather : ",
       selected = "sunny",
       choices = split(conditions_df$code,
                       conditions_df$description)
@@ -497,23 +495,23 @@ sidebar_orig <- bslib::sidebar(
 )
 
 ui <- bslib::page_sidebar(
-    title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
-    sidebar = sidebar_accordion,
-    ## This allows use of shinyjs::reset() to reset fields on submission
-    shinyjs::useShinyjs(),
-    bslib::navset_card_underline(
-      bslib::nav_panel(
-        "Observations",
-        gps_card,
-        conditions_card,
-        flock_card,
-        individual_card,
-        interaction_card,
-        submit_card
-      ),
-      bslib::nav_panel(
-        "Download",
-        download_card
-      )
+  title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
+  sidebar = sidebar_accordion,
+  ## This allows use of shinyjs::reset() to reset fields on submission
+  shinyjs::useShinyjs(),
+  bslib::navset_card_underline(
+    bslib::nav_panel(
+      "Observations",
+      gps_card,
+      conditions_card,
+      flock_card,
+      individual_card,
+      interaction_card,
+      submit_card
+    ),
+    bslib::nav_panel(
+      "Download",
+      download_card
     )
+  )
 )
