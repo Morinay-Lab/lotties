@@ -528,49 +528,54 @@ server <- function(input, output, session) {
   #################################################################################
   ## Add data to SQLite database when the "Submit all data" button is pressed
   shiny::observeEvent(input$submit_all, {
-    ## GPS data is submitted on file upload
+    ## GPS data is submitted on file upload, the rest is uploaded on input$submit_all
     ## Conditions/metadata
-    RSQLite::dbWriteTable(
-      conn = con,
-      name = "Conditions",
-      unique(conditions_data()),
-      overwrite = FALSE,
-      append = TRUE
-    )
+    if (!is.null(conditions_data())) {
+      RSQLite::dbWriteTable(
+        conn = con,
+        name = "Conditions",
+        unique(conditions_data()),
+        overwrite = FALSE,
+        append = TRUE)
+    }
     ## @ns-rse 2026-06-08 Debugging...
-    db_table_debug(conn = con, table = "Conditions")
+    ## db_table_debug(conn = con, table = "Conditions")
     ## Composition - we deduplicate ringed birds first (via deduplicate_flock())
-    composition_all <- composition_data()
-    composition_data_dedup <- lottie::deduplicate_flock(df = composition_all)
-    RSQLite::dbWriteTable(
-      conn = con,
-      name = "Composition",
-      composition_data_dedup,
-      overwrite = FALSE,
-      append = TRUE
-    )
+    if (!is.null(composition_data())) {
+      composition_all <- composition_data()
+      composition_data_dedup <- lottie::deduplicate_flock(df = composition_all)
+      RSQLite::dbWriteTable(
+        conn = con,
+        name = "Composition",
+        composition_data_dedup,
+        overwrite = FALSE,
+        append = TRUE
+      )
+    }
     ## @ns-rse 2026-06-02 Debugging...
-    db_table_debug(conn = con, table = "Composition")
+    ## db_table_debug(conn = con, table = "Composition")
     ## Description
-    RSQLite::dbWriteTable(
-      conn = con,
-      name = "Description",
-      unique(description_data()),
-      overwrite = FALSE,
-      append = TRUE
-    )
+    if (!is.null(description_data())) {
+      RSQLite::dbWriteTable(
+        conn = con,
+        name = "Description",
+        unique(description_data()),
+        overwrite = FALSE,
+        append = TRUE)
+    }
     ## @ns-rse 2026-06-02 Debugging...
-    db_table_debug(conn = con, table = "Description")
+    ## db_table_debug(conn = con, table = "Description")
     ## Interactions
-    RSQLite::dbWriteTable(
-      conn = con,
-      name = "Interactions",
-      unique(interactions_data()),
-      overwrite = FALSE,
-      append = TRUE
-    )
+    if (!is.null(interactions_data() |> nrow())) {
+      RSQLite::dbWriteTable(
+        conn = con,
+        name = "Interactions",
+        unique(interactions_data()),
+        overwrite = FALSE,
+        append = TRUE)
+    }
     ## @ns-rse 2026-06-02 Debugging...
-    db_table_debug(conn = con, table = "Interactions")
+    ## db_table_debug(conn = con, table = "Interactions")
     ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
     ## function all_inputs()
     lapply(all_inputs(), shinyjs::reset)
