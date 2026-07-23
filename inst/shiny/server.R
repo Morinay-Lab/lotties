@@ -379,7 +379,7 @@ server <- function(input, output, session) {
     ## increment that automatically)
     tmp_inputs <- lottie::filter_inputs(input=all_inputs(),
                                         filter = "^composition_",
-                                        exclude = c("composition_flock_number"))
+                                        exclude = c("composition_flock_number", "composition_date"))
     lapply(tmp_inputs, shinyjs::reset)
     composition_data(composition_to_add)
   })
@@ -458,7 +458,7 @@ server <- function(input, output, session) {
     ## increment that automatically)
     tmp_inputs <- lottie::filter_inputs(input = all_inputs(),
                                         filter = "^description_",
-                                        exclude = c("description_flock_number"))
+                                        exclude = c("description_flock_number", "description_date"))
     lapply(tmp_inputs, shinyjs::reset)
     description_data(description_to_add)
   })
@@ -504,7 +504,8 @@ server <- function(input, output, session) {
     tmp_inputs <- lottie::filter_inputs(
       input = all_inputs(),
       filter = "^interactions_",
-      exclude = c("interactions_flock_a", "interactions_flock_b"))
+      exclude = c("interactions_flock_a", "interactions_flock_b", "interactions_date"))
+    lapply(tmp_inputs, shinyjs::reset)
     interactions_data(interactions_to_add)
   })
   ## The interaction table is returned and rendered on the page
