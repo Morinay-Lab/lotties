@@ -648,7 +648,8 @@ render_dt <- function(reactive_data, editable = "cell", exclude_cols = NULL, ser
 #'
 #' @export
 dataTableUI <- function(id) {
-    ns <- shiny::NS(id)
+    ## Create a function that can be used to produce identifiers within an `id` namespace
+    ns <- shiny::NS(namespace = id)
     DT::DTOutput(ns("dt"))
 }
 
@@ -665,8 +666,9 @@ dataTableUI <- function(id) {
 dataTableServer <- function(id, reactive_data, empty_df) {
     shiny::moduleServer(id,
                         function(input, output, session) {
-                            ## Identify columns which should not be editable (zero indexed for JS). We exclude logical columns
+                            ## Identify columns which should not be editable.  We exclude logical columns
                             ## because DT::editData() doesn't seem to be able to handle these updates.
+                            ## Note that this vector is zero indexed because DataTables use JavaScript under the hood.
                             exclude_cols <- unname(which(sapply(empty_df, is.logical))) - 1
                             ## Render DataTable, enabling cell editing except where columns are marked to be excluded
                             output$dt <- lottie::render_dt(reactive_data,
