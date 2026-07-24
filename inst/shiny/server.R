@@ -420,7 +420,7 @@ server <- function(input, output, session) {
     }
     ## ns-rse - Reshape the data to wide as other_species column can have multiple
     ## values and are captured in long format
-    to_add <-data.frame(
+    to_add <- data.frame(
       date = as.character(input$description_date),
       start_time = as.character(format(input$description_start_time, "%H:%M")),
       end_time = as.character(format(input$description_end_time, "%H:%M")),
@@ -446,7 +446,7 @@ server <- function(input, output, session) {
     flocks <- as.vector(description_to_add$flock_number)
     shiny::updateSelectInput(session, "composition_flock_number", choices = flocks)
     shiny::updateSelectInput(session, "interactions_flock_a", choices = flocks)
-    shiny::updateSelectInput(session, "interactions_flock_b", choices = flocks)
+    shiny::updateSelectInput(session, "interactions_flock_b", choices = flocks[flocks != flocks[1]])
     ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
     ## function all_inputs(), this requires filtering all_inputs for those that start with description_
     ## then removing those we do not want to update (in this case description_flock_number since we want to
@@ -470,6 +470,28 @@ server <- function(input, output, session) {
   #################################################################################
   ## Interactions                                                                ##
   #################################################################################
+  ## Remove Flock A from Flock B list (and vice versa) to prevent the same flock being selected
+  flock_a <- shiny::reactive({
+    input$interactions_flock_a
+  })
+  flock_b <- shiny::reactive({
+    input$interactions_flock_b
+  })
+  shiny::observeEvent(input$interactions_flock_a, {
+    flocks <- as.list(description_data()$flock_number)
+    shiny::updateSelectInput(
+      session,
+      "interactions_flock_b",
+      choices = flocks[flocks != flock_a()]
+    )
+  })
+  shiny::observeEvent(input$interactions_flock_b, {
+    flocks <- as.list(description_data()$flock_number)
+    shiny::updateSelectInput(
+      session,
+      "interactions_flock_a",
+      choices = flocks[flocks != flock_b()])
+  })
   ## Build a data frame of interactions when the "Submit interaction" button is clocked
   interactions_data <- shiny::reactiveVal(empty_dataframes$interactions_data)
   shiny::observeEvent(input$add_interactions, {
