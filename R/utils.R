@@ -1,4 +1,5 @@
 library(dplyr)
+library(DT)
 library(readr)
 library(stringr)
 
@@ -533,17 +534,17 @@ create_empty_dataframes <- function() {
   empty_df$composition_data <- data.frame(date = character(),
                                           time = character(),
                                           flock_number = integer(),
-                                          ringed = character(),
+                                          ringed = logical(),
                                           colour_ring = character(),
-                                          certain = character(),
+                                          certain = logical(),
                                           left_top = character(),
-                                          left_top_certain = character(),
+                                          left_top_certain = logical(),
                                           left_bottom = character(),
-                                          left_bottom_certain = character(),
+                                          left_bottom_certain = logical(),
                                           right_top = character(),
-                                          right_top_certain = character(),
+                                          right_top_certain = logical(),
                                           right_bottom = character(),
-                                          right_bottom_certain = character(),
+                                          right_bottom_certain = logical(),
                                           bto_ring_position = character(),
                                           notes = character(),
                                           stringsAsFactors = FALSE)
@@ -552,11 +553,11 @@ create_empty_dataframes <- function() {
                                           end_time = character(),
                                           flock_type = character(),
                                           flock_number = integer(),
-                                          whole_flock = character(),
+                                          whole_flock = logical(),
                                           n_flock = integer(),
                                           n_ringed = integer(),
                                           section = character(),
-                                          mist_net = character(),
+                                          mist_net = logical(),
                                           notes = character(),
                                           blue_tit = logical(),
                                           chiff_chaff = logical(),
@@ -579,17 +580,18 @@ create_empty_dataframes <- function() {
                                            time = character(),
                                            flock_a = integer(),
                                            flock_b = integer(),
+                                           notes = character(),
                                            foraging_together = logical(),
                                            a_chasing_b = logical(),
                                            b_chasing_a = logical(),
                                            close_but_not_interacting = logical(),
                                            other = logical(),
-                                           notes = character(),
                                            stringsAsFactors = FALSE)
   empty_df$gps_data <- data.frame(Filename = character(),
                                   Points = integer(),
                                   Start = character(),
                                   Finish = character())
+  empty_df
 }
 
 #' Render a dataframe table as a Shiny.
@@ -603,6 +605,96 @@ create_empty_dataframes <- function() {
 render_table <- function(df, striped = TRUE) {
   shiny::renderTable({df}, striped = striped)
 }
+
+
+#' Render a reactive dataframe as an editable DataTable.
+#'
+#' @param reactive_data function Data for rendering as table, expected to be a reactive function.
+#' @param editable str|list Controls table elements to be editable (`cell|row|column|all` or `list()`, default `cell`).
+#' @param exclude_cols int Vector of zero-indexed column indices for which editing should be disabled (default `NULL`).
+#' @param server bool Whether to run server side or not (default `TRUE`).
+#' @param rownames bool Whether to display row names (default = `FALSE`).
+#' @param options list List of DataTable options (default = `list()`).
+#' @param ... Other parameters to be passed on to `DT::renderDT()`.
+#'
+#' @returns Rendered DataTable.
+#'
+#' @export
+render_dt <- function(reactive_data, editable = "cell", exclude_cols = NULL, server = TRUE, rownames = FALSE, options = list(), ...) {
+    if (!is.null(exclude_cols)) {
+        if (!is.list(editable)) {
+            editable <- list(target = editable)
+        }
+        editable$disable = list(columns = exclude_cols)
+    }
+    DT::renderDT(
+    {
+        reactive_data()
+    },
+    server = server,
+    editable = editable,
+    rownames = rownames,
+    options = options,
+    ...
+    )
+}
+
+
+#' DataTable module UI function
+#'
+#' @param id str ID for namespace within which UI element(s) will live.
+#'
+#' @returns DataTable UI output.
+#'
+#' @export
+dataTableUI <- function(id) {
+    ## Create a function that can be used to produce identifiers within an `id` namespace
+    ns <- shiny::NS(namespace = id)
+    DT::DTOutput(ns("dt"))
+}
+
+
+#' DataTable module server function
+#'
+#' @param id str ID for namespace within which UI element(s) live.
+#' @param reactive_data function Data for rendering as DataTable, expected to be a reactive function.
+#' @param empty_df dataframe Empty dataframe indicating data types.
+#'
+#' @returns `NULL`
+#'
+#' @export
+dataTableServer <- function(id, reactive_data, empty_df) {
+    shiny::moduleServer(id,
+                        function(input, output, session) {
+                            ## Identify columns which should not be editable.  We exclude logical columns
+                            ## because DT::editData() doesn't seem to be able to handle these updates.
+                            ## Note that this vector is zero indexed because DataTables use JavaScript under the hood.
+                            exclude_cols <- unname(which(sapply(empty_df, is.logical))) - 1
+                            ## Render DataTable, enabling cell editing except where columns are marked to be excluded
+                            output$dt <- lottie::render_dt(reactive_data,
+                                                           exclude_cols = exclude_cols,
+                                                           rownames = FALSE,
+                                                           options = list(
+                                                               paging = FALSE,
+                                                               searching = FALSE,
+                                                               ordering = FALSE,
+                                                               info = FALSE  # Suppress "Showing _ to _ of _ entries" info
+                                                           ))
+                            ## Observe edit events in data table and update flock description data
+                            shiny::observeEvent(input$dt_cell_edit, {
+                                cell <- input$dt_cell_clicked
+                                # Don't try to update disabled entries
+                                if (!cell$col %in% exclude_cols) {
+                                    info <- input$dt_cell_edit
+                                    to_update <- DT::editData({reactive_data()}, info, rownames = FALSE)
+                                    reactive_data(to_update)
+                                }
+                            })
+                            return()
+                        }
+    )
+}
+
 
 #' Filter a list of inputs for a subset and remove those that are to be excluded.
 #'

@@ -383,13 +383,8 @@ server <- function(input, output, session) {
     lapply(tmp_inputs, shinyjs::reset)
     composition_data(composition_to_add)
   })
-  ## The composition table is returned and rendered on the page
-  output$composition <- shiny::renderTable(
-    {
-      composition_data()
-    },
-    striped = TRUE
-  )
+  ## Render flock composition data as a simple DataTable with editable cells
+  dataTableServer("composition", composition_data, empty_df = empty_dataframes$composition_data)
 
   #################################################################################
   ## Flock Description                                                           ##
@@ -469,13 +464,8 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$add_description, {
     shiny::updateNumericInput(session, "description_flock_number", value = flock_number() + 1)
   })
-  ## The description table is returned and rendered on the page
-  output$description <- shiny::renderTable(
-    {
-      description_data()
-    },
-    striped = TRUE
-  )
+  ## Render flock description data as a simple DataTable with editable cells
+  dataTableServer("description", description_data, empty_df = empty_dataframes$description_data)
 
   #################################################################################
   ## Interactions                                                                ##
@@ -508,13 +498,8 @@ server <- function(input, output, session) {
     lapply(tmp_inputs, shinyjs::reset)
     interactions_data(interactions_to_add)
   })
-  ## The interaction table is returned and rendered on the page
-  output$interactions <- shiny::renderTable(
-    {
-      interactions_data()
-    },
-    striped = TRUE
-  )
+  ## Render flock interactions data as a simple DataTable with editable cells
+  dataTableServer("interactions", interactions_data, empty_df = empty_dataframes$interactions_data)
 
   #################################################################################
   ## Extract a list of all input id's                                            ##

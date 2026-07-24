@@ -221,7 +221,7 @@ individual_inputs <- list(
 
 individual_card <- display_section(
   header = "Flock Composition",
-  shiny::tableOutput("composition"),
+  lottie::dataTableUI("composition"),
   shiny::helpText("NB - Duplicate observations of ringed birds in the above table will be removed on submission.")
 )
 
@@ -312,7 +312,7 @@ flock_inputs <- list(
 
 flock_card <- display_section(
   header = "Flocks",
-  shiny::tableOutput("description"),
+  lottie::dataTableUI("description"),
   shiny::helpText("NB - Duplicate observations in the above table will be removed on submission.")
 )
 
@@ -369,7 +369,7 @@ interaction_inputs <- list(
 
 interaction_card <- display_section(
   header = "Flock Interactions",
-  shiny::tableOutput("interactions"),
+  lottie::dataTableUI("interactions"),
   shiny::helpText("NB - Duplicate observations in the above table will be removed on submission.")
 )
 
