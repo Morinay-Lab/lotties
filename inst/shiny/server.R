@@ -565,6 +565,8 @@ server <- function(input, output, session) {
     ## Reset the input fields using shinyjs, we get the list of all ids that are to be reset from the reactive
     ## function all_inputs()
     lapply(all_inputs(), shinyjs::reset)
+    ## Refresh the page which clears the existing tables
+    shinyjs::refresh()
   })
 
 
