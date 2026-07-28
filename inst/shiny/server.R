@@ -409,7 +409,7 @@ server <- function(input, output, session) {
   })
   ## Check that the number of ringed is not greater than the flock size
   shiny::observeEvent(
-    list(input$description_n_flock, input$description_n_ringed),
+    input$add_description,
     {
       req(input$description_n_flock, input$description_n_ringed)
       if (input$description_n_ringed > input$description_n_flock) {
@@ -427,6 +427,8 @@ server <- function(input, output, session) {
   )
   ## Build the dataframe/table of flock descriptions when the "Submit flock description" button is clicked
   shiny::observeEvent(input$add_description, {
+    shiny::validate(shiny::need(input$description_n_ringed <= input$description_n_flock,
+                                "You can not have more ringed birds than the total flock size."))
     ## We need to check if there are other species, if there are none then the value is NULL and this causes errors
     ## when creating dataframes.
     if (is.null(input$description_other_species)) {
