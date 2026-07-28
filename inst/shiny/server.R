@@ -477,20 +477,27 @@ server <- function(input, output, session) {
   flock_b <- shiny::reactive({
     input$interactions_flock_b
   })
+  flock_a_selected <- FALSE
+  flock_b_selected <- FALSE
   shiny::observeEvent(input$interactions_flock_a, {
     flocks <- as.list(description_data()$flock_number)
-    shiny::updateSelectInput(
-      session,
-      "interactions_flock_b",
-      choices = flocks[flocks != flock_a()]
-    )
+    if (flock_a_selected == FALSE) {
+      flock_a_selected <- TRUE
+      shiny::updateSelectInput(
+        session,
+        "interactions_flock_b",
+        choices = flocks[flocks != flock_a()])
+    }
   })
   shiny::observeEvent(input$interactions_flock_b, {
     flocks <- as.list(description_data()$flock_number)
-    shiny::updateSelectInput(
-      session,
-      "interactions_flock_a",
-      choices = flocks[flocks != flock_b()])
+    flock_b_selected <- TRUE
+    if (flock_b_selected == FALSE) {
+      shiny::updateSelectInput(
+        session,
+        "interactions_flock_a",
+        choices = flocks[flocks != flock_b()])
+    }
   })
   ## Build a data frame of interactions when the "Submit interaction" button is clocked
   interactions_data <- shiny::reactiveVal(empty_dataframes$interactions_data)
