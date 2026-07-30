@@ -64,7 +64,14 @@ Sheffield IT Services.
 This is a GNU/Linux machine running Ubuntu Linux and users can connect to the Shiny App that is running from any
 computer on the University network or whilst connected to the Universities Virtual Private Network (VPN).
 
-**TODO** Deploy the Shiny App on the server and work out the address to point to (https://lotties.shef.ac.uk/)
+
+### Clone the repository
+
+The `lotties` account has a clone of the repository under `~/lotties`. If it is not cloned you can do so using
+
+```
+git clone https://github.com/Morniay-Lab/lotties.git
+```
 
 
 ## Virtual Machine Administration
@@ -86,16 +93,140 @@ By default you should be prompted for a secure password.
 
 #### Windows
 
-Windows users should follow the instructions on [Using PuTTYgen on Windows to generate SSH key pairs][puttySSH] an
+Windows users should follow the instructions on [Using PuTTYgen on Windows to generate SSH key pairs][puttySSH].
 
 ### Uploading Keys
 
 Share your `id_25519.pub` (the public part of your key) with the administrator who will setup your account and place the
 public key under your `/home/<username>/.ssh/id_ed25519.pub`
 
+### R setup
+
+The University of Sheffield Virtual Machines run Ubuntu. We can leverage [r2u][r2u] to install binaries of all packages
+which speeds up installation. The [Usage and setup](https://github.com/eddelbuettel/r2u#usage-and-setup) instructions
+should be followed. This will, if you include _Step 3 : Ensure you have current R binaries_ will install the latest
+version of R. Once complete you can check the version of R
+
+```
+R --version
+```
+
+
+#### Package install
+
+Switch to the `lotties` user to clone and install (or update) the `lotties` package
+
+```
+sudo su lotties
+```
+
+Start R and install the `devtools` package and use it to install the locally clone of the ~lotties~ package along with dependencies.
+
+```r
+R
+> install.packages("devtools")
+> devtools::install("./", dependencies = TRUE)
+```
+
+If any packages fail then install them globally using the `r2u` built packages.
+
+```r
+> install.packages(c("patrick", "RSQLite", "ggplot2", "scales", "tidyr", "viridisLite", "watcher"))
+> devtools::install("./", dependencies = TRUE)
+> devtools::install("./", dependencies = TRUE)
+
+-- pak::local_install_deps() ---------------------------------------------------------------------------------------
+
+> Package library at /home/lotties/R/x86_64-pc-linux-gnu-library/4.6, /usr/local/lib/R/site-library, /usr/lib/R/sitebrary, and /usr/lib/R/library.
+> The package (0 B) is cached.
+x Missing 3 system packages. You'll probably need to install them manually:
++ cmake        - fs
++ libuv1-dev   - fs
++ libxml2-dev  - xml2
+i No downloads are needed
+v 86 deps: kept 86 [2.1s]
+-- R CMD build -----------------------------------------------------------------------------------------------------
+v  checking for file '/home/lotties/lotties/DESCRIPTION' ...
+-  preparing 'lottie':
+v  checking DESCRIPTION meta-information ...
+-  checking for LF line-endings in source and make files and shell scripts
+-  checking for empty or unneeded directories
+     NB: this package now depends on R (>= 4.1.0)
+     WARNING: Added dependency on R >= 4.1.0 because package code uses the
+     pipe |> or function shorthand \(...) syntax added in R 4.1.0.
+     File(s) using such syntax:
+       'utils.R'
+-  building 'lottie_0.0.0.9000.tar.gz'
+
+-- R CMD INSTALL ---------------------------------------------------------------------------------------------------
+Running /usr/lib/R/bin/R CMD INSTALL /tmp/RtmpKnTcHK/lottie_0.0.0.9000.tar.gz \
+  --install-tests
+* installing to library '/home/lotties/R/x86_64-pc-linux-gnu-library/4.6'
+* installing *source* package 'lottie' ...
+** this is package 'lottie' version '0.0.0.9000'
+** using staged installation
+** R
+** inst
+** tests
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (lottie)
+>
+```
+
+You can now launch the application, but you need to know what the IP address of the machine is. You can find this out
+using either `ifconfig` or the newer `ip a`. The call can be made from a plain shell, or you can do it from the running
+R session by using the `system()` function to make a system call.
+
+```r
+> system("ip a")
+
+
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host noprefixroute
+       valid_lft forever preferred_lft forever
+2: ens192: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 00:50:56:b6:bd:a8 brd ff:ff:ff:ff:ff:ff
+    altname enp11s0
+    inet 143.167.249.3/24 brd 143.167.249.255 scope global ens192
+       valid_lft forever preferred_lft forever
+    inet6 fe80::250:56ff:feb6:bda8/64 scope link
+       valid_lft forever preferred_lft forever
+```
+
+Here the network device is `ens192` and the IP address associated with it is `143.167.249.3`. We therefore load the
+~lotties~ package and start the
+Shiny App, pointing it to the location of the Shiny `server.R` and `ui.R` (within the `inst/shiny/` directory) and use the IP address...
+
+```r
+> devtools::load_all()
+> shiny::runApp("inst/shiny", host = "143.167.249.3")
+```
+
+The port used will be `3781` as this is defined in the packages `.Rprofile` file. For convenience you can add the host
+to this file too which will negate the need to explicitly provide the `host` parameter when calling `shiny::runApp()`.
+
+```
+## Shiny options
+options(shiny.autoreload = TRUE,
+        shiny.host = "143.167.249.3",
+        shiny.port = 3781,
+        shiny.trace = TRUE)
+```
+
 [ed25519]: https://blog.g3rt.nl/upgrade-your-ssh-keys.html
 [pak]: https://pak.r-lib.org/
 [lottie]: https://github.com/Morinay-lab/lotties
 [puttySSH]: https://www.ssh.com/academy/ssh/putty/windows/puttygen
+[r2u]: https://github.com/eddelbuettel/r2u
 [shiny]: https://shiny.posit.co/r/getstarted/
 [sqlite]: https://sqlite.org/index.html
