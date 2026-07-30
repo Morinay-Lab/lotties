@@ -1,0 +1,3 @@
+## Set variables
+LOTTIES_TESTING=TRUE
+LOTTIES_DATABASE_DIR="data/sqlite/lottie.sql"
