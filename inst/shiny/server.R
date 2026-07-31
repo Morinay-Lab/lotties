@@ -407,6 +407,24 @@ server <- function(input, output, session) {
       shiny::updateNumericInput(session, "description_n_ringed", value = 12)
     }
   })
+  ## Check that the number of ringed is not greater than the flock size
+  shiny::observeEvent(
+    input$add_description,
+    {
+      req(input$description_n_flock, input$description_n_ringed)
+      if (input$description_n_ringed > input$description_n_flock) {
+        shiny::showModal(
+          shiny::modalDialog(
+            title = "Error",
+            "You cannot have more ringed birds than are in the flock.",
+            easyClose = TRUE,
+            footer = modalButton("OK")
+          )
+        )
+      }
+    },
+    ignoreNULL = TRUE
+  )
   ## Build the dataframe/table of flock descriptions when the "Submit flock description" button is clicked
   shiny::observeEvent(input$add_description, {
     shiny::validate(shiny::need(input$description_n_ringed <= input$description_n_flock,
