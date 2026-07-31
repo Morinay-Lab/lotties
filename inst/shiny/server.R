@@ -416,7 +416,7 @@ server <- function(input, output, session) {
         shiny::showModal(
           shiny::modalDialog(
             title = "Error",
-            "Error : You can not have more ringed birds than are in the flock",
+            "You cannot have more ringed birds than are in the flock.",
             easyClose = TRUE,
             footer = modalButton("OK")
           )
