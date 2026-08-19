@@ -1,5 +1,5 @@
 ---
-title: "intro"
+title: "Lotties | Installation and server setup"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{intro}
@@ -64,15 +64,63 @@ Sheffield IT Services.
 This is a GNU/Linux machine running Ubuntu Linux and users can connect to the Shiny App that is running from any
 computer on the University network or whilst connected to the Universities Virtual Private Network (VPN).
 
+### User account
 
-### Clone the repository
+The `lotties` account has been created to run the service, once you have SSH'd into the machine you can switch
+to this account using
 
-The `lotties` account has a clone of the repository under `~/lotties`. If it is not cloned you can do so using
+```shell
+sudo su lotties
+cd
+```
+
+### Get the repository
+
+The `lotties` account has a clone of the repository under `~/lotties`. You can update it by changing directory and
+pulling.
+```shell
+cd ~/lotties
+git pull
+```
+
+If it is not cloned, for example the service is being deployed elsewhere, you can clone it using
 
 ```
+cd
 git clone https://github.com/Morniay-Lab/lotties.git
 ```
 
+### Launching the Service
+
+A [systemd service module][systemd] has been added to facilitate starting and stopping the service. It has been setup to
+be run as the `lotties` user on the account so after you have SSH'd to the machine you should switch to this account
+(see above) and you can start
+
+```shell
+systemctl restart lotties.service
+```
+
+You can check the status with
+
+```shell
+systemctl status lotties.service
+```
+
+### Updating
+
+The `lotties` package is a work in progress and new features may be added. To update these you should..
+
+1. Switch to the `lotties` user account.
+2. Navigate to `~/lotties/` git repository.
+3. Get the latest changes to the `main` branch with `git switch main && git pull`
+4. Edit `inst/shiny/server.R` and set `testing <- FALSE` so the SQLite database is used rather than running in memory.
+5. Restart the service with `sudo systemctl restart lotties.service`
+
+It is possible that you may wish to test features on a branch in which case you can replace step 3 with...
+
+3. Switch to branch to be tested with `git switch <branch>`
+
+...although ideally all branches should have been tested locally in memory and changes merged to `main` for deployment.
 
 ## Virtual Machine Administration
 
@@ -132,7 +180,6 @@ If any packages fail then install them globally using the `r2u` built packages.
 
 ```r
 > install.packages(c("patrick", "RSQLite", "ggplot2", "scales", "tidyr", "viridisLite", "watcher"))
-> devtools::install("./", dependencies = TRUE)
 > devtools::install("./", dependencies = TRUE)
 
 -- pak::local_install_deps() ---------------------------------------------------------------------------------------
@@ -197,30 +244,68 @@ R session by using the `system()` function to make a system call.
 2: ens192: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
     link/ether 00:50:56:b6:bd:a8 brd ff:ff:ff:ff:ff:ff
     altname enp11s0
-    inet 143.167.249.3/24 brd 143.167.249.255 scope global ens192
+    inet 123.456.178.9/24 brd 143.167.249.255 scope global ens192
        valid_lft forever preferred_lft forever
     inet6 fe80::250:56ff:feb6:bda8/64 scope link
        valid_lft forever preferred_lft forever
 ```
 
-Here the network device is `ens192` and the IP address associated with it is `143.167.249.3`. We therefore load the
+Here the network device is `ens192` and the IP address associated with it is `123.456.178.9`. We therefore load the
 ~lotties~ package and start the
 Shiny App, pointing it to the location of the Shiny `server.R` and `ui.R` (within the `inst/shiny/` directory) and use the IP address...
 
 ```r
 > devtools::load_all()
-> shiny::runApp("inst/shiny", host = "143.167.249.3")
+> shiny::runApp("inst/shiny", host = "123.456.178.9")
 ```
 
 The port used will be `3781` as this is defined in the packages `.Rprofile` file. For convenience you can add the host
-to this file too which will negate the need to explicitly provide the `host` parameter when calling `shiny::runApp()`.
+to this file too which will negate the need to explicitly provide the `host` parameter when calling `shiny::runApp()`
+but since this is contingent on the computer it is being run on it is _not_ included in the version in the repository.
 
 ```
 ## Shiny options
 options(shiny.autoreload = TRUE,
-        shiny.host = "143.167.249.3",
         shiny.port = 3781,
+        shiny.host = "123.456.178.9",
         shiny.trace = TRUE)
+```
+
+
+# Appendix
+
+## Systemd Service module
+
+This is based on the [Using systemd to Run Shiny Apps][systemd_shiny] article ([archived][systemd_shiny_archive]) but
+with a few tweaks to run it as user. It is saved in the `/etc/systemd/user/lotties.service` file.
+
+```
+[Unit]
+Description=Lotties Shiny App
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=<username>
+ExecStart=nohup Rscript -e "devtools::load_all(path='/home/lotties/lotties/')" -e "shiny::runApp('/home/lotties/lotties/inst/shiny', port = ####, host = '###.###.###.###')" > /home/lotties/log/lotties.log 2>&1 &
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**NB** - This should log output to `/home/lotties/log/lotties.log` but it isn't currently redirecting. Instead use
+`journalctl -u lotties.service --since today` to see output from the service from the current day.
+
+### Enable the service
+
+If setting up on a new system copy the above to `/etc/systemd/user/lotties.service` and then as `root` enable the
+service with...
+
+```shell
+systemctl enable --now lotties.service
 ```
 
 [ed25519]: https://blog.g3rt.nl/upgrade-your-ssh-keys.html
@@ -230,3 +315,6 @@ options(shiny.autoreload = TRUE,
 [r2u]: https://github.com/eddelbuettel/r2u
 [shiny]: https://shiny.posit.co/r/getstarted/
 [sqlite]: https://sqlite.org/index.html
+[systemd]: https://systemd.io/
+[systemd_shiny]: https://hosting.analythium.io/using-systemd-to-run-shiny-apps/
+[systemd_shiny_archive]: https://web.archive.org/web/20260819145512/https://hosting.analythium.io/using-systemd-to-run-shiny-apps/
