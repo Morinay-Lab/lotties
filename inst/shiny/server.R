@@ -71,6 +71,7 @@ if (testing) {
   RSQLite::dbWriteTable(conn = con,
                         name = "GPS",
                         data.frame("time" = character(),
+                                   "user" = character(),
                                    "lat" = numeric(),
                                    "lon" = numeric(),
                                    "ele" = numeric(),
@@ -83,6 +84,7 @@ if (testing) {
                         name = "Composition",
                         data.frame("date" = character(),
                                    "time" = character(),
+                                   "user" = character(),
                                    "flock_number" = character(),
                                    "ringed" = numeric(),
                                    "colour_ring" = character(),
@@ -107,6 +109,7 @@ if (testing) {
                         data.frame("date" = character(),
                                    "start_time" = character(),
                                    "end_time" = character(),
+                                   "user" = character(),
                                    "flock_type" = character(),
                                    "flock_number" = character(),
                                    "whole_flock" = numeric(),
@@ -139,6 +142,7 @@ if (testing) {
                         name = "Interactions",
                         data.frame("date" = character(),
                                    "time" = character(),
+                                   "user" = character(),
                                    "flock_a" = character(),
                                    "flock_b" = character(),
                                    "notes" = numeric(),
@@ -257,9 +261,23 @@ server <- function(input, output, session) {
       xml2::xml_find_first(gpx_data, ".//d1:trk/d1:name", gpx_namespace) |> xml2::xml_text(),
       ".gpx"
     )
+    ## Update the user field based on the uploaded filename (which may be different from the internal filename
+    ## extracted above)
+    uploaded_filename <- dplyr::select(input$gpx, name)
+    user <- NULL
+    for (i in seq_len(nrow(person_df))) {
+      row <- person_df[i, ]
+      to_match <- unlist(c(row$code, strsplit(row$synonyms, split = ",")))
+      if (grepl(pattern = paste(to_match, collapse = "|"), uploaded_filename)) {
+          user <- row$code
+          ## print(paste("Matched user:", user))
+          break
+      }
+    }
     ## Build dataframe
     gps_df <- data.frame(
       time = as.character(time),
+      user = as.character(user),
       lat = lat,
       lon = lon,
       ele = ele,
@@ -280,19 +298,7 @@ server <- function(input, output, session) {
     update_date(date = start_date_time, tag = "interactions_date", session)
     update_time(date = start_date_time, tag = "interactions_time", session)
 
-    ## Update the user field based on the uploaded filename (which may be different from the internal filename
-    ## extracted above)
-    uploaded_filename <- dplyr::select(input$gpx, name)
-    user <- NULL
-    for (i in seq_len(nrow(person_df))) {
-      row <- person_df[i, ]
-      to_match <- unlist(c(row$code, strsplit(row$synonyms, split = ",")))
-      if (grepl(pattern = paste(to_match, collapse = "|"), uploaded_filename)) {
-          user <- row$code
-          ## print(paste("Matched user:", user))
-          break
-      }
-    }
+    ## Set the session to the user value extracted from the filename
     shiny::updateSelectInput(
       session = session,
       inputId = "user",
@@ -425,6 +431,7 @@ server <- function(input, output, session) {
     ## We now set the `ringed` and `bto_ring_position` conditional on the selected rings
     to_add <- data.frame(date = as.character(input$composition_date),
                          time = as.character(format(input$composition_time, "%H:%M")),
+                         user = as.character(input$user),
                          flock_number = input$composition_flock_number,
                          ringed = selected_rings()$ringed,
                          colour_ring = input$composition_colour_ring,
@@ -515,6 +522,7 @@ server <- function(input, output, session) {
       date = as.character(input$description_date),
       start_time = as.character(format(input$description_start_time, "%H:%M")),
       end_time = as.character(format(input$description_end_time, "%H:%M")),
+      user = as.character(input$user),
       flock_type = input$description_flock_type,
       flock_number = input$description_flock_number,
       whole_flock = input$description_whole_flock,
@@ -592,6 +600,7 @@ server <- function(input, output, session) {
     to_add <- data.frame(
       date = as.character(input$interactions_date),
       time = as.character(format(input$interactions_time, "%H:%M")),
+      user = as.character(input$user),
       flock_a = input$interactions_flock_a,
       flock_b = input$interactions_flock_b,
       type = input$interactions_type,
