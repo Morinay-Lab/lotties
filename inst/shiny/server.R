@@ -4,14 +4,14 @@ library(shiny)
 library(xml2)
 
 ## When developing set to TRUE, otherwise set to FALSE
-testing <- TRUE
-## testing <- FALSE
+## testing <- TRUE
+testing <- FALSE
 ## If testing we load the database in memory with this data.
 if (testing) {
   db_path <- ":memory:"
 } else {
   ## ...otherwise we have a database on disc and load it.
-  db_path <- "inst/sqlite/lottie.sql"
+  db_path <- "../sqlite/lottie.sql"
 }
 ## Setup connection to database
 con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
@@ -21,7 +21,6 @@ con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
 ## Load lookup dataframes and populate database if testing
 if (testing) {
   ## Load lookup dataframes and populate database if testing
-  ## source("lookups.R")
   overwrite <- TRUE
   ## People
   RSQLite::dbWriteTable(conn = con,
@@ -43,7 +42,7 @@ if (testing) {
 
   ## Section
   RSQLite::dbWriteTable(conn = con,
-                        name = "Site",
+                        name = "Sites",
                         section_df,
                         overwrite = overwrite)
   ## Conditions
@@ -79,8 +78,82 @@ if (testing) {
                                    stringsAsFactors = FALSE,
                                    check.names = FALSE),
                         overwrite = overwrite)
+  ## Composition
+  RSQLite::dbWriteTable(conn = con,
+                        name = "Composition",
+                        data.frame("date" = character(),
+                                   "time" = character(),
+                                   "flock_number" = character(),
+                                   "ringed" = numeric(),
+                                   "colour_ring" = character(),
+                                   "certain" = numeric(),
+                                   "left_top" = character(),
+                                   "left_top_certain" = numeric(),
+                                   "left_bottom" = character(),
+                                   "left_bottom_certain" = numeric(),
+                                   "right_top" = character(),
+                                   "right_top_certain" = numeric(),
+                                   "right_bottom" = character(),
+                                   "right_bottom_certain" = numeric(),
+                                   "notes" = character(),
+                                   "bto_ring_position" = character(),
+                                   stringsAsFactors = FALSE,
+                                   check.names = FALSE),
+                        overwrite = overwrite)
+
+  ## Description
+  RSQLite::dbWriteTable(conn = con,
+                        name = "Description",
+                        data.frame("date" = character(),
+                                   "start_time" = character(),
+                                   "end_time" = character(),
+                                   "flock_type" = character(),
+                                   "flock_number" = character(),
+                                   "whole_flock" = numeric(),
+                                   "n_flock" = numeric(),
+                                   "n_ringed" = numeric(),
+                                   "section" = character(),
+                                   "mist_net" = numeric(),
+                                   "notes" = character(),
+                                   "chaffinch" = numeric(),
+                                   "dunnock" = numeric(),
+                                   "great_tit" = numeric(),
+                                   "willow_warbler" = numeric(),
+                                   "blue_tit" = numeric(),
+                                   "chiff_chaff" = numeric(),
+                                   "coal_tit" = numeric(),
+                                   "goldcrest" = numeric(),
+                                   "nuthatch" = numeric(),
+                                   "robin" = numeric(),
+                                   "siskin" = numeric(),
+                                   "tree_creeper" = numeric(),
+                                   "unknown_tit" = numeric(),
+                                   "woodpecker" = numeric(),
+                                   "wren" = numeric(),
+                                   stringsAsFactors = FALSE,
+                                   check.names = FALSE),
+                        overwrite = overwrite)
+
+  ## Interactions
+  RSQLite::dbWriteTable(conn = con,
+                        name = "Interactions",
+                        data.frame("date" = character(),
+                                   "time" = character(),
+                                   "flock_a" = character(),
+                                   "flock_b" = character(),
+                                   "notes" = numeric(),
+                                   "a_chasing_b" = numeric(),
+                                   "foraging_together" = numeric(),
+                                   "b_chasing_a" = character(),
+                                   "close_but_not_interacting" = numeric(),
+                                   "other" = character(),
+                                   stringsAsFactors = FALSE,
+                                   check.names = FALSE),
+                        overwrite = overwrite)
+
 } else {
   ## Otherwise extract lookups from database
+  overwrite <- FALSE
   ## Person
   query <- "SELECT * FROM Person"
   person_df <- RSQLite::dbGetQuery(con, query)
