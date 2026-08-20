@@ -18,6 +18,7 @@ Imports:
     dplyr,
     DT,
     ggplot2,
+    lubridate,
     patrick,
     RSQLite,
     readr,
