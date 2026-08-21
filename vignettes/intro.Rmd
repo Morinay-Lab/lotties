@@ -152,7 +152,7 @@ public key under your `/home/<username>/.ssh/id_ed25519.pub`
 
 The University of Sheffield Virtual Machines run Ubuntu. We can leverage [r2u][r2u] to install binaries of all packages
 which speeds up installation. The [Usage and setup](https://github.com/eddelbuettel/r2u#usage-and-setup) instructions
-should be followed. This will, if you include _Step 3 : Ensure you have current R binaries_ will install the latest
+should be followed. This will, if you include _Step 3 : Ensure you have current R binaries_, install the latest
 version of R. Once complete you can check the version of R
 
 ```
@@ -168,7 +168,7 @@ Switch to the `lotties` user to clone and install (or update) the `lotties` pack
 sudo su lotties
 ```
 
-Start R and install the `devtools` package and use it to install the locally clone of the ~lotties~ package along with dependencies.
+Start R and install the `devtools` package and use it to install the local clone of the ~lotties~ package along with dependencies.
 
 ```r
 R
