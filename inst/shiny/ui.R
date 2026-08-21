@@ -495,7 +495,7 @@ sidebar_orig <- bslib::sidebar(
   !!!conditions_inputs
 )
 
-testing_banner = NULL
+testing_banner <- NULL
 if (Sys.getenv("LOTTIES_TESTING")) {
     testing_banner <- shiny::div(class="p-3 bg-dark rounded-3 border text-center", "TESTING MODE")
 }
