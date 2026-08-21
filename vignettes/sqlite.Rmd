@@ -49,7 +49,7 @@ List tables with `RSQLite::dbListTables(con)`
 
 ## Creating Tables
 
-You create a dataframe in R and use this as the
+You create a dataframe in R and use this as the table to be written to the database. 
 
 ```{r sql_write_table}
 df <- data.frame("user" = character(),
