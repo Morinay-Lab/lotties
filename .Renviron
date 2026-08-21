@@ -1,3 +1,3 @@
 ## Set variables
-LOTTIES_TESTING=TRUE
-LOTTIES_DATABASE_DIR="data/sqlite/lottie.sql"
+LOTTIES_TESTING=FALSE
+LOTTIES_DB_PATH="../sqlite/lotties.sql"

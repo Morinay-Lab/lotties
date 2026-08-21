@@ -1,0 +1,151 @@
+---
+title: "SQLite"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{intro}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(lottie)
+```
+
+This document provide a _very_ brief introduction to interacting with the SQLite database from R using
+[RSQLite][rsqlite].
+
+## Connection
+
+You _always_ need to have a connection defined which points to the location of the database. This may be `:memory:` if
+testing things locally in memory or it may be the location of a `.sql` file on disk.
+
+```{r connection}
+# In memory database
+db_path <- ":memory:"
+# On disk database
+db_path <- "inst/sqlite/lottie.sql"
+con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+```
+
+All subsequent commands for interacting with the database required the `con` (connection) so that they know what
+database they are connecting to.
+
+## Listing Tables
+
+List tables with `RSQLite::dbListTables(con)`
+
+```{r sql_list_tables}
+> RSQLite::dbListTables(con)
+[1] "Composition"  "Conditions"   "Description"  "GPS"          "Interactions"
+[6] "OtherSpecies" "Person"       "Rings"        "Sites"
+```
+
+## Creating Tables
+
+You create a dataframe in R and use this as the table to be written to the database. 
+
+```{r sql_write_table}
+df <- data.frame("user" = character(),
+                 "date" = character(),
+                 "start_time" = character(),
+                 "end_time" = character(),
+                 "weather" = character(),
+                 "visibility" = character(),
+                 "cloudy_grey" = logical(),
+                 "foggy" = logical(),
+                 "light_rain" = logical(),
+                 "partly_cloudy" = logical(),
+                 "really_rainy" = logical(),
+                 "sunny" = logical(),
+                 "windy" = logical(),
+                 stringsAsFactors = FALSE,
+                 check.names = FALSE)
+RSQLite::dbWriteTable(conn = con,
+                      name = "Conditions",
+                      df,
+                      overwrite = overwrite)
+
+```
+
+## Extract Data
+
+You extract data by defining a query in SQL and then using the `RSQLite::dbGetQuery()` function. Typically the results
+will then be stored in a dataframe.
+
+### Complete table
+
+You can extract a complete table very easily and convert the results to a [tibble][tibble] using the [`SELECT`][sqlite_select]. Here `*` is a wild card and
+short hand for "all columns".
+
+```{r sql_get_query_all}
+table <- "Interactions"
+query <- paste0("SELECT * FROM ", table)  ## NB - the space after FROM is essential
+interactions_df <- RSQLite::dbGetQuery(con, query) |> dplyr::tibble()
+```
+
+### Some columns
+
+If you only want some columns from a table you have to be explicit as to which you want.
+
+```{r sql_get_query_cols}
+table <- "Interactions"
+query <- paste0("SELECT date,time,flock_a,flock_b FROM ", table)  ## NB - the space after FROM is essential
+interactions_subset_df <- RSQLite::dbGetQuery(con, query) |> dplyr::tibble()
+```
+
+### Some rows
+
+You may wish to filter the rows of a table which is done with the [`WHERE`][sqlite_where]. Here we select a specific date
+
+```{r sql_get_query_rows}
+table <- "Interactions"
+query <- paste0("SELECT * FROM ", table, " WHERE date == '2026-08-20'")  ## NB - the space after FROM and before WHERE is essential
+interactions_subset_df <- RSQLite::dbGetQuery(con, query) |> dplyr::tibble()
+```
+
+## Modifying data
+
+It is possible to modify data in a SQLite database using [`UPDATE`][sqlite_update]. You will need to know the
+appropriate `WHERE` condition to select the row you wish to update and this will typically involve using other operators
+such as
+[`AND`][sqlite_and], [`OR`][sqlite_or], [`BETWEEN`][sqlite_between] or [`IN`][sqlite_in].
+
+The example below flips round which flock was chasing which from `1` (`a`) chasing `4` (`b`) to `4` (`b`) chasing `1`
+(`a`). The data
+
+```{r sql_get_query_update}
+table <- "Interactions"
+query <- paste0("UPDATE ", ## NB - the space after FROM is essential
+                table,
+                " SET a_chasing_b = 0, b_chasing_a = 1",  ## NB - the spaces before keywords are also essential
+                " WHERE date == '2026-08-20' ",
+                " AND flock_a == '1' ",
+                " AND flock_b == '4'",
+                " AND a_chasing_b = 1",
+                " AND b_chasing_a = 0")
+RSQLite::dbSendQuery(con, query)
+```
+
+
+## Summary
+
+This is just the tip of the iceberg there is a _lot_ to learn about writing database queries. A good resource for
+learning more is the [SQLite Tutorial][sqlite_toturial].
+
+[rsqlite]: https://rsqlite.r-dbi.org/
+[sqlite_select]: https://www.sqlitetutorial.net/sqlite-select/
+[sqlite_tutorial]: https://www.sqlitetutorial.net/
+[sqlite_and]: https://www.sqlitetutorial.net/sqlite-and/
+[sqlite_between]: https://www.sqlitetutorial.net/sqlite-between/
+[sqlite_in]: https://www.sqlitetutorial.net/sqlite-in/
+[sqlite_or]: https://www.sqlitetutorial.net/sqlite-or/
+[sqlite_where]: https://www.sqlitetutorial.net/sqlite-where/
+[sqlite_update]: https://www.sqlitetutorial.net/sqlite-update/
+[tibble]: https://tibble.tidyverse.org/
