@@ -495,11 +495,17 @@ sidebar_orig <- bslib::sidebar(
   !!!conditions_inputs
 )
 
+testing_banner <- NULL
+if (Sys.getenv("LOTTIES_TESTING")) {
+    testing_banner <- shiny::div(class="p-3 bg-dark rounded-3 border text-center", "TESTING MODE")
+}
+
 ui <- bslib::page_sidebar(
   title = shiny::h1("Lottie - Long-tailed Tit Data Capture"),
   sidebar = sidebar_accordion,
   ## This allows use of shinyjs::reset() to reset fields on submission
   shinyjs::useShinyjs(),
+  testing_banner,
   bslib::navset_card_underline(
     bslib::nav_panel(
       "Observations",
