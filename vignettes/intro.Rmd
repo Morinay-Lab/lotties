@@ -261,7 +261,7 @@ Shiny App, pointing it to the location of the Shiny `server.R` and `ui.R` (withi
 
 The port used will be `3781` as this is defined in the packages `.Rprofile` file. For convenience you can add the host
 to this file too which will negate the need to explicitly provide the `host` parameter when calling `shiny::runApp()`
-but since this is contingent on the computer it is being run on it is _not_ included in the version in the repository.
+but since this is contingent on the computer it is being run on it is _not_ included in the version in this repository.
 
 ```
 ## Shiny options
