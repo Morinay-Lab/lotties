@@ -1,0 +1,27 @@
+# This file starts and runs the Lotties Shiny WebApp
+#
+# If a new deployment is being made a copy should be placed at /etc/systemd/system/lotties.service and the
+# port and host fields modified to reflect the hosts IP address (see output of 'ip a') and the desired port.
+#
+# The service can be enabled with...
+#
+# systemctl enable --now lotties.service
+#
+# Status can be checked with
+#
+# systemctl status lotties.service
+# journalctl -u lotties.service --since today
+[Unit]
+Description=Lotties Shiny App
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=lotties
+ExecStart=nohup Rscript -e "devtools::load_all(path='/home/lotties/lotties/')" -e "shiny::runApp('/home/lotties/lotties/inst/shiny', port = ****, host = '###.###.###.###')" > /home/lotties/log/lotties.log 2>&1 &
+
+[Install]
+WantedBy=multi-user.target
