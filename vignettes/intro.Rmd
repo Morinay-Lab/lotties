@@ -38,16 +38,21 @@ To launch the Shiny App locally you can run the following...
 shiny::runApp(system.file("shiny", package = "lotties"))
 ```
 
-This should launch a browser pointing to a locally running instance of the application. The database will be in memory
-and is _not_ permanent.
+This should launch a browser pointing to a locally running instance of the application.
 
-### Persistence
+### Database Persistence
 
 By default the App is set to run in memory and so no historical data nor data entered persists. When the application is
-killed all entered data will be lost. Included in the package under `inst/xls` are various historical data files which
-have been cleaned and added to a [SQLite][sqlite3] which resides under `inst/sqlite`. By modifying `testing <- FALSE` in
-the `inst/shiny/server.R` file then the database with the historical data in the `inst/sqlite/` directory will be
-loaded.
+killed all entered data will be lost.
+Whether the database will be in memory or read from disk depends on the values defined in the `.Renviron` file that is included in
+the repository. There are two variables defined.
+
+
+| Variable          | Value                   | Effect                                                                                                                                                                    |
+|:------------------|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `LOTTIES_TESTING` | `TRUE`                  | Will use an in memory SQLite3 database, ideal for development/testing.                                                                                                    |
+|                   | `FALSE`                 | Will use the SQLite3 database from disk specified in the `LOTTIES_DB_PATH`                                                                                                |
+| `LOTTIES_DB_PATH` | `../sqlite/lotties.sql` | Path to the SQLite3 database on disc which is loaded if `LOTTES_TESTING` is `FALSE`. The path is relative to the location on `server.R` which is in `inst/shiny/server.R` |
 
 ### Data Entry
 
@@ -61,8 +66,9 @@ pull-down menus in subsequent sections (_Individual Data_ and _Interactions Data
 To make the Shiny App available more widely the Morinay Lab have comissioned a Virtual Machine (VM) from University of
 Sheffield IT Services.
 
-This is a GNU/Linux machine running Ubuntu Linux and users can connect to the Shiny App that is running from any
-computer on the University network or whilst connected to the Universities Virtual Private Network (VPN).
+This is a GNU/Linux machine running Ubuntu Linux and users can connect to the Shiny App Web Interface that is running
+from any computer on the University network or whilst connected to the Universities Virtual Private Network (VPN). They
+do not need to have any credentials to do so.
 
 ### User account
 

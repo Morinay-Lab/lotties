@@ -3,15 +3,13 @@ library(RSQLite)
 library(shiny)
 library(xml2)
 
-## When developing set to TRUE, otherwise set to FALSE
-## testing <- TRUE
-testing <- FALSE
+testing <- Sys.getenv("LOTTIES_TESTING")
 ## If testing we load the database in memory with this data.
 if (testing) {
   db_path <- ":memory:"
 } else {
   ## ...otherwise we have a database on disc and load it.
-  db_path <- "../sqlite/lottie.sql"
+  db_path <- Sys.getenv("LOTTIES_DB_PATH")
 }
 ## Setup connection to database
 con <- DBI::dbConnect(RSQLite::SQLite(), db_path)

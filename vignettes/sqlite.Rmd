@@ -122,14 +122,14 @@ The example below flips round which flock was chasing which from `1` (`a`) chasi
 
 ```{r sql_get_query_update}
 table <- "Interactions"
-query <- paste0("UPDATE ",
+query <- paste0("UPDATE ", ## NB - the space after FROM is essential
                 table,
-                " SET a_chasing_b = 0, b_chasing_a = 1",
+                " SET a_chasing_b = 0, b_chasing_a = 1",  ## NB - the spaces before keywords are also essential
                 " WHERE date == '2026-08-20' ",
                 " AND flock_a == '1' ",
                 " AND flock_b == '4'",
                 " AND a_chasing_b = 1",
-                " AND b_chasing_a = 0")  ## NB - the space after FROM is essential
+                " AND b_chasing_a = 0")
 RSQLite::dbSendQuery(con, query)
 ```
 
