@@ -9,7 +9,7 @@ library(RSQLite)
 library(shiny)
 library(xml2)
 
-db_path <- "inst/sqlite/lottie.sql"
+db_path <- Sys.getenv("LOTTIES_DB_PATH")
 ## Setup connection to database
 con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
 overwrite <- FALSE
