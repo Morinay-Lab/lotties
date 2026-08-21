@@ -2,13 +2,16 @@ Package: lottie
 Title: Long-tailed Tits Database and Shiny App
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Tamora", "James", , "t.d.james@sheffield.ac.uk", role = c("aut")),
-    person("Neil", "Shephard", , "n.shephard@sheffield.ac.uk", role=c("aut", "cre")),
-    person("Jennifer", "Morinay", , "j.morinay@sheffield.ac.uk", role=c("aut")))
-Description: A Shiny WebUI and SQLite database for capturing, validating, cleaning and analysing data from a long-term study of the Long-tailed Tit (_Aegithalos caudatus_).
+    person("Tamora", "James", , "t.d.james@sheffield.ac.uk", role = "aut"),
+    person("Neil", "Shephard", , "n.shephard@sheffield.ac.uk", role = c("aut", "cre")),
+    person("Jennifer", "Morinay", , "j.morinay@sheffield.ac.uk", role = "aut")
+  )
+Description: A Shiny WebUI and SQLite database for capturing, validating,
+    cleaning and analysing data from a long-term study of the Long-tailed
+    Tit (_Aegithalos caudatus_).
 License: GPL (>= 3)
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
+URL: https://github.com/Morinay-Lab/lotties/
+BugReports: https://github.com/Morinay-Lab/lotties/issues
 Imports:
     bsicons,
     bslib,
@@ -17,6 +20,7 @@ Imports:
     ggplot2,
     patrick,
     RSQLite,
+    readr,
     shiny,
     shinyjs,
     shinyTime,
@@ -25,9 +29,14 @@ Imports:
     watcher,
     xml2
 Suggests:
+    devtools,
     knitr,
+    renv,
     rmarkdown,
     testthat (>= 3.0.0)
-Config/testthat/edition: 3
+VignetteBuilder:
+    knitr
 Config/roxygen2/version: 8.0.0
-VignetteBuilder: knitr
+Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
