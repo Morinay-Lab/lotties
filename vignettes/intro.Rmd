@@ -52,7 +52,7 @@ the repository. There are two variables defined.
 |:------------------|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `LOTTIES_TESTING` | `TRUE`                  | Will use an in memory SQLite3 database, ideal for development/testing.                                                                                                    |
 |                   | `FALSE`                 | Will use the SQLite3 database from disk specified in the `LOTTIES_DB_PATH`                                                                                                |
-| `LOTTIES_DB_PATH` | `../sqlite/lotties.sql` | Path to the SQLite3 database on disc which is loaded if `LOTTES_TESTING` is `FALSE`. The path is relative to the location on `server.R` which is in `inst/shiny/server.R` |
+| `LOTTIES_DB_PATH` | `../sqlite/lotties.sql` | Path to the SQLite3 database on disc which is loaded if `LOTTIES_TESTING` is `FALSE`. The path is relative to the location of `server.R` which is `inst/shiny/server.R` |
 
 ### Data Entry
 
