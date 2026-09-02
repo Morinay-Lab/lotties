@@ -52,7 +52,7 @@ the repository. There are two variables defined.
 |:------------------|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `LOTTIES_TESTING` | `TRUE`                  | Will use an in memory SQLite3 database, ideal for development/testing.                                                                                                    |
 |                   | `FALSE`                 | Will use the SQLite3 database from disk specified in the `LOTTIES_DB_PATH`                                                                                                |
-| `LOTTIES_DB_PATH` | `../sqlite/lotties.sql` | Path to the SQLite3 database on disc which is loaded if `LOTTIES_TESTING` is `FALSE`. The path is relative to the location of `server.R` which is `inst/shiny/server.R` |
+| `LOTTIES_DB_PATH` | `../sqlite/lotties.sql` | Path to the SQLite3 database on disc which is loaded if `LOTTES_TESTING` is `FALSE`. The path is relative to the location of `server.R` which is `inst/shiny/server.R` |
 
 ### Data Entry
 
@@ -96,6 +96,13 @@ cd
 git clone https://github.com/Morniay-Lab/lotties.git
 ```
 
+### Switch to permanent database
+
+As described above the `.Renviron` file defines variables which control the behaviour of the application when started. A
+key one is what database is used and by default this will be the in-memory database controlled by
+`LOTTIES_TESTING=TRUE`. Prior to deployment edit `.Renviron` and set `LOTTIES_TESTING=FALSE` to ensure the defined
+database (`inst/sqlite/lotties.sql` by default) will be used.
+
 ### Launching the Service
 
 A [systemd service module][systemd] has been added to facilitate starting and stopping the service. It has been setup to
@@ -111,6 +118,25 @@ You can check the status with
 ```shell
 systemctl status lotties.service
 ```
+
+### Backups
+
+Backups are scheduled to run using the [`cron`](https://en.wikipedia.org/wiki/Cron) time-based scheduler. The `lotties`
+account has been added to the `conrtab` group and an entry made (using `conrtab -e`) to run the `inst/scripts/backup.R`
+script daily at 06:00.
+
+The `crontab` entry shown using `crontab -l` is listed below and should not need editing.
+
+```
+# m h  dom mon dow   command
+  0 6  *   *   *     cd /home/lotties/lotties/inst/shiny/ && Rscript /home/lotties/lotties/inst/scripts/backup.R
+```
+
+The `init/scripts/backup.R` script extracts all data tables and compresses them to the `LOTTIES_BACKUP_DIR` that is
+defined in `.Renviron`. The default for this path is the xdrive path
+`/mnt/san/morinay_group/Shared/Database_Files/backup` and zip files are created here with the format
+`extract_YYYY-MM-DD_hhmmss.####.zip` which includes a unique time-stamp in
+[ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 
 ### Updating
 
