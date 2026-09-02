@@ -42,9 +42,9 @@ database they are connecting to.
 List tables with `RSQLite::dbListTables(con)`
 
 ```{r sql_list_tables}
-> RSQLite::dbListTables(con)
-[1] "Composition"  "Conditions"   "Description"  "GPS"          "Interactions"
-[6] "OtherSpecies" "Person"       "Rings"        "Sites"
+RSQLite::dbListTables(con)
+#[1] "Composition"  "Conditions"   "Description"  "GPS"          "Interactions"
+#[6] "OtherSpecies" "Person"       "Rings"        "Sites"
 ```
 
 ## Creating Tables
