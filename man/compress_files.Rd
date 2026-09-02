@@ -4,16 +4,21 @@
 \alias{compress_files}
 \title{Compress a list of files.}
 \usage{
-compress_files(csv_files, path)
+compress_files(csv_files, path, extract_dir)
 }
 \arguments{
 \item{csv_files}{list A named list of files to be compressed.}
 
 \item{path}{str The location the files should be compressed to.}
+
+\item{extract_dir}{str Path to the location files that are to be compressed are located.}
 }
 \value{
 Nothing
 }
 \description{
 A list of CSV files are compressed to the specified 'path' in a file named 'extract_YYYYMMDD_HHmmss.zzzzz.zip'.
+}
+\details{
+We pass \code{extract_dir} to use as the \code{zip::zip(..., root = extract_dir)} and strip this path from the list of files.
 }

@@ -15,5 +15,7 @@ con <- DBI::dbConnect(RSQLite::SQLite(), Sys.getenv("LOTTIES_DB_PATH"))
 csv_files <- extract_all_tables(con=con,
                                 path=Sys.getenv("LOTTIES_EXTRACT_DIR"))
 ## Compress all extracted files to the backup directory
-compress_files(csv_files = csv_files,
-               path = Sys.getenv("LOTTIES_BACKUP_DIR"))
+compress_files(
+    csv_files = csv_files,
+    path = Sys.getenv("LOTTIES_BACKUP_DIR"),
+    extract_dir= Sys.getenv("LOTTIES_EXTRACT_DIR"))

@@ -42,17 +42,25 @@ extract_all_tables <- function(con,
 #'
 #' A list of CSV files are compressed to the specified 'path' in a file named 'extract_YYYYMMDD_HHmmss.zzzzz.zip'.
 #'
+#' We pass `extract_dir` to use as the `zip::zip(..., root = extract_dir)` and strip this path from the list of files.
+#'
 #' @param csv_files list A named list of files to be compressed.
 #' @param path str The location the files should be compressed to.
+#' @param extract_dir str Path to the location files that are to be compressed are located.
 #'
 #' @returns Nothing
 #' @export
-compress_files <- function(csv_files, path) {
-  zip::zip(zipfile = paste0(path,
-                            "/extract_",
-                            lubridate::now() |>
-                              stringr::str_replace_all(" ", "_")|>
-                              stringr::str_replace_all(":", ""),
-                            ".zip"),
-           files = unlist(csv_files))
+compress_files <- function(csv_files, path, extract_dir) {
+  clean_csv_files <- unlist(csv_files) |> stringr::str_replace(extract_dir, "")
+  zip::zip(
+      zipfile = paste0(
+          path,
+          "/extract_",
+          lubridate::now() |>
+              stringr::str_replace_all(" ", "_") |>
+              stringr::str_replace_all(":", ""),
+          ".zip"
+      ),
+      root = extract_dir,
+      files = clean_csv_files)
 }
