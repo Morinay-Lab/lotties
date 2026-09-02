@@ -21,7 +21,11 @@ Type=simple
 Restart=always
 RestartSec=1
 User=lotties
-ExecStart=nohup Rscript -e "devtools::load_all(path='/home/lotties/lotties/')" -e "shiny::runApp('/home/lotties/lotties/inst/shiny', port = ****, host = '###.###.###.###', launch.browser = FALSE)" > /home/lotties/log/lotties.log 2>&1 &
+WorkingDirectory=/home/lotties/lotties
+ExecStart=nohup Rscript -e "devtools::load_all(path='/home/lotties/lotties/')" \
+                        # Uncomment the following line to get tracebacks when errors occur
+                        # -e "options(shiny.fullstacktrace = TRUE, shiny.sanitize.errors = FALSE)" \
+                        -e "shiny::runApp('/home/lotties/lotties/inst/shiny', port = ****, host = '###.###.###.###', launch.browser = FALSE)" > /home/lotties/log/lotties.log 2>&1 &
 
 [Install]
 WantedBy=multi-user.target
