@@ -93,7 +93,7 @@ If it is not cloned, for example the service is being deployed elsewhere, you ca
 
 ```
 cd
-git clone https://github.com/Morniay-Lab/lotties.git
+git clone https://github.com/Morinay-Lab/lotties.git
 ```
 
 ### Switch to permanent database

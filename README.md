@@ -63,7 +63,7 @@ if (testing) {
 }
 ```
 
-#### Option
+#### Options
 
 Useful options which can be set in your global or the project  `.Rprofile` are shown below. They set a consistent port
 for viewing the web-page locally (`shiny.port`), increase verbosity of the running server to help debugging
