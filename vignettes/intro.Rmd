@@ -93,7 +93,7 @@ If it is not cloned, for example the service is being deployed elsewhere, you ca
 
 ```
 cd
-git clone https://github.com/Morniay-Lab/lotties.git
+git clone https://github.com/Morinay-Lab/lotties.git
 ```
 
 ### Switch to permanent database
@@ -145,7 +145,7 @@ The `lotties` package is a work in progress and new features may be added. To up
 1. Switch to the `lotties` user account.
 2. Navigate to `~/lotties/` git repository.
 3. Get the latest changes to the `main` branch with `git switch main && git pull`
-4. Edit `inst/shiny/server.R` and set `testing <- FALSE` so the SQLite database is used rather than running in memory.
+4. Edit `.Renviron` and set `LOTTIES_TESTING=FALSE` so the SQLite database is used rather than running in memory.
 5. Restart the service with `sudo systemctl restart lotties.service`
 
 It is possible that you may wish to test features on a branch in which case you can replace step 3 with...
