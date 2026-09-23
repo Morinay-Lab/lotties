@@ -35,7 +35,7 @@ pak::pkg_install("Morinay-lab/lotties")
 To launch the Shiny App locally you can run the following...
 
 ```R
-shiny::runApp(system.file("shiny", package = "lotties"))
+shiny::runApp(system.file("inst/shiny", package = "lotties"))
 ```
 
 This should launch a browser pointing to a locally running instance of the application.
@@ -158,27 +158,6 @@ It is possible that you may wish to test features on a branch in which case you 
 
 To connect to the virtual machine `lotties.shef.ac.uk` you will need to have an account created for you. For security
 it has been configured to only allow connections using SSH authentication.
-
-### Key Generation
-
-#### GNU/Linux and OSX
-If you are using GNU/Linux or OSX then you
-can create SSH keys using the following commands (**NB** - It is recommend to use [Ed25519 Twisted Edward curve keys][ed25519])
-
-```shell
-ssh-keygen -o -a 100 -t ed25519
-```
-
-By default you should be prompted for a secure password.
-
-#### Windows
-
-Windows users should follow the instructions on [Using PuTTYgen on Windows to generate SSH key pairs][puttySSH].
-
-### Uploading Keys
-
-Share your `id_25519.pub` (the public part of your key) with the administrator who will setup your account and place the
-public key under your `/home/<username>/.ssh/id_ed25519.pub`
 
 ### R setup
 

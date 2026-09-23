@@ -30,7 +30,11 @@ testing things locally in memory or it may be the location of a `.sql` file on d
 # In memory database
 db_path <- ":memory:"
 # On disk database
-db_path <- "inst/sqlite/lottie.sql"
+# The next two lines set the working directory, the firstr on the VM, the second on a users computer and should replace
+# <username> with your username
+setwd("/home/lotties/lotties")
+# setwd("c:/Users/<username>/Documents")
+db_path <- paste0(getwd(), "inst/sqlite/lottie.sql")
 con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
 ```
 
@@ -49,7 +53,7 @@ RSQLite::dbListTables(con)
 
 ## Creating Tables
 
-You create a dataframe in R and use this as the table to be written to the database. 
+You create a dataframe in R and use this as the table to be written to the database.
 
 ```{r sql_write_table}
 df <- data.frame("user" = character(),
