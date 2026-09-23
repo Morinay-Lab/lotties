@@ -140,19 +140,55 @@ defined in `.Renviron`. The default for this path is the xdrive path
 
 ### Updating
 
-The `lotties` package is a work in progress and new features may be added. To update these you should...
+The `lotties` package is a work in progress and new features may be added.
 
-1. Switch to the `lotties` user account.
-2. Navigate to `~/lotties/` git repository.
-3. Get the latest changes to the `main` branch with `git switch main && git pull`
-4. Edit `.Renviron` and set `LOTTIES_TESTING=FALSE` so the SQLite database is used rather than running in memory.
-5. Restart the service with `sudo systemctl restart lotties.service`
+Typically new features will be developed and tested on a users computer before being merged into the `main` branch once
+we are confident that they are working. These changes then need to be moved to the Virtual Machine and the service
+restarted. The following steps provide an overview of how to do this.
 
-It is possible that you may wish to test features on a branch in which case you can replace step 3 with...
+1. On your local computer ensure the `main` branch is up-to-date. `git pull` when the `main` branch is checked out.
+2. Make a _new_ branch on which to make your changes, whether this is to code or lookups.
+3. Once you have made your changes staged and commit them (there may be several iterations of this).
+4. Run the server locally and check that all functionality works and nothing is broken.
+5. Push the changes on your local branch to GitHub.
+6. On GitHub make a "_Pull Request_" to merge your changes into the `main` branch.
+7. Merge the pull request.
+8. Log in to the Virual Machine and switch to the `lotties` user.
+9. Change directory to `lotties` (`cd ~/lotties`).
+10. Make sure you are checked out on the `main` branch (`git switch main`).
+11. Pull the changes that have just been merged from GitHub (`git pull`).
+12. Restart the service (`sudo systemctl restart lotties.service`).
+13. Visit the website and check everything still works.
 
-3. Switch to branch to be tested with `git switch <branch>`
+#### Updating Lookups
 
-...although ideally all branches should have been tested locally in memory and changes merged to `main` for deployment.
+We use "lookups" to define dataframes that determine the options that are available in a number of the menus. These are
+`.csv` files that reside in the `inst/csv/` directory which are loaded by the `R/lookups.R` file which is parsed/run on
+starting the server.
+
+The following lookups are available...
+
+| Lookup File                   | Description                 |
+|:------------------------------|:----------------------------|
+| `conditions.csv`              | General weather conditions. |
+| `interactions.csv`            | Types of interactions.      |
+| `other_species.csv`           | Other species present.      |
+| `person.csv`                  | Person recording data.      |
+| `section.csv`                 | Area being surveyed.        |
+| `valid_ring_combinations.csv` | Valid ring combinations.    |
+| `valid_rings.csv`             | Valid rings.                |
+| `visibility.csv`              | Visibility conditions.      |
+
+The most common change is that a new ring combination will be added as new birds are captured and ringed for
+observation. This means that the `valid_ring_combinations.csv` file will need updating. You can either manually add new
+entries to this file or export it anew from another database. It should have a single column but it is important to
+ensure that special fields such as `BTO L`/`BTO R`/`Unknown` and so forth are present.
+
+As these files are under version control you should make the changes on a new branch, stage and commit them, push to
+GitHub and make a pull request to merge them (see previous section).
+
+Any of these look up files may be modified to reflect changes in conditions, other species, field researchers or areas
+being surveyed.
 
 ## Virtual Machine Administration
 
