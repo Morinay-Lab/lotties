@@ -110,13 +110,13 @@ be run as the `lotties` user on the account so after you have SSH'd to the machi
 (see above) and you can start
 
 ```shell
-systemctl restart lotties.service
+sudo systemctl restart lotties.service
 ```
 
 You can check the status with
 
 ```shell
-systemctl status lotties.service
+sudo systemctl status lotties.service
 ```
 
 ### Backups
