@@ -142,18 +142,18 @@ defined in `.Renviron`. The default for this path is the xdrive path
 
 The `lotties` package is a work in progress and new features may be added.
 
-Typically new features will be developed and tested on a users computer before being merged into the `main` branch once
+Typically new features will be developed and tested on a user's computer before being merged into the `main` branch once
 we are confident that they are working. These changes then need to be moved to the Virtual Machine and the service
 restarted. The following steps provide an overview of how to do this.
 
 1. On your local computer ensure the `main` branch is up-to-date. `git pull` when the `main` branch is checked out.
-2. Make a _new_ branch on which to make your changes, whether this is to code or lookups.
-3. Once you have made your changes staged and commit them (there may be several iterations of this).
+2. Make a _new_ branch on which to make your changes, whether this is to code or to update lookups.
+3. Once you have made your changes, stage and commit them (there may be several iterations of this).
 4. Run the server locally and check that all functionality works and nothing is broken.
 5. Push the changes on your local branch to GitHub.
 6. On GitHub make a "_Pull Request_" to merge your changes into the `main` branch.
 7. Merge the pull request.
-8. Log in to the Virual Machine and switch to the `lotties` user.
+8. Log in to the Virtual Machine and switch to the `lotties` user.
 9. Change directory to `lotties` (`cd ~/lotties`).
 10. Make sure you are checked out on the `main` branch (`git switch main`).
 11. Pull the changes that have just been merged from GitHub (`git pull`).
