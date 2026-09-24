@@ -34,7 +34,7 @@ db_path <- ":memory:"
 # <username> with your username
 setwd("/home/lotties/lotties")
 # setwd("c:/Users/<username>/Documents")
-db_path <- paste0(getwd(), "inst/sqlite/lottie.sql")
+db_path <- paste0(getwd(), "/inst/sqlite/lottie.sql")
 con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
 ```
 
@@ -126,7 +126,7 @@ The example below flips round which flock was chasing which from `1` (`a`) chasi
 
 ```{r sql_get_query_update}
 table <- "Interactions"
-query <- paste0("UPDATE ", ## NB - the space after FROM is essential
+query <- paste0("UPDATE ", ## NB - the space after UPDATE is essential
                 table,
                 " SET a_chasing_b = 0, b_chasing_a = 1",  ## NB - the spaces before keywords are also essential
                 " WHERE date == '2026-08-20' ",
@@ -137,6 +137,64 @@ query <- paste0("UPDATE ", ## NB - the space after FROM is essential
 RSQLite::dbSendQuery(con, query)
 ```
 
+## ☣️Deleting Data ☣️
+
+It is possible to also delete data from the SQLite database directory, but it is advisable to be wary when doing
+so. Even though backups are made daily it is possible that some data may be lost.
+
+It is recommended when attempting to delete data directly that you first construct a query that uses `SELECT` and
+`WHERE` to identify the rows you think will be deleted and check that this is what you want to modify.
+
+The [`DELETE`][sqlite_delete] command allows removal of one, multiple or all rows from a table. It takes an argument of
+the `table` from which you wish to remove rows and a search condition using [`WHERE`][sqlite_where].
+
+### Remove a one or more rows
+
+First construct a [`SELECT`][sqlite_select] statement and see what is returned...
+
+```{r sql_select_for_deletion}
+table <- "Interactions"
+select_query <- paste0("SELECT FROM ", ## NB - the space after FROM is essential
+                table,
+                " WHERE date == '2025-07-21' ",
+                " AND user == 'LN' ")
+RSQLite::dbSendQuery(con, select_query)
+```
+
+You may need to use multiple `AND` statements to narrow down the row(s) you want to remove. Once you are happy you have
+identified just the rows you wish to remove you can then switch the query to use `DELETE` instead of `SELECT`
+
+```{r sql_delete_single_row}
+table <- "Interactions"
+delete_query <- paste0("DELETE FROM ", ## NB - the space after FROM is essential
+                table,
+                " WHERE date == '2025-07-21' ",
+                " AND user == 'LN' ")
+RSQLite::dbSendQuery(con, delete_query)
+```
+
+You can re-run your `select_query` to check the row(s) have been deleted, it should not return any rows.
+
+```{r sql_delete_single_row_check}
+RSQLite::dbSendQuery(con, select_query)
+<SQLiteResult>
+  SQL  SELECT * FROM interactions WHERE date == '2025-07-21' AND user == 'LN'
+  ROWS Fetched: 0 [complete]
+       Changed: 0
+Warning message:
+Closing open result set, pending rows
+```
+
+### Remove all rows from a table
+
+To remove all rows from a table you omit the `WHERE` clauses from the query.
+
+```{r sql_delete_single_row}
+table <- "Interactions"
+delete_query <- paste0("DELETE FROM ", ## NB - the space after FROM is essential
+                table)
+RSQLite::dbSendQuery(con, delete_query)
+```
 
 ## Summary
 
@@ -148,6 +206,7 @@ learning more is the [SQLite Tutorial][sqlite_toturial].
 [sqlite_tutorial]: https://www.sqlitetutorial.net/
 [sqlite_and]: https://www.sqlitetutorial.net/sqlite-and/
 [sqlite_between]: https://www.sqlitetutorial.net/sqlite-between/
+[sqlite_delete]: https://www.sqlitetutorial.net/sqlite-delete
 [sqlite_in]: https://www.sqlitetutorial.net/sqlite-in/
 [sqlite_or]: https://www.sqlitetutorial.net/sqlite-or/
 [sqlite_where]: https://www.sqlitetutorial.net/sqlite-where/
