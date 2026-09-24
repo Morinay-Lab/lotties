@@ -105,15 +105,15 @@ database (`inst/sqlite/lotties.sql` by default) will be used.
 
 ### Launching the Service
 
-A [systemd service module][systemd] has been added to facilitate starting and stopping the service. It has been setup to
-be run as the `lotties` user on the account so after you have SSH'd to the machine you should switch to this account
-(see above) and you can start
+A [systemd service module][systemd] has been added to facilitate starting and stopping the service. This service can
+only be restarted from your login account or as `root`. It will _not_ work from the `lotties` account. From your login
+account run the following to restart the service.
 
 ```shell
 sudo systemctl restart lotties.service
 ```
 
-You can check the status with
+You can check the status with...
 
 ```shell
 sudo systemctl status lotties.service
