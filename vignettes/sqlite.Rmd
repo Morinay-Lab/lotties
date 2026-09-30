@@ -195,6 +195,82 @@ delete_query <- paste0("DELETE FROM ", ## NB - the space after FROM is essential
                 table)
 RSQLite::dbSendQuery(con, delete_query)
 ```
+## Restoring Data
+
+Back-ups made daily to `.csv` files which are compressed to `.zip` files. It is possible to use these to restore the
+database to the previous snapshot if required.
+
+The location of backups is defined in the `.Renviron` and stored in the `LOTTIES_BACKUP_DIR`, at the time of writing
+this was set to `/mnt/san/morinay_group/Shared/Database_Files/backup`.
+
+To restore a backup you need to extract the files from the most recent `.zip`.
+
+```shell
+sudo su lotties
+cd ~/lotties/tmp
+mkdir $(date +%Y%m%d)     # Create a directory to extract files to of the form YYYYMMDD
+unzip /mnt/san/morinay_group/Shared/Database_Files/backup/extract_2026-09-30_060003.847514.zip -d .
+ls -lha 20260930
+total 172K
+drwxrwxr-x 2 lotties lotties 4.0K Sep 30 12:57 .
+drwxrwxr-x 3 lotties lotties 4.0K Sep 30 12:56 ..
+-rw-rw-r-- 1 lotties lotties 6.1K Sep 30 06:00 composition.csv
+-rw-rw-r-- 1 lotties lotties  320 Sep 30 06:00 conditions.csv
+-rw-rw-r-- 1 lotties lotties 1.2K Sep 30 06:00 description.csv
+-rw-rw-r-- 1 lotties lotties 141K Sep 30 06:00 gps.csv
+-rw-rw-r-- 1 lotties lotties  133 Sep 30 06:00 interactions.csv
+```
+
+Now change directory back to `~/lotties` so that all the relative paths will work and start R.
+
+```shell
+cd lotties
+R
+```
+
+Setup a connection to the `inst/sqlite/lottie.sql` database and list the available tables.
+
+```r
+db_path <- paste0(getwd(), "/inst/sqlite/lottie-20260930.sql")
+con <- DBI::dbConnect(RSQLite::SQLite(), db_path)
+> RSQLite::dbListTables(con)
+[1] "Composition"  "Conditions"   "Description"  "GPS"          "Interactions"
+[6] "OtherSpecies" "Person"       "Rings"        "Sites"
+```
+
+We now load each of the `.csv` files and update the database. This **will** over-write anything that is in the database
+as we use the option `overwite=TRUE` when we use the `RSQLite::dbWriteTable()`.
+
+```r
+## You may need to modify this line to reflect the current date
+TMP_DIR <- "tmp/20260930"
+
+## Composition
+table <- "Composition"
+composition_df <- read.csv(paste0(TMP_DIR, "composition.csv"))
+RSQLite::dbWriteTable(conn = con, name=table, composition_df, overwrite=TRUE)
+
+## Conditions
+table <- "Conditions"
+conditions_df <- read.csv(paste0(TMP_DIR, "conditions.csv"))
+RSQLite::dbWriteTable(conn = con, name=table, conditions_df, overwrite=TRUE)
+
+## Description
+table <- "Description"
+description_df <- read.csv(paste0(TMP_DIR, "description.csv"))
+RSQLite::dbWriteTable(conn = con, name=table, description_df, overwrite=TRUE)
+
+## GPS
+table <- "GPS"
+gps_df <- read.csv(paste0(TMP_DIR, "gps.csv"))
+RSQLite::dbWriteTable(conn = con, name=table, gps_df, overwrite=TRUE)
+
+## Interactions
+table <- "Interactions"
+interactions_df <- read.csv(paste0(TMP_DIR, "interactions.csv"))
+RSQLite::dbWriteTable(conn = con, name=table, interactions_df, overwrite=TRUE)
+
+```
 
 ## Summary
 
