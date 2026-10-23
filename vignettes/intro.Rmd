@@ -150,6 +150,11 @@ restarted. The following steps provide an overview of how to do this.
 2. Make a _new_ branch on which to make your changes, whether this is to code or to update lookups.
 3. Once you have made your changes, stage and commit them (there may be several iterations of this).
 4. Run the server locally and check that all functionality works and nothing is broken.
+``` r
+setwd("~/path/to/cloned/repository/lotties")
+devtools::load_all()
+shiny::runApp(appDir = "inst/shiny/")
+```
 5. Push the changes on your local branch to GitHub.
 6. On GitHub make a "_Pull Request_" to merge your changes into the `main` branch.
 7. Merge the pull request.
